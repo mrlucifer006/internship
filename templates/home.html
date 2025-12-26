@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Data Entry{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="py-4 px-6 bg-blue-500 text-white font-bold text-xl">
+        Data Entry Form
+    </div>
+    <form action="/data" method="POST" class="py-4 px-6">
+        <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2" for="name">
+                Name
+            </label>
+            <input
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="name" name="name" type="text" placeholder="Enter your name" required>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2" for="Number">
+                Number
+            </label>
+            <input
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="Number" name="Number" type="text" placeholder="Enter number" required>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2" for="V_name">
+                Visitor Name
+            </label>
+            <input
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="V_name" name="V_name" type="text" placeholder="Visitor Name" required>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2" for="reason">
+                Reason
+            </label>
+            <textarea
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="reason" name="reason" placeholder="Reason for visit" rows="3" required></textarea>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2">
+                Vehicle
+            </label>
+            <div class="flex items-center">
+                <input class="mr-2 leading-tight" type="checkbox" id="vehicle" name="vehicle" value="yes"
+                    onchange="toggleVehicleNumber()">
+                <label class="text-sm" for="vehicle">
+                    Has Vehicle?
+                </label>
+            </div>
+        </div>
+
+        <div class="mb-6 hidden" id="vehicle_number_container">
+            <label class="block text-gray-700 font-bold mb-2" for="vehicle_number">
+                Vehicle Number
+            </label>
+            <input
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="vehicle_number" name="vehicle_number" type="text" placeholder="Enter vehicle number">
+        </div>
+
+        <div class="flex items-center justify-between">
+            <button
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                type="submit">
+                Submit
+            </button>
+        </div>
+    </form>
+</div>
+
+{% if entries %}
+<div class="max-w-4xl mx-auto mt-8 bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="py-4 px-6 bg-gray-800 text-white font-bold text-xl">
+        Entry Log
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white">
+            <thead>
+                <tr>
+                    <th class="py-2 px-4 border-b-2 border-gray-300 text-left text-sm font-semibold text-gray-600">Name
+                    </th>
+                    <th class="py-2 px-4 border-b-2 border-gray-300 text-left text-sm font-semibold text-gray-600">
+                        Visitor</th>
+                    <th class="py-2 px-4 border-b-2 border-gray-300 text-left text-sm font-semibold text-gray-600">
+                        Reason</th>
+                    <th class="py-2 px-4 border-b-2 border-gray-300 text-left text-sm font-semibold text-gray-600">
+                        Vehicle</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr class="hover:bg-gray-100">
+                    <td class="py-2 px-4 border-b border-gray-200 text-sm">{{ entry.name }}</td>
+                    <td class="py-2 px-4 border-b border-gray-200 text-sm">{{ entry.V_name }}</td>
+                    <td class="py-2 px-4 border-b border-gray-200 text-sm">{{ entry.reason }}</td>
+                    <td class="py-2 px-4 border-b border-gray-200 text-sm">
+                        {% if entry.vehicle %}
+                        Yes ({{ entry.vehicle_number }})
+                        {% else %}
+                        No
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    function toggleVehicleNumber() {
+        var checkBox = document.getElementById("vehicle");
+        var text = document.getElementById("vehicle_number_container");
+        if (checkBox.checked == true) {
+            text.classList.remove("hidden");
+        } else {
+            text.classList.add("hidden");
+        }
+    }
+</script>
+{% endblock %}
