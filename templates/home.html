@@ -107,6 +107,16 @@
                     <p class="text-slate-500 text-base font-normal">Please verify details before logging entry.</p>
                 </div>
                 <div class="bg-white rounded-xl border border-slate-200 p-6 lg:p-8 shadow-sm">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
+                        role="alert">
+                        <span class="font-medium">Error!</span> {{ message }}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
                     <form class="flex flex-col gap-6" action="{{ url_for('get_data') }}" method="POST">
                         <div class="space-y-4">
                             <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-blue)]">Host
@@ -117,6 +127,19 @@
                                     <input
                                         class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 placeholder:text-slate-400 px-4 text-base font-normal leading-normal transition-all"
                                         placeholder="Who are they visiting?" type="text" name="name" required />
+                                </label>
+                                <label class="flex flex-col min-w-40 flex-1">
+                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Host Phone
+                                        Number</p>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                            <span class="material-symbols-outlined text-[20px]">phone</span>
+                                        </span>
+                                        <input
+                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 placeholder:text-slate-400 pl-10 pr-4 text-base font-normal leading-normal transition-all"
+                                            placeholder="Host's Number (e.g. +91...)" type="tel" name="host_number"
+                                            required />
+                                    </div>
                                 </label>
                             </div>
                         </div>
