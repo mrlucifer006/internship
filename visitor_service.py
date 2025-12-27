@@ -1,82 +1,102 @@
-from app.db import mongo
-from datetime import datetime
+from .db import get_db_connection
+from datetime import datetime, timedelta, timezone
 
-def save_visitor(data):
+IST = timezone(timedelta(hours=5, minutes=30))
+
+def insert(data):
     """
-    Validates and saves visitor data.
-    Expected keys: name, phone, person_to_visit, reason, has_vehicle, vehicle_number (optional)
+    Saves visitor data to the SQLite database (Stack Push).
     """
-    errors = []
-    
-    # Basic Validation
-    if not data.get("name"):
-        errors.append("Name is required.")
-    if not data.get("phone"):
-        errors.append("Phone number is required.")
-    if not data.get("person_to_visit"):
-        errors.append("Person to visit is required.")
-    if not data.get("reason"):
-        errors.append("Reason for visit is required.")
-    
-    has_vehicle = data.get("has_vehicle")
-    vehicle_number = data.get("vehicle_number")
-    
-    # Normalize boolean check (handle string "true"/"false" if coming from form)
-    if isinstance(has_vehicle, str):
-        has_vehicle = has_vehicle.lower() == 'true'
-    
-    if has_vehicle and not vehicle_number:
-        errors.append("Vehicle registration number is required if vehicle is present.")
-
-    # Duplicate Check
-    active_visitor = mongo.db.visitors.find_one({
-        "name": data["name"],
-        "phone": data["phone"],
-        "exit_time": None
-    })
-
-    if active_visitor:
-        return {"success": False, "errors": ["Visitor already checked in and has not exited."]}
-
-    if errors:
-        return {"success": False, "errors": errors}
-
-    # Construct Document
-    visitor_doc = {
-        "name": data["name"],
-        "phone": data["phone"],
-        "person_to_visit": data["person_to_visit"],
-        "reason": data["reason"],
-        "has_vehicle": bool(has_vehicle),
-        "vehicle_number": vehicle_number if has_vehicle else None,
-        "entry_time": datetime.utcnow(),
-        "exit_time": None
-    }
-
+    conn = get_db_connection()
     try:
-        mongo.db.visitors.insert_one(visitor_doc)
-        return {"success": True, "message": "Visitor registered successfully."}
+        # 1 if has_vehicle is True/truthy, else 0
+        has_vehicle_int = 1 if data.get("has_vehicle") else 0
+        
+        query = """
+            INSERT INTO visitors (ticket_number, name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time, exit_time)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        values = (
+            data.get("ticket_number"),
+            data["name"],
+            data["phone"],
+            data["person_to_visit"],
+            data["reason"],
+            has_vehicle_int,
+            data.get("vehicle_number"),
+            datetime.now(IST).isoformat(),
+            None
+        )
+        
+        cursor = conn.execute(query, values)
+        conn.commit()
+        return {"success": True, "message": "Visitor registered successfully.", "id": str(cursor.lastrowid)}
     except Exception as e:
-        return {"success": False, "errors": [str(e)]}
+        return {"success": False, "error": str(e)}
+    finally:
+        conn.close()
 
-def check_out_visitor(data):
+def get_visitors(limit=1):
     """
-    Marks a visitor as exited.
-    Expected keys: name, phone
+    Retrieves visitor records ordered by entry_time descending (LIFO).
+    Args:
+        limit (int): Number of records to retrieve. Default is 1 (Stack Peek).
     """
-    if not data.get("name") or not data.get("phone"):
-        return {"success": False, "errors": ["Name and Phone number are required."]}
+    conn = get_db_connection()
+    try:
+        query = "SELECT * FROM visitors ORDER BY entry_time DESC LIMIT ?"
+        rows = conn.execute(query, (limit,)).fetchall()
+        return {"success": True, "data": [dict(row) for row in rows]}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    finally:
+        conn.close()
 
-    result = mongo.db.visitors.update_one(
-        {
-            "name": data["name"],
-            "phone": data["phone"],
-            "exit_time": None
-        },
-        {"$set": {"exit_time": datetime.utcnow()}}
-    )
+def get_visitor_by_ticket(ticket_number):
+    """
+    Retrieves a visitor record by ticket number.
+    """
+    conn = get_db_connection()
+    try:
+        query = "SELECT * FROM visitors WHERE ticket_number = ?"
+        row = conn.execute(query, (ticket_number,)).fetchone()
+        
+        if row:
+            return {"success": True, "data": dict(row)}
+        return {"success": False, "error": "Visitor not found."}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    finally:
+        conn.close()
 
-    if result.modified_count > 0:
+def update_exit_time(name, phone):
+    """
+    Updates the exit time for the most recent active visitor record (Stack Pop).
+    Ensures consistency by closing the correct session.
+    """
+    conn = get_db_connection()
+    try:
+        # Find the latest active record ID for this user (Stack Top)
+        query_find = """
+            SELECT id FROM visitors 
+            WHERE name = ? AND phone = ? AND exit_time IS NULL
+            ORDER BY entry_time DESC
+            LIMIT 1
+        """
+        row = conn.execute(query_find, (name, phone)).fetchone()
+        
+        if not row:
+             return {"success": False, "error": "No active check-in found for this visitor."}
+
+        # Update that specific record
+        visitor_id = row['id']
+        query_update = "UPDATE visitors SET exit_time = ? WHERE id = ?"
+        conn.execute(query_update, (datetime.now(IST).isoformat(), visitor_id))
+        conn.commit()
+        
         return {"success": True, "message": "Visitor checked out successfully."}
-    else:
-        return {"success": False, "errors": ["No active check-in found for this visitor."]}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    finally:
+        conn.close()
+
