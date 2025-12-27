@@ -1,5 +1,9 @@
 import flask
 import threading
+import time
+from Whatsapp_message import send_message
+import visitor_service
+import db
 app = flask.Flask(__name__)
 
 from visitor_service import save_visitor, get_all_entries
@@ -55,6 +59,7 @@ def entry_data():
     
     return flask.render_template('entry_data.html', name=name, Number=Number, V_name=V_name, reason=reason, vehicle=vehicle, vehicle_number=vehicle_number)
     time.sleep(5)
+    send_message(name,Number,reason,V_name,V_name)
 @app.route('/view_all')
 def view_all():
     return flask.render_template('view_all.html', entries=get_all_entries())   
