@@ -4,6 +4,7 @@ import time
 from Whatsapp_message import send_message
 from db import init_db
 from visitor_service import save_visitor, get_all_entries
+from employee_db import get_employee_phone
 import os
 
 
@@ -20,33 +21,50 @@ def home ():
 
 @app.route('/data',methods=['GET','POST'])
 def get_data():
-    if flask.request.method == 'POST':
-        name = flask.request.form['name']
-        Number = flask.request.form['Number']
-        host_number = flask.request.form['host_number']
-        V_name = flask.request.form['V_name']
-        reason = flask.request.form['reason']
-        vehicle = flask.request.form.get('vehicle')
-        vehicle_number = None
-        if vehicle:
-            vehicle_number = flask.request.form['vehicle_number']
+    try:
+        if flask.request.method == 'POST':
+            print(f"\nDEBUG: Received Form Data: {dict(flask.request.form)}") # DEBUG: Check what is actually received
+            name = flask.request.form.get('name')
+            if not name:
+                 flask.flash("Host Name is required.", 'error')
+                 return flask.redirect(flask.url_for('home'))
 
-        entry = {
-            'name': name,
-            'Number': Number,
-            'V_name': V_name,
-            'reason': reason,
-            'vehicle': vehicle,
-            'vehicle_number': vehicle_number
-        }
-        
-        result = save_visitor(entry)
-        if not result['success']:
-            for error in result['errors']:
-                flask.flash(error, 'error')
-            return flask.redirect(flask.url_for('home'))
+            # Lookup Host Phone
+            host_number = get_employee_phone(name)
+            if not host_number:
+                flask.flash(f"Host '{name}' not found in Employee Database.", 'error')
+                return flask.redirect(flask.url_for('home'))
+                
+            Number = flask.request.form.get('Number')
+            V_name = flask.request.form.get('V_name')
+            reason = flask.request.form.get('reason')
+            vehicle = flask.request.form.get('vehicle')
+            vehicle_number = None
+            if vehicle:
+                vehicle_number = flask.request.form.get('vehicle_number')
+
+            entry = {
+                'name': name,
+                'Number': Number,
+                'V_name': V_name,
+                'reason': reason,
+                'vehicle': vehicle,
+                'vehicle_number': vehicle_number
+            }
             
-        return flask.redirect(flask.url_for('entry_data',name=name,Number=Number,host_number=host_number,V_name=V_name,reason=reason,vehicle=vehicle,vehicle_number=vehicle_number))
+            result = save_visitor(entry)
+            if not result['success']:
+                for error in result['errors']:
+                    flask.flash(error, 'error')
+                return flask.redirect(flask.url_for('home'))
+                
+            return flask.redirect(flask.url_for('entry_data',name=name,Number=Number,host_number=host_number,V_name=V_name,reason=reason,vehicle=vehicle,vehicle_number=vehicle_number))
+            
+        return flask.redirect(flask.url_for('home'))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return f"Internal Server Error: {e}", 500
 
 @app.route('/entry_data',methods = ['GET','POST'])
 def entry_data():
@@ -74,5 +92,5 @@ def view_all():
 
 if __name__ == '__main__':
     print("Starting Flask Server on port 5000...")
-    app.run(debug=False, port=5000)
+    app.run(debug=True, port=5000)
 

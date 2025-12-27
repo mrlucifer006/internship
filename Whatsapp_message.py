@@ -9,7 +9,7 @@ def send_message(visitor_name,visitor_phone,reason,person_meet_name,person_meet_
     )
 
     try:
-        pywhatkit.sendmsg_instantly(
+        pywhatkit.sendwhatmsg_instantly(
             phone_no = person_meet_whatsapp,
             message = message,
             tab_close = True
@@ -23,6 +23,8 @@ def send_message(visitor_name,visitor_phone,reason,person_meet_name,person_meet_
         }
     
     except Exception as e:
+        # Prevent server crash if browser fails
+        print(f"FAILED TO SEND WHATSAPP: {e}")
         return {
             "success" : False,
             "message" : str(e)
