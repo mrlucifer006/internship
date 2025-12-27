@@ -54,6 +54,7 @@ def entry_data():
     vehicle_number = flask.request.args.get('vehicle_number')
     
     return flask.render_template('entry_data.html', name=name, Number=Number, V_name=V_name, reason=reason, vehicle=vehicle, vehicle_number=vehicle_number)
+    time.sleep(5)
 @app.route('/view_all')
 def view_all():
     return flask.render_template('view_all.html', entries=get_all_entries())   
