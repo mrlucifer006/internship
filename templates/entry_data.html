@@ -62,8 +62,8 @@
         <span class="text-primary font-bold text-lg">Watchman Portal</span>
       </div>
       <div class="flex items-center gap-4">
-        <div class="bg-orange-500 h-9 px-4 rounded text-white text-sm font-medium flex items-center shadow-sm">Logout
-        </div>
+        <a href="{{ url_for('logout') }}"
+          class="bg-orange-500 hover:bg-orange-600 h-9 px-4 rounded text-white text-sm font-medium flex items-center shadow-sm transition-colors">Logout</a>
         <div class="w-9 h-9 rounded-full bg-slate-700"></div>
       </div>
     </div>
