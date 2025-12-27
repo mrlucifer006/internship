@@ -1,0 +1,6 @@
+[alias]
+    # 'git save' will stage everything and commit
+    save = !git add -A && git commit -m \"Auto-commit: $(date)\"
+    
+    # 'git quick' will stage everything and ask for a message in one line
+    quick = !git add -A && git commit -m
