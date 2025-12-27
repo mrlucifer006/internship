@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Enterprise Minimal Login</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark min-h-screen flex flex-col overflow-x-hidden antialiased">
+<!-- Main Layout Container -->
+<div class="relative flex flex-1 flex-col items-center justify-center p-4">
+<!-- Login Card -->
+<!-- Fixed width constraint, rounded corners, shadow, white background -->
+<div class="w-full max-w-[440px] flex flex-col gap-8 rounded-lg bg-white dark:bg-[#1A232E] shadow-xl dark:shadow-slate-900/50 p-8 sm:p-10 border border-slate-100 dark:border-slate-800">
+<!-- Header Section -->
+<div class="flex flex-col gap-2 text-center">
+<h1 class="text-slate-900 dark:text-white text-2xl font-bold tracking-tight leading-tight">
+                    Login
+                </h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal">
+                    Please enter your credentials to access the system.
+                </p>
+</div>
+<!-- Form Section -->
+<form class="flex flex-col gap-5" onsubmit="event.preventDefault();">
+<!-- Login ID Input -->
+<div class="flex flex-col gap-2">
+<label class="text-slate-900 dark:text-slate-200 text-sm font-semibold leading-normal" for="login-id">
+                        Login ID
+                    </label>
+<input autocomplete="email" class="form-input flex w-full min-w-0 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white border border-[#cfdbe7] dark:border-slate-600 bg-slate-50 dark:bg-slate-800 h-12 px-4 text-base font-normal leading-normal placeholder:text-[#4c739a] dark:placeholder:text-slate-500 focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200" id="login-id" placeholder="Enter your ID" type="email" value=""/>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col gap-2">
+<label class="text-slate-900 dark:text-slate-200 text-sm font-semibold leading-normal" for="password">
+                        Password
+                    </label>
+<input autocomplete="current-password" class="form-input flex w-full min-w-0 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white border border-[#cfdbe7] dark:border-slate-600 bg-slate-50 dark:bg-slate-800 h-12 px-4 text-base font-normal leading-normal placeholder:text-[#4c739a] dark:placeholder:text-slate-500 focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200" id="password" placeholder="Enter your password" type="password" value=""/>
+</div>
+<!-- Spacer for visual balance -->
+<div class="h-2"></div>
+<!-- Login Button -->
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary hover:bg-blue-600 active:bg-blue-700 text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors duration-200 shadow-sm focus:ring-4 focus:ring-primary/30 outline-none" type="submit">
+<span class="truncate">Login</span>
+</button>
+</form>
+</div>
+</div>
+</body></html>
