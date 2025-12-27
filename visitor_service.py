@@ -109,3 +109,15 @@ def check_out_visitor(visitor_name, phone): # Changed params to simple args pote
             return {"success": False, "errors": ["No active visit found."]}
     finally:
         conn.close()
+
+def remove_all_records():
+    conn = get_db_connection()
+    try:
+        conn.execute("DELETE * FROM visitors")
+        conn.commit()
+    except Exception as e:
+        conn.close()
+        return "Failed to remove the records " + str(e)
+    finally:
+        conn.close()
+    return "Records removed successfully."
