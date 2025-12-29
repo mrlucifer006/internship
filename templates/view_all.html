@@ -1,62 +1,171 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block content %}
-<div class="flex flex-col gap-6">
-    <div class="flex items-center justify-between">
-        <h1 class="text-[#1e73be] text-3xl font-bold">All Visitor Entries</h1>
-        <a href="{{ url_for('home') }}" class="text-slate-600 hover:text-[#1e73be] font-medium">Back to Home</a>
-    </div>
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>All Visitor Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1e73be",
+                        "brand-blue": "#1e73be",
+                        "brand-green": "#5c8a42",
+                        "brand-orange": "#f08422",
+                        "background-light": "#f5f7f8",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        :root {
+          --brand-blue: #1e73be;
+          --brand-green: #5c8a42;
+          --brand-orange: #f08422;
+        }
+        .text-primary {
+            color: var(--brand-blue);
+        }
+        .bg-primary {
+            background-color: var(--brand-blue);
+        }
+        .btn-logout {
+            background-color: var(--brand-orange);
+        }
+        .btn-logout:hover {
+            background-color: #d1701b;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .status-badge-in {
+            @apply bg-green-100 text-green-700 border-green-200;
+        }
+        .status-badge-out {
+            @apply bg-gray-100 text-gray-700 border-gray-200;
+        }
+    </style>
+</head>
 
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold">
-                    <tr>
-                        <th class="px-6 py-4">Visitor Name</th>
-                        <th class="px-6 py-4">Host</th>
-                        <th class="px-6 py-4">Reason</th>
-                        <th class="px-6 py-4">Phone</th>
-                        <th class="px-6 py-4">Vehicle</th>
-                        <th class="px-6 py-4">Entry Time</th>
-                        <th class="px-6 py-4">Exit Time</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    {% for entry in entries|reverse %}
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-slate-900">{{ entry.V_name }}</td>
-                        <td class="px-6 py-4">{{ entry.name }}</td>
-                        <td class="px-6 py-4">
-                            <span
-                                class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                                {{ entry.reason }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">{{ entry.Number }}</td>
-                        <td class="px-6 py-4">
-                            {% if entry.vehicle %}
-                            <span class="text-slate-900">{{ entry.vehicle_number }}</span>
-                            {% else %}
-                            <span class="text-slate-400">-</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 text-xs font-mono text-slate-500">
-                            {{ entry.entry_time.replace('T', ' ')[:19] if entry.entry_time else '-' }}
-                        </td>
-                        <td class="px-6 py-4 text-xs font-mono text-slate-500">
-                            {{ entry.exit_time.replace('T', ' ')[:19] if entry.exit_time else '-' }}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-slate-500">
-                            No entries found.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<body class="bg-background-light font-display antialiased min-h-screen flex flex-col text-slate-600">
+    <header
+        class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 px-6 lg:px-10 py-3 bg-white shadow-sm z-10 sticky top-0">
+        <div class="flex items-center gap-4">
+            <h2 class="text-lg lg:text-xl font-bold leading-tight tracking-[-0.015em] text-[#1e73be]">Watchman Portal
+            </h2>
         </div>
-    </div>
-</div>
-{% endblock %}
+        <nav class="hidden md:flex items-center gap-6 ml-10 mr-auto">
+            <a class="text-slate-500 hover:text-[var(--brand-blue)] font-medium text-sm transition-colors" href="#">New
+                Entry</a>
+            <a class="text-[var(--brand-blue)] font-bold text-sm border-b-2 border-[var(--brand-blue)] py-5"
+                href="#">All Visitors</a>
+        </nav>
+        <div class="flex flex-1 justify-end gap-6 items-center">
+            <button
+                class="btn-logout flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 text-white text-sm font-bold transition-colors shadow-sm">
+                <span class="truncate">Logout</span>
+            </button>
+        </div>
+    </header>
+    <main class="flex-grow flex flex-col h-full p-6 lg:p-10">
+        <div class="w-full max-w-[1400px] mx-auto flex flex-col gap-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex flex-col gap-1">
+                    <h1 class="text-[#1e73be] text-3xl font-bold leading-tight tracking-[-0.033em]">All Visitor Details
+                    </h1>
+                    <p class="text-slate-500 text-base font-normal">Comprehensive log of all visitor entries and exits.
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="relative group">
+                        <span
+                            class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-[var(--brand-blue)] transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">search</span>
+                        </span>
+                        <input
+                            class="pl-10 pr-4 h-10 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-[var(--brand-blue)] w-full md:w-64 transition-all"
+                            placeholder="Search visitors..." type="text" />
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr
+                                class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                                <th class="p-4 min-w-[150px]">Visitor Name</th>
+                                <th class="p-4 min-w-[150px]">Host Details</th>
+                                <th class="p-4 min-w-[120px]">Reason</th>
+                                <th class="p-4 min-w-[130px]">Phone Number</th>
+                                <th class="p-4 min-w-[130px]">Vehicle Number</th>
+                                <th class="p-4 min-w-[120px]">Entry Time</th>
+                                <th class="p-4 min-w-[120px]">Exit Time</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-sm text-slate-600">
+                            <tr>
+                                <td class="p-12 text-center" colspan="7">
+                                    <div class="flex flex-col items-center justify-center text-slate-400 py-6">
+                                        <div class="bg-slate-50 p-4 rounded-full mb-3">
+                                            <span
+                                                class="material-symbols-outlined text-4xl text-slate-300">folder_off</span>
+                                        </div>
+                                        <p class="text-lg font-bold text-slate-600">No entries found</p>
+                                        <p class="text-sm text-slate-500 mt-1 max-w-xs">There are currently no visitor
+                                            details recorded. New entries will appear here.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="border-t border-slate-200 p-4 flex items-center justify-between bg-slate-50">
+                    <span class="text-sm text-slate-500">Showing <span class="font-semibold text-slate-700">0</span> of
+                        <span class="font-semibold text-slate-700">0</span> entries</span>
+                    <div class="flex gap-2">
+                        <button
+                            class="px-3 py-1 border border-slate-300 rounded-md bg-white text-slate-500 hover:bg-slate-50 text-sm disabled:opacity-50"
+                            disabled="">Previous</button>
+                        <button
+                            class="px-3 py-1 border border-slate-300 rounded-md bg-white text-slate-500 hover:bg-slate-50 text-sm disabled:opacity-50"
+                            disabled="">Next</button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center mt-6">
+                <a class="inline-flex items-center gap-2 bg-[var(--brand-blue)] text-white px-6 py-2.5 rounded-lg hover:bg-[#155a96] transition-colors font-medium shadow-md"
+                    href="#">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
