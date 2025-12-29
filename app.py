@@ -122,7 +122,35 @@ def entry_data():
 def view_all():
     if not is_logged_in():
         return flask.redirect(flask.url_for('login'))
-    return flask.render_template('view_all.html', entries=get_all_entries())   
+    return flask.render_template('view_all.html', entries=get_all_entries())
+
+@app.route('/check_out_page')
+def check_out_page():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+    active_visitors = get_active_visitors()
+    return flask.render_template('check_out.html', visitors=active_visitors)
+
+@app.route('/process_check_out', methods=['POST'])
+def process_check_out():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+        
+    visitor_name = flask.request.form.get('visitor_name')
+    phone = flask.request.form.get('phone')
+    
+    if not visitor_name or not phone:
+        flask.flash("Missing visitor details for check-out.", 'error')
+        return flask.redirect(flask.url_for('check_out_page'))
+        
+    result = check_out_visitor(visitor_name, phone)
+    if result['success']:
+        flask.flash(f"Visitor {visitor_name} checked out successfully.", 'success')
+    else:
+        for error in result.get('errors', []):
+            flask.flash(error, 'error')
+            
+    return flask.redirect(flask.url_for('check_out_page'))
 
 if __name__ == '__main__':
     print("Starting Flask Server on port 5000...")
