@@ -17,6 +17,8 @@
                         <th class="px-6 py-4">Reason</th>
                         <th class="px-6 py-4">Phone</th>
                         <th class="px-6 py-4">Vehicle</th>
+                        <th class="px-6 py-4">Entry Time</th>
+                        <th class="px-6 py-4">Exit Time</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -37,6 +39,12 @@
                             {% else %}
                             <span class="text-slate-400">-</span>
                             {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-xs font-mono text-slate-500">
+                            {{ entry.entry_time.replace('T', ' ')[:19] if entry.entry_time else '-' }}
+                        </td>
+                        <td class="px-6 py-4 text-xs font-mono text-slate-500">
+                            {{ entry.exit_time.replace('T', ' ')[:19] if entry.exit_time else '-' }}
                         </td>
                     </tr>
                     {% else %}
