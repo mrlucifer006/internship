@@ -3,7 +3,7 @@ import threading
 import time
 from Whatsapp_message import send_message
 from db import init_db
-from visitor_service import save_visitor, get_all_entries
+from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors
 from employee_db import get_employee_phone
 import os
 
