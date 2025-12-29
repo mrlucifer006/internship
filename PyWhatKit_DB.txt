@@ -18,3 +18,8 @@ Time: 13:42
 Phone Number: +919342672711
 Message: Visitor Alert Test Visitor 2 has come to meet you. Reason for visit : Testing redirection
 --------------------
+Date: 29/12/2025
+Time: 13:59
+Phone Number: +919342672711
+Message: Visitor Alert Checkout Test User has come to meet you. Reason for visit : Checking out
+--------------------
