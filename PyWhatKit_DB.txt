@@ -70,3 +70,18 @@ Phone Number: {'phone': '+916382833994'}
 Message: Visitor Alert Arun has come to meet you. Reason for visit : Meeting
 >>>>>>> Stashed changes
 --------------------
+Date: 29/12/2025
+Time: 22:8
+Phone Number: +916382833994
+Message: Visitor Alert gadi has come to meet you. Reason for visit : report card sign
+--------------------
+Date: 29/12/2025
+Time: 22:18
+Phone Number: +919342672711
+Message: Visitor Alert Modi has come to meet you. Reason for visit : report card sign
+--------------------
+Date: 29/12/2025
+Time: 22:35
+Phone Number: +919342672711
+Message: Visitor Alert sample has come to meet you. Reason for visit : summa
+--------------------

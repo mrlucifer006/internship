@@ -4,7 +4,7 @@ import time
 from Whatsapp_message import send_message
 from db import init_db
 from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors
-from employee_db import get_employee_phone
+from employee_db import get_employee_phone, check_credentials, insert_employee
 import os
 
 
@@ -24,9 +24,17 @@ def login():
         username = flask.request.form.get('username')
         password = flask.request.form.get('password')
         
-        # Simple Hardcoded Credentials
+        # Check DB first
+        user = check_credentials(username, password)
+        if user:
+            flask.session['user'] = user['name']
+            flask.session['auth_level'] = user['Auth_level'] # Store auth level
+            return flask.redirect(flask.url_for('home'))
+
+        # Fallback: Simple Hardcoded Credentials (ADMIN)
         if username == 'admin' and password == 'password123':
             flask.session['user'] = username
+            flask.session['auth_level'] = 5 # Grant max authority to hardcoded admin
             return flask.redirect(flask.url_for('home'))
         else:
             flask.flash("Invalid credentials. Please try again.", 'error')
@@ -36,9 +44,14 @@ def login():
 @app.route('/logout')
 def logout():
     flask.session.pop('user', None)
+    flask.session.pop('auth_level', None)
     return flask.redirect(flask.url_for('login'))
 
 @app.route('/')
+def index():
+    return flask.redirect(flask.url_for('login'))
+
+@app.route('/home')
 def home ():
     if not is_logged_in():
         return flask.redirect(flask.url_for('login'))
@@ -151,6 +164,56 @@ def process_check_out():
             flask.flash(error, 'error')
             
     return flask.redirect(flask.url_for('check_out_page'))
+
+@app.route('/new_user')
+def new_user():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+    
+    # Check Authority
+    if flask.session.get('auth_level', 0) < 5:
+        flask.flash("You do not have authority to access this page.", 'error')
+        return flask.redirect(flask.url_for('home'))
+        
+    return flask.render_template('new_user.html')
+
+@app.route('/process_add_user', methods=['POST'])
+def process_add_user():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+        
+    if flask.session.get('auth_level', 0) < 5:
+        flask.flash("Unauthorized action.", 'error')
+        return flask.redirect(flask.url_for('home'))
+
+    name = flask.request.form.get('name')
+    login_id = flask.request.form.get('login_id')
+    phone = flask.request.form.get('phone')
+    password = flask.request.form.get('password')
+    # Slider/Input might give string '3'
+    try:
+        auth_level = int(flask.request.form.get('auth_level', 1))
+    except:
+        auth_level = 1
+        
+    if not all([name, login_id, phone, password]):
+        flask.flash("All fields are required.", 'error')
+        return flask.redirect(flask.url_for('new_user'))
+        
+    data = {
+        "name": name,
+        "login_id": login_id,
+        "phone": phone.replace("+91", "").strip(), # Clean it if user left +91
+        "password": password,
+        "Auth_level": auth_level
+    }
+    
+    if insert_employee(data):
+        flask.flash(f"User {name} added successfully!", 'success')
+        return flask.redirect(flask.url_for('home'))
+    else:
+        flask.flash("Failed to add user. Login ID might be taken.", 'error')
+        return flask.redirect(flask.url_for('new_user'))
 
 if __name__ == '__main__':
     print("Starting Flask Server on port 5000...")

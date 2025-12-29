@@ -53,12 +53,29 @@ def get_employee_phone(name):
             cursor = conn.execute("SELECT phone FROM employee WHERE name = ?", (name,))
             row = cursor.fetchone()
             if row:
-                return dict(row)
+                return row['phone']
             else:
-                return "Employee not found"
+                return None
     except Exception as e:
         print(f"Error getting employee phone: {e}")
         return False
+    finally:
+        conn.close()
+
+def check_credentials(login_id, password):
+    conn = get_db_connection()
+    try:
+        # Note: formatting query this way to ensure safety. 
+        # Ideally, hash passwords! But for now, plain text as per existing schema hints.
+        cursor = conn.execute("SELECT * FROM employee WHERE login_id = ? AND password = ?", (login_id, password))
+        row = cursor.fetchone()
+        if row:
+            return dict(row)
+        else:
+            return None
+    except Exception as e:
+        print(f"Login Check Error: {e}")
+        return None
     finally:
         conn.close()            
 
