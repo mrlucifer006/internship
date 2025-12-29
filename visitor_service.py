@@ -93,6 +93,24 @@ def get_all_entries():
         })
     return results
 
+def get_active_visitors():
+    conn = get_db_connection()
+    visitors = conn.execute('SELECT * FROM visitors WHERE exit_time IS NULL').fetchall()
+    conn.close()
+    
+    results = []
+    for row in visitors:
+        results.append({
+            'V_name': row['name'],
+            'Number': row['phone'],
+            'name': row['person_to_visit'],
+            'reason': row['reason'],
+            'vehicle': row['has_vehicle'],
+            'vehicle_number': row['vehicle_number'],
+            'entry_time': row['entry_time']
+        })
+    return results
+
 def check_out_visitor(visitor_name, phone): # Changed params to simple args potentially, but sticking to logic
     conn = get_db_connection()
     try:
