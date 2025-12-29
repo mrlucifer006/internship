@@ -62,7 +62,8 @@ def save_visitor(data):
         cur.execute('''
             INSERT INTO visitors (name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (visitor_name, phone, host_name, reason, has_vehicle, vehicle_number, datetime.now().isoformat()))
+        ''', (visitor_name, 
+        phone, host_name, reason, has_vehicle, vehicle_number, datetime.now().isoformat()))
         conn.commit()
     except Exception as e:
         conn.close()
