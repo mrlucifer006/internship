@@ -10,6 +10,7 @@ Message: Visitor Alert sanjai has come to meet you. Reason for visit : Testing l
 --------------------
 Date: 29/12/2025
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 Time: 13:41
 Phone Number: +919342672711
 Message: Visitor Alert Test Visitor has come to meet you. Reason for visit : Testing functionality
@@ -58,6 +59,11 @@ Date: 29/12/2025
 Time: 20:9
 Phone Number: +919952747859
 Message: Visitor Alert Narendra Modi has come to meet you. Reason for visit : For getting Signature on report card
+=======
+Time: 20:15
+Phone Number: {'phone': '+916382833994'}
+Message: Visitor Alert Arun has come to meet you. Reason for visit : Meeting
+>>>>>>> Stashed changes
 =======
 Time: 20:15
 Phone Number: {'phone': '+916382833994'}
