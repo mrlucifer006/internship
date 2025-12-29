@@ -8,3 +8,5 @@ venv/
 .env/
 .DS_Store
 Thumbs.db
+PyWhatKit_DB.txt
+.vscode/
