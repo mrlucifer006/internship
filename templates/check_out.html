@@ -129,13 +129,16 @@
                                         class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                         Vehicle</th>
                                     <th
+                                        class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                        Status</th>
+                                    <th
                                         class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
                                         Action</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border-light dark:divide-border-dark">
                                 {% for visitor in visitors %}
-                                <tr
+                                <tr id="row-{{ visitor.id }}"
                                     class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors bg-white dark:bg-card-dark">
                                     <td class="py-4 px-6">
                                         <div class="font-bold text-slate-800 dark:text-slate-200">{{ visitor.V_name }}
@@ -163,20 +166,53 @@
                                             {% endif %}
                                         </div>
                                     </td>
+                                    <td class="py-4 px-6" id="status-cell-{{ visitor.id }}">
+                                        {% if visitor.approval_status == 'Approved' %}
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                            Approved
+                                        </span>
+                                        {% elif visitor.approval_status == 'Denied' %}
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                                            Denied
+                                        </span>
+                                        {% else %}
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200 animate-pulse">
+                                            Pending
+                                        </span>
+                                        {% endif %}
+                                    </td>
                                     <td class="py-4 px-6 text-right">
                                         <form action="{{ url_for('process_check_out') }}" method="POST" class="inline">
                                             <input type="hidden" name="visitor_name" value="{{ visitor.V_name }}">
                                             <input type="hidden" name="phone" value="{{ visitor.Number }}">
+                                            {% if visitor.approval_status == 'Denied' %}
                                             <button type="submit"
-                                                class="bg-success hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition shadow-sm whitespace-nowrap">
+                                                class="bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 px-4 py-2 rounded text-sm font-bold transition shadow-sm whitespace-nowrap flex items-center gap-2 ml-auto">
+                                                <span class="material-symbols-outlined text-lg">delete</span>
+                                                Remove
+                                            </button>
+                                            {% elif visitor.approval_status == 'Pending' %}
+                                            <button type="submit"
+                                                class="bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-200 px-4 py-2 rounded text-sm font-bold transition shadow-sm whitespace-nowrap flex items-center gap-2 ml-auto">
+                                                <span class="material-symbols-outlined text-lg">close</span>
+                                                Cancel
+                                            </button>
+                                            {% else %}
+                                            <button type="submit"
+                                                class="bg-success hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition shadow-sm whitespace-nowrap flex items-center gap-2 ml-auto">
+                                                <span class="material-symbols-outlined text-lg">logout</span>
                                                 Check-Out
                                             </button>
+                                            {% endif %}
                                         </form>
                                     </td>
                                 </tr>
                                 {% else %}
                                 <tr>
-                                    <td colspan="6" class="py-8 text-center text-slate-500">No active visitors found.
+                                    <td colspan="7" class="py-8 text-center text-slate-500">No active visitors found.
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -198,13 +234,20 @@
             <h3 class="text-lg font-bold text-blue-600 dark:text-blue-400 mb-4">Currently On Premises</h3>
             <div class="space-y-3">
                 {% for visitor in visitors %}
+                {% if visitor.approval_status != 'Denied' %}
                 <div
                     class="bg-white dark:bg-card-dark p-4 rounded-lg border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition cursor-pointer group">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex items-center gap-2">
+                            {% if visitor.approval_status == 'Pending' %}
+                            <div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                            <span
+                                class="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase">Pending</span>
+                            {% else %}
                             <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                             <span
                                 class="text-xs font-semibold text-green-600 dark:text-green-400 uppercase">Active</span>
+                            {% endif %}
                         </div>
                         <span class="text-xs text-slate-400">Recently</span>
                     </div>
@@ -213,6 +256,7 @@
                         {{ visitor.V_name }}</h4>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Visiting: {{ visitor.name }}</p>
                 </div>
+                {% endif %}
                 {% else %}
                 <p class="text-slate-500 text-sm">No visitors on premises.</p>
                 {% endfor %}
@@ -243,6 +287,113 @@
             </div>
         </div>
     </div>
+
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+    <script>
+        let knownStatuses = {}; // Map: id -> status
+
+        // Initialize from DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            // Populate knownStatuses from initial render
+            {% for visitor in visitors %}
+            knownStatuses["{{ visitor.id }}"] = "{{ visitor.approval_status }}";
+            {% endfor %}
+        });
+
+        function showToast(message, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colorClass = type === 'error' ? 'bg-red-500' : 'bg-green-500';
+            const icon = type === 'error' ? 'cancel' : 'check_circle';
+
+            toast.className = `${colorClass} text-white px-6 py-4 rounded-lg shadow-lg transform translate-y-10 opacity-0 flex items-center gap-3 pointer-events-auto transition-all duration-300`;
+            toast.innerHTML = `<span class="material-symbols-outlined text-2xl">${icon}</span><span class="font-bold">${message}</span>`;
+
+            container.appendChild(toast);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            });
+
+            // Remove after 5s
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-10');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        function updateBadge(id, status) {
+            const cell = document.getElementById(`status-cell-${id}`);
+            if (!cell) return;
+
+            let html = '';
+            if (status === 'Approved') {
+                html = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">Approved</span>`;
+            } else if (status === 'Denied') {
+                html = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">Denied</span>`;
+            } else {
+                html = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200 animate-pulse">Pending</span>`;
+            }
+            cell.innerHTML = html;
+        }
+
+        function checkForChanges() {
+            fetch('/api/visitors')
+                .then(res => res.json())
+                .then(visitors => {
+                    let needsReload = false;
+                    const validIds = new Set();
+                    const audio = document.getElementById('update-sound');
+
+                    // Check for Status Changes or New Items
+                    visitors.forEach(v => {
+                        validIds.add(String(v.id));
+                        const oldStatus = knownStatuses[v.id];
+
+                        if (oldStatus === undefined) {
+                            // New visitor!
+                            needsReload = true;
+                        } else if (oldStatus !== v.approval_status) {
+                            // Status Changed
+                            knownStatuses[v.id] = v.approval_status;
+                            updateBadge(v.id, v.approval_status);
+
+                            // Notifications
+                            if (v.approval_status === 'Denied') {
+                                showToast(`ENTRY DENIED: ${v.V_name}`, 'error');
+                                if (audio) audio.play().catch(e => console.log(e));
+                            } else if (v.approval_status === 'Approved') {
+                                showToast(`Entry Approved: ${v.V_name}`, 'success');
+                                if (audio) audio.play().catch(e => console.log(e));
+                            }
+                        }
+                    });
+
+                    // Check for deletions (checked out)
+                    for (const id in knownStatuses) {
+                        if (!validIds.has(id)) {
+                            // Someone was removed. Reload to sync list.
+                            needsReload = true;
+                        }
+                    }
+
+                    if (needsReload) {
+                        console.log("List structure changed. Reloading...");
+                        // Delay slightly if we just showed a toast? No, structural change needs reload.
+                        // Ideally we delay if a toast is active, but keeping it simple.
+                        setTimeout(() => window.location.reload(), 1000);
+                    }
+                })
+                .catch(err => console.error("Poll error:", err));
+        }
+
+        // Poll every 2 seconds
+        setInterval(checkForChanges, 2000);
+    </script>
+    <audio id="update-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
+        preload="auto"></audio>
 </body>
 
 </html>

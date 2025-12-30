@@ -29,10 +29,22 @@ def init_db(app=None):
             # Migration for existing table: Attempt to add the column if it doesn't exist.
             # SQLite doesn't have "IF NOT EXISTS" for ADD COLUMN in older versions, 
             # but we can try catch or check pragma. A try-except block is safest/simplest for dev.
+            # Migration for existing table
             try:
                 conn.execute('ALTER TABLE visitors ADD COLUMN ticket_number TEXT')
             except sqlite3.OperationalError:
-                # Column likely already exists
+                pass
+                
+            try:
+                # Default to Approved for backward compatibility
+                conn.execute("ALTER TABLE visitors ADD COLUMN approval_status TEXT DEFAULT 'Approved'") 
+            except sqlite3.OperationalError:
+                pass
+
+            try:
+                conn.execute("ALTER TABLE visitors ADD COLUMN updated_at DATETIME")
+                conn.execute("UPDATE visitors SET updated_at = entry_time WHERE updated_at IS NULL")
+            except sqlite3.OperationalError:
                 pass
     finally:
         conn.close()

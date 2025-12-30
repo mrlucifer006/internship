@@ -12,7 +12,14 @@ def create_table():
         conn = get_db_connection()
         with conn:
             conn.execute("CREATE TABLE IF NOT EXISTS employee (name TEXT NOT NULL, phone TEXT NOT NULL, login_id TEXT NOT NULL, password TEXT NOT NULL, Auth_level INT NOT NULL, status BOOLEAN NOT NULL DEFAULT 0)")
-            conn.execute("CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, host_login_id TEXT NOT NULL, visitor_name TEXT NOT NULL, reason TEXT NOT NULL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, is_read BOOLEAN DEFAULT 0)")
+            conn.execute("CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, host_login_id TEXT NOT NULL, visitor_name TEXT NOT NULL, reason TEXT NOT NULL, visitor_id INTEGER, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, is_read BOOLEAN DEFAULT 0)")
+            
+            # Migration
+            try:
+                conn.execute("ALTER TABLE notifications ADD COLUMN visitor_id INTEGER")
+            except Exception:
+                pass
+                
         return True
     except Exception as e:
         print(f"Error creating table: {e}")
@@ -84,7 +91,11 @@ def update_employee_status(login_id, status):
     conn = get_db_connection()
     try:
         with conn:
-            conn.execute("UPDATE employee SET status = ? WHERE login_id = ?", (status, login_id))
+            cursor = conn.execute("UPDATE employee SET status = ? WHERE login_id = ?", (status, login_id))
+            if cursor.rowcount == 0:
+                print(f"Warning: update_employee_status - No employee found with login_id: {login_id}")
+            else:
+                print(f"Updated status to {status} for {login_id}")
         return True
     except Exception as e:
         print(f"Error updating employee status: {e}")
@@ -92,11 +103,11 @@ def update_employee_status(login_id, status):
     finally:
         conn.close()
 
-def add_notification(host_login_id, visitor_name, reason):
+def add_notification(host_login_id, visitor_name, reason, visitor_id=None):
     conn = get_db_connection()
     try:
         with conn:
-            conn.execute("INSERT INTO notifications (host_login_id, visitor_name, reason) VALUES (?, ?, ?)", (host_login_id, visitor_name, reason))
+            conn.execute("INSERT INTO notifications (host_login_id, visitor_name, reason, visitor_id) VALUES (?, ?, ?, ?)", (host_login_id, visitor_name, reason, visitor_id))
         return True
     except Exception as e:
         print(f"Error adding notification: {e}")
@@ -119,6 +130,19 @@ def get_unread_notifications(host_login_id):
             return notifications
     except Exception as e:
         print(f"Error getting notifications: {e}")
+        return []
+    finally:
+        conn.close()
+
+def get_notification_history(host_login_id):
+    conn = get_db_connection()
+    try:
+        with conn:
+            cursor = conn.execute("SELECT * FROM notifications WHERE host_login_id = ? ORDER BY timestamp DESC LIMIT 20", (host_login_id,))
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
+    except Exception as e:
+        print(f"Error getting notification history: {e}")
         return []
     finally:
         conn.close()

@@ -216,10 +216,22 @@
                 {% for entry in entries|reverse %}
                 <div
                     class="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors animate-fade-in">
+                    {% if entry.approval_status == 'Denied' %}
+                    <div
+                        class="mt-1 bg-red-50 text-red-600 rounded-full size-8 flex items-center justify-center shrink-0 border border-red-100">
+                        <span class="material-symbols-outlined text-sm font-bold">close</span>
+                    </div>
+                    {% elif entry.approval_status == 'Pending' %}
+                    <div
+                        class="mt-1 bg-orange-50 text-orange-600 rounded-full size-8 flex items-center justify-center shrink-0 border border-orange-100 animate-pulse">
+                        <span class="material-symbols-outlined text-sm font-bold">hourglass_empty</span>
+                    </div>
+                    {% else %}
                     <div
                         class="mt-1 bg-[var(--brand-green)]/10 text-[var(--brand-green)] rounded-full size-8 flex items-center justify-center shrink-0">
                         <span class="material-symbols-outlined text-sm font-bold">check</span>
                     </div>
+                    {% endif %}
                     <div class="flex flex-col gap-1 min-w-0">
                         <p class="text-slate-600 font-bold text-sm truncate">{{ entry.V_name }}</p>
                         <p class="text-slate-500 text-xs">Visiting: {{ entry.name }}</p>
@@ -258,30 +270,81 @@
         </div>
     </div>
 
-    <!-- Notification Modal -->
-    <div id="notification-modal" class="fixed inset-0 z-50 flex items-start justify-end p-4 pointer-events-none hidden">
-        <div class="bg-white dark:bg-slate-800 border-l-4 border-blue-500 shadow-xl rounded-lg pointer-events-auto transform transition-all duration-300 translate-x-full max-w-sm w-full"
-            id="notification-content">
-            <div class="p-4">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0">
-                        <span class="material-symbols-outlined text-blue-500 text-2xl">notifications_active</span>
+    <!-- New Notification Modal (Overlay) -->
+    <div id="notification-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity hidden">
+        <div class="relative w-full max-w-[400px] bg-white rounded-[32px] shadow-2xl overflow-hidden animate-modal">
+            <div class="relative h-32 bg-indigo-600 overflow-hidden">
+                <div
+                    class="absolute top-0 right-0 w-48 h-48 bg-white opacity-10 rounded-full -translate-y-1/2 translate-x-1/4">
+                </div>
+                <div
+                    class="absolute bottom-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full translate-y-1/2 -translate-x-1/4">
+                </div>
+                <div class="absolute inset-0 opacity-20"
+                    style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;">
+                </div>
+            </div>
+            <div class="px-8 pb-8 relative">
+                <div class="relative -mt-16 mb-6 flex justify-center">
+                    <div
+                        class="w-24 h-24 rounded-2xl bg-white p-2 shadow-xl rotate-45 transform origin-center z-10 ring-4 ring-indigo-50">
+                        <div
+                            class="w-full h-full bg-slate-50 rounded-xl flex items-center justify-center -rotate-45 border border-slate-100 overflow-hidden">
+                            <span class="material-symbols-outlined text-4xl text-indigo-600">person_filled</span>
+                        </div>
                     </div>
-                    <div class="ml-3 w-0 flex-1 pt-0.5">
-                        <p class="text-sm font-medium text-slate-900 dark:text-white">New Visitor!</p>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400" id="notification-msg"></p>
+                </div>
+                <div class="text-center space-y-5">
+                    <div>
+                        <div class="inline-block px-3 py-1 bg-indigo-50 rounded-full mb-3">
+                            <h3 class="text-[11px] font-bold tracking-widest text-indigo-600 uppercase">Visitor Request
+                            </h3>
+                        </div>
+                        <p id="modal-visitor-name" class="text-2xl text-slate-900 font-bold leading-tight mb-2">Visitor
+                            Name</p>
+                        <p class="text-slate-500 leading-relaxed">
+                            has come to meet you for <br />
+                            <span id="modal-reason" class="font-semibold text-slate-800">Reason</span>
+                        </p>
                     </div>
-                    <div class="ml-4 flex-shrink-0 flex">
-                        <button onclick="closeNotification()"
-                            class="bg-white dark:bg-slate-800 rounded-md inline-flex text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <span class="sr-only">Close</span>
-                            <span class="material-symbols-outlined text-xl">close</span>
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <button onclick="handleAction('deny')"
+                            class="flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-2xl border-2 border-slate-100 hover:bg-red-50 hover:border-red-100 group transition-all duration-200">
+                            <span
+                                class="material-symbols-outlined text-2xl text-slate-400 group-hover:text-red-500 transition-colors">close</span>
+                            <span
+                                class="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-red-600">Deny</span>
+                        </button>
+                        <button onclick="handleAction('approve')"
+                            class="flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group">
+                            <span
+                                class="material-symbols-outlined text-2xl text-indigo-100 group-hover:text-white">check</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-50">Accept</span>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        @keyframes modalPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .animate-modal {
+            animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
 
     <script>
         // Vehicle Toggle Logic
@@ -299,68 +362,54 @@
         });
 
         function resetForm() {
-            // Form reset is handled by type="reset", but we need to hide the vehicle container
             setTimeout(() => {
                 document.getElementById('vehicle-input-container').classList.add('hidden');
                 document.getElementById('vehicle-reg').removeAttribute('required');
             }, 10);
         }
 
-        // --- Notification Logic ---
-        function checkNotifications() {
-            fetch('/check_notifications')
-                .then(response => response.json())
-                .then(notifications => {
-                    if (notifications && notifications.length > 0) {
-                        notifications.forEach(note => {
-                            showNotification(note.visitor_name, note.reason);
-                        });
-                    }
-                })
-                .catch(err => console.error("Error polling notifications:", err));
-        }
-
-        function showNotification(visitorName, reason) {
-            const modal = document.getElementById('notification-modal');
-            const content = document.getElementById('notification-content');
-            const msg = document.getElementById('notification-msg');
-
-            msg.textContent = `${visitorName} is here for ${reason}.`;
-
-            modal.classList.remove('hidden');
-            // Small delay to allow display check before animating
-            setTimeout(() => {
-                content.classList.remove('translate-x-full');
-            }, 10);
-
-            // Auto hide after 10 seconds
-            setTimeout(closeNotification, 10000);
-        }
-
-        function closeNotification() {
-            const modal = document.getElementById('notification-modal');
-            const content = document.getElementById('notification-content');
-
-            content.classList.add('translate-x-full');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        // Poll every 5 seconds
-        setInterval(checkNotifications, 5000);
-
-        // --- Auto-Refresh Logic ---
+        // --- Unified Polling Logic ---
         let lastKnownUpdate = null;
 
-        // Initial Fetch
+        // Initial Fetch for updates timestamp
         fetch('/check_updates')
             .then(res => res.json())
             .then(data => {
                 lastKnownUpdate = data.last_updated;
             });
 
-        function checkUpdates() {
+        let currentVisitorId = null;
+
+        function performPoll() {
+            // 1. Check Personal Notifications First
+            fetch('/check_notifications')
+                .then(response => response.json())
+                .then(notifications => {
+                    if (notifications && notifications.length > 0) {
+                        // We have a notification! Show it and DO NOT reload
+                        const note = notifications[0];
+                        showNotification(note.visitor_name, note.reason, note.visitor_id);
+
+                        // We also likely have a new timestamp, so let's update our local tracker
+                        fetch('/check_updates')
+                            .then(r => r.json())
+                            .then(d => { lastKnownUpdate = d.last_updated; });
+
+                    } else {
+                        // 2. No notification, so safely check for Global Updates
+                        checkGlobalUpdates();
+                    }
+                })
+                .catch(err => console.error("Error polling:", err));
+        }
+
+        function checkGlobalUpdates() {
+            // If modal is open, do absolutely nothing (pause updates)
+            const modal = document.getElementById('notification-modal');
+            if (!modal.classList.contains('hidden')) {
+                return;
+            }
+
             fetch('/check_updates')
                 .then(res => res.json())
                 .then(data => {
@@ -368,16 +417,63 @@
                         console.log("New entry detected. Refreshing...");
                         window.location.reload();
                     } else if (!lastKnownUpdate && data.last_updated) {
-                        // First sync
                         lastKnownUpdate = data.last_updated;
                     }
                 })
                 .catch(err => console.error("Update check failed", err));
         }
 
-        // Check for updates every 5 seconds
-        setInterval(checkUpdates, 5000);
+        function showNotification(visitorName, reason, visitorId) {
+            const modal = document.getElementById('notification-modal');
+            const nameEl = document.getElementById('modal-visitor-name');
+            const reasonEl = document.getElementById('modal-reason');
+            const audio = document.getElementById('notification-sound');
+
+            nameEl.textContent = visitorName;
+            reasonEl.textContent = reason;
+            currentVisitorId = visitorId;
+
+            modal.classList.remove('hidden');
+
+            // Play Sound
+            if (audio) {
+                audio.play().catch(e => console.log("Audio play failed (user interaction needed):", e));
+            }
+        }
+
+        function handleAction(action) {
+            if (!currentVisitorId) return;
+
+            fetch('/api/action_visitor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ visitor_id: currentVisitorId, action: action })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        closeNotification();
+                        // Optionally refresh to see the status update
+                        setTimeout(() => window.location.reload(), 500);
+                    } else {
+                        alert("Error processing action: " + data.error);
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+
+        function closeNotification() {
+            const modal = document.getElementById('notification-modal');
+            modal.classList.add('hidden');
+            currentVisitorId = null;
+        }
+
+        // Single Loop: Poll every 4 seconds
+        setInterval(performPoll, 4000);
     </script>
+    <!-- Notification Sound -->
+    <audio id="notification-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
+        preload="auto"></audio>
 </body>
 
 </html>

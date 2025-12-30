@@ -59,19 +59,23 @@ def save_visitor(data):
             conn.close()
             return {"success": False, "errors": ["Visitor already checked in."]}
 
+        # Default status is 'Approved' unless specified
+        approval_status = data.get("approval_status", "Approved")
+
         cur.execute('''
-            INSERT INTO visitors (name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO visitors (name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time, approval_status, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (visitor_name, 
-        phone, host_name, reason, has_vehicle, vehicle_number, datetime.now().isoformat()))
+        phone, host_name, reason, has_vehicle, vehicle_number, datetime.now().isoformat(), approval_status, datetime.now().isoformat()))
         conn.commit()
+        visitor_id = cur.lastrowid
     except Exception as e:
         conn.close()
         return {"success": False, "errors": [str(e)]}
     finally:
         conn.close()
 
-    return {"success": True, "message": "Visitor registered successfully."}
+    return {"success": True, "message": "Visitor registered successfully.", "visitor_id": visitor_id}
 
 def get_all_entries():
     conn = get_db_connection()
@@ -90,7 +94,8 @@ def get_all_entries():
             'vehicle': row['has_vehicle'],
             'vehicle_number': row['vehicle_number'],
             'entry_time': row['entry_time'],
-            'exit_time': row['exit_time']
+            'exit_time': row['exit_time'],
+            'approval_status': row['approval_status'] if 'approval_status' in row.keys() else 'Approved'
         })
     return results
 
@@ -108,24 +113,47 @@ def get_active_visitors():
             'reason': row['reason'],
             'vehicle': row['has_vehicle'],
             'vehicle_number': row['vehicle_number'],
-            'entry_time': row['entry_time']
+            'vehicle': row['has_vehicle'],
+            'vehicle_number': row['vehicle_number'],
+            'vehicle': row['has_vehicle'],
+            'vehicle_number': row['vehicle_number'],
+            'entry_time': row['entry_time'],
+            'approval_status': row['approval_status'] if 'approval_status' in row.keys() else 'Approved',
+            'id': row['id']
         })
     return results
 
-def check_out_visitor(visitor_name, phone): # Changed params to simple args potentially, but sticking to logic
+def check_out_visitor(visitor_name, phone): 
     conn = get_db_connection()
     try:
         cur = conn.cursor()
-        cur.execute('''
-            UPDATE visitors 
-            SET exit_time = ? 
-            WHERE name = ? AND phone = ? AND exit_time IS NULL
-        ''', (datetime.now().isoformat(), visitor_name, phone))
-        conn.commit()
-        if cur.rowcount > 0:
-            return {"success": True}
-        else:
+        
+        # Check status first
+        cur.execute("SELECT approval_status FROM visitors WHERE name = ? AND phone = ? AND exit_time IS NULL", (visitor_name, phone))
+        row = cur.fetchone()
+        
+        if not row:
             return {"success": False, "errors": ["No active visit found."]}
+            
+        status = row['approval_status']
+        
+        if status != 'Approved':
+            # Notification/Alert: "Don't add to database"
+            # Delete the record entirely to remove trace
+            cur.execute("DELETE FROM visitors WHERE name = ? AND phone = ? AND exit_time IS NULL", (visitor_name, phone))
+            msg = "Visitor entry removed (Denied/Pending)."
+        else:
+            # Normal exit logic
+            timestamp = datetime.now().isoformat()
+            cur.execute('''
+                UPDATE visitors 
+                SET exit_time = ?, updated_at = ?
+                WHERE name = ? AND phone = ? AND exit_time IS NULL
+            ''', (timestamp, timestamp, visitor_name, phone))
+            msg = "Visitor checked out successfully."
+            
+        conn.commit()
+        return {"success": True, "message": msg}
     finally:
         conn.close()
 
@@ -145,7 +173,8 @@ def get_latest_visitor_timestamp():
     conn = get_db_connection()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT MAX(entry_time) as last_updated FROM visitors")
+        # Check MAX of updated_at OR entry_time (fallback)
+        cur.execute("SELECT MAX(COALESCE(updated_at, entry_time)) as last_updated FROM visitors")
         row = cur.fetchone()
         if row and row['last_updated']:
             return row['last_updated']
@@ -154,3 +183,4 @@ def get_latest_visitor_timestamp():
         return None
     finally:
         conn.close()
+

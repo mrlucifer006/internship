@@ -30,11 +30,12 @@ def login():
             flask.session['user'] = user['name']
             flask.session['auth_level'] = user['Auth_level'] # Store auth level
             flask.session['login_id'] = user['login_id']
-            update_employee_status(user['login_id'], True)
+            # Explicitly set to 1 (integer)
+            update_employee_status(user['login_id'], 1)
             return flask.redirect(flask.url_for('home'))
 
         # Fallback: Simple Hardcoded Credentials (ADMIN)
-        if username == 'admin' and password == 'password123':
+        if username == 'super' and password == 'password123':
             flask.session['user'] = username
             flask.session['auth_level'] = 5 # Grant max authority to hardcoded admin
             return flask.redirect(flask.url_for('home'))
@@ -47,7 +48,8 @@ def login():
 def logout():
     login_id = flask.session.get('login_id')
     if login_id:
-        update_employee_status(login_id, False)
+        # Explicitly set to 0 (integer)
+        update_employee_status(login_id, 0)
     
     flask.session.pop('user', None)
     flask.session.pop('auth_level', None)
@@ -92,23 +94,64 @@ def get_data():
             vehicle_number = None
             if vehicle:
                 vehicle_number = flask.request.form.get('vehicle_number')
+    # --- CHECK HOST STATUS ---
+            from employee_db import get_employee_by_name, add_notification
+            host_info = get_employee_by_name({'name': name}) # name is Host Name
+            
+            approval_status = "Approved" # Default
+            is_host_online = False
+            
+            if host_info and host_info != "Employee not found":
+                if host_info.get('status'): # If Host is Online (1)
+                    approval_status = "Pending"
+                    is_host_online = True
 
-            entry = {
-                'name': name,
-                'Number': Number,
-                'V_name': V_name,
-                'reason': reason,
-                'vehicle': vehicle,
-                'vehicle_number': vehicle_number
+            data = {
+                "name": name,
+                "Number": Number, # Assuming 'Number' is visitor's phone
+                "V_name": V_name,
+                "reason": reason,
+                "vehicle": vehicle,
+                "vehicle_number": vehicle_number,
+                "approval_status": approval_status
             }
             
-            result = save_visitor(entry)
-            if not result['success']:
-                for error in result['errors']:
-                    flask.flash(error, 'error')
+            result = save_visitor(data)
+            
+            if result["success"]:
+                # Send Notification if Host is Online and status is Pending
+                if is_host_online and result.get("visitor_id"):
+                     add_notification(host_info['login_id'], V_name, reason, visitor_id=result["visitor_id"])
+                     if approval_status == "Pending":
+                         flask.flash("Visitor entry pending. Waiting for Host approval.", 'warning')
+                     else:
+                         flask.flash("Visitor entry logged successfully!", 'success')
+                else:
+                    # Host is Offline: Send WhatsApp and Notify Guard
+                    if host_info and host_info != "Employee not found":
+                        from Whatsapp_message import send_message
+                        import threading
+                        
+                        host_phone = host_info['phone'] 
+                        # Function to run in thread
+                        def send_wa():
+                            try:
+                                print(f"Sending WhatsApp to {host_info['name']} at {host_phone}")
+                                send_message(V_name, Number, reason, host_info['name'], host_phone)
+                            except Exception as e:
+                                print(f"WhatsApp Error: {e}")
+                                
+                        threading.Thread(target=send_wa).start()
+                        
+                        flask.flash(f"Host '{host_info['name']}' is Offline. Notification sent via WhatsApp.", 'success')
+                    else:
+                        flask.flash("Visitor entry logged successfully! (Host not found)", 'success')
+                    
                 return flask.redirect(flask.url_for('home'))
-                
-            return flask.redirect(flask.url_for('entry_data',name=name,Number=Number,host_number=host_number,V_name=V_name,reason=reason,vehicle=vehicle,vehicle_number=vehicle_number))
+            else:
+                for err in result["errors"]:
+                    flask.flash(err, 'error')
+                return flask.redirect(flask.url_for('home'))
             
         return flask.redirect(flask.url_for('home'))
     except Exception as e:
@@ -221,9 +264,9 @@ def process_add_user():
         return flask.redirect(flask.url_for('new_user'))
         
     data = {
-        "name": name,
-        "login_id": login_id,
-        "phone": phone.replace("+91", "").strip(), # Clean it if user left +91
+        "name": name.strip(),
+        "login_id": login_id.strip(),
+        "phone": phone.replace("+91", "").strip(), 
         "password": password,
         "Auth_level": auth_level,
         "status": 0
@@ -269,6 +312,74 @@ def view_status():
     from employee_db import get_all_employees_full
     employees = get_all_employees_full()
     return flask.render_template('view_status.html', employees=employees)
+
+@app.route('/api/employees')
+def api_employees():
+    if not is_logged_in():
+        return flask.jsonify({'error': 'Unauthorized'}), 401
+    
+    if flask.session.get('auth_level', 0) < 4:
+        return flask.jsonify({'error': 'Unauthorized'}), 403
+        
+    from employee_db import get_all_employees_full
+    employees = get_all_employees_full()
+    employees = get_all_employees_full()
+    return flask.jsonify(employees)
+
+@app.route('/notifications')
+def notifications_page():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+        
+    login_id = flask.session.get('login_id')
+    from employee_db import get_notification_history
+    notifications = get_notification_history(login_id)
+    
+    # render the template with the latest notification if exists
+    latest_notification = notifications[0] if notifications else None
+    
+    return flask.render_template('notification.html', notification=latest_notification, all_notifications=notifications)
+
+@app.route('/api/visitors')
+def get_visitors_api():
+    if not is_logged_in():
+        return flask.jsonify({'error': 'Unauthorized'}), 401
+    
+    visitors = get_active_visitors()
+    return flask.jsonify(visitors)
+
+@app.route('/api/action_visitor', methods=['POST'])
+def action_visitor():
+    if not is_logged_in():
+        return flask.jsonify({'success': False, 'error': 'Unauthorized'}), 401
+        
+    data = flask.request.get_json()
+    visitor_id = data.get('visitor_id')
+    action = data.get('action') # 'approve' or 'deny'
+    
+    if not visitor_id or not action:
+        return flask.jsonify({'success': False, 'error': 'Missing data'})
+        
+    status = "Approved" if action == 'approve' else "Denied"
+    
+    from db import get_db_connection
+    conn = get_db_connection()
+    try:
+        with conn:
+            # If Denied, we might want to set exit_time immediately so they aren't 'active'?
+            # Or just set status. User said "not update entry" which implies "don't let them in".
+            # For logging purposes, 'Denied' status is good.
+            from datetime import datetime
+            now = datetime.now().isoformat()
+            
+            # Update status and updated_at. Do NOT set exit_time yet, so Guard sees the feedback.
+            conn.execute("UPDATE visitors SET approval_status = ?, updated_at = ? WHERE id = ?", (status, now, visitor_id))
+            
+        return flask.jsonify({'success': True, 'status': status})
+    except Exception as e:
+        return flask.jsonify({'success': False, 'error': str(e)})
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
     from employee_db import create_table as create_employee_table
