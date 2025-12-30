@@ -215,7 +215,4 @@ def process_add_user():
         flask.flash("Failed to add user. Login ID might be taken.", 'error')
         return flask.redirect(flask.url_for('new_user'))
 
-if __name__ == '__main__':
-    print("Starting Flask Server on port 5000...")
-    app.run(host='0.0.0.0',debug=True, port=5000)
 
