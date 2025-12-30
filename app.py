@@ -3,7 +3,7 @@ import threading
 import time
 from Whatsapp_message import send_message
 from db import init_db
-from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors
+from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp
 from employee_db import get_employee_phone, check_credentials, insert_employee, update_employee_status, add_notification, get_employee_by_name, get_unread_notifications
 import os
 
@@ -247,6 +247,14 @@ def check_notifications():
         
     notifications = get_unread_notifications(login_id)
     return flask.jsonify(notifications)
+
+@app.route('/check_updates')
+def check_updates():
+    if not is_logged_in():
+        return flask.jsonify({'last_updated': None})
+    
+    last_updated = get_latest_visitor_timestamp()
+    return flask.jsonify({'last_updated': last_updated})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5000,debug=True)

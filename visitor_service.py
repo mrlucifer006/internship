@@ -140,3 +140,17 @@ def remove_all_records():
     finally:
         conn.close()
     return "Records removed successfully."
+
+def get_latest_visitor_timestamp():
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT MAX(entry_time) as last_updated FROM visitors")
+        row = cur.fetchone()
+        if row and row['last_updated']:
+            return row['last_updated']
+        return None
+    except Exception:
+        return None
+    finally:
+        conn.close()

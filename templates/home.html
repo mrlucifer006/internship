@@ -375,6 +375,34 @@
 
         // Poll every 5 seconds
         setInterval(checkNotifications, 5000);
+
+        // Auto-Refresh Logic
+        let lastKnownUpdate = null;
+
+        // Initial Fetch
+        fetch('/check_updates')
+            .then(res => res.json())
+            .then(data => {
+                lastKnownUpdate = data.last_updated;
+            });
+
+        function checkUpdates() {
+            fetch('/check_updates')
+                .then(res => res.json())
+                .then(data => {
+                    if (lastKnownUpdate && data.last_updated && data.last_updated > lastKnownUpdate) {
+                        console.log("New entry detected. Refreshing...");
+                        window.location.reload();
+                    } else if (!lastKnownUpdate && data.last_updated) {
+                        // First sync
+                        lastKnownUpdate = data.last_updated;
+                    }
+                })
+                .catch(err => console.error("Update check failed", err));
+        }
+
+        // Check for updates every 5 seconds
+        setInterval(checkUpdates, 5000);
     </script>
 </body>
 
