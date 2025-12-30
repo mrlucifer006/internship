@@ -124,16 +124,11 @@
                                     <p class="text-slate-600 text-base font-medium leading-normal pb-2">Name</p>
                                     <select
                                         class="form-select flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 px-4 text-base font-normal leading-normal transition-all"
-                                        id="host-name" required="">
+                                        id="host-name" name="name" required="">
                                         <option disabled="" selected="" value="">Select host name</option>
-                                        <option value="John Doe">John Doe - Flat 101</option>
-                                        <option value="Jane Smith">Jane Smith - Flat 102</option>
-                                        <option value="Robert Johnson">Robert Johnson - Flat 201</option>
-                                        <option value="Emily Davis">Emily Davis - Flat 202</option>
-                                        <option value="Michael Brown">Michael Brown - Flat 301</option>
-                                        <option value="Sarah Wilson">Sarah Wilson - Flat 302</option>
-                                        <option value="David Miller">David Miller - Penthouse A</option>
-                                        <option value="Lisa Anderson">Lisa Anderson - Penthouse B</option>
+                                        {% for emp in employees %}
+                                        <option value="{{ emp.name }}">{{ emp.name }}</option>
+                                        {% endfor %}
                                     </select>
                                 </label>
                             </div>

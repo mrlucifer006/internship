@@ -4,7 +4,7 @@ import time
 from Whatsapp_message import send_message
 from db import init_db
 from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp
-from employee_db import get_employee_phone, check_credentials, insert_employee, update_employee_status, add_notification, get_employee_by_name, get_unread_notifications
+from employee_db import get_employee_phone, check_credentials, insert_employee, update_employee_status, add_notification, get_employee_by_name, get_unread_notifications, get_all_employees
 import os
 
 
@@ -64,7 +64,8 @@ def home ():
         return flask.redirect(flask.url_for('login'))
         
     entries = get_all_entries() # For now, showing all. Could be recent.
-    return flask.render_template('home.html', entries=entries)
+    employees = get_all_employees()
+    return flask.render_template('home.html', entries=entries, employees=employees)
 
 @app.route('/data',methods=['GET','POST'])
 def get_data():
@@ -257,4 +258,15 @@ def check_updates():
     return flask.jsonify({'last_updated': last_updated})
 
 if __name__ == '__main__':
+    import socket
+    try:
+        # Determine local IP address
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_address = s.getsockname()[0]
+        s.close()
+        print(f"\nExample App running on: http://{ip_address}:5000\n")
+    except Exception as e:
+        print(f"Could not determine IP: {e}")
+    
     app.run(host='0.0.0.0',port=5000,debug=True)
