@@ -11,7 +11,7 @@ def create_table():
     try:
         conn = get_db_connection()
         with conn:
-            conn.execute("CREATE TABLE IF NOT EXISTS employee (name TEXT NOT NULL, phone TEXT NOT NULL, login_id TEXT NOT NULL, password TEXT NOT NULL, Auth_level INT NOT NULL)")
+            conn.execute("CREATE TABLE IF NOT EXISTS employee (name TEXT NOT NULL, phone TEXT NOT NULL, login_id TEXT NOT NULL, password TEXT NOT NULL, Auth_level INT NOT NULL, status BOOLEAN NOT NULL DEFAULT 0)")
         return True
     except Exception as e:
         print(f"Error creating table: {e}")
@@ -23,7 +23,7 @@ def insert_employee(data):
     conn = get_db_connection()
     try:
         with conn:
-            conn.execute("INSERT INTO employee (name, phone, login_id, password, Auth_level) VALUES (?, ?, ?, ?, ?)", (data["name"], "+91"+data["phone"], data["login_id"], data["password"], data["Auth_level"]))
+            conn.execute("INSERT INTO employee (name, phone, login_id, password, Auth_level, status) VALUES (?, ?, ?, ?, ?, ?)", (data["name"], "+91"+data["phone"], data["login_id"], data["password"], data["Auth_level"], data["status"]))
             return True
     except Exception as e:
         print(f"Error inserting employee: {e}")
