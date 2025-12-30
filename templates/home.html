@@ -307,6 +307,75 @@
             document.getElementById('vehicle-reg').removeAttribute('required');
         }
     </script>
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="fixed inset-0 z-50 flex items-start justify-end p-4 pointer-events-none hidden">
+        <div class="bg-white dark:bg-slate-800 border-l-4 border-blue-500 shadow-xl rounded-lg pointer-events-auto transform transition-all duration-300 translate-x-full max-w-sm w-full"
+            id="notification-content">
+            <div class="p-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <span class="material-symbols-outlined text-blue-500 text-2xl">notifications_active</span>
+                    </div>
+                    <div class="ml-3 w-0 flex-1 pt-0.5">
+                        <p class="text-sm font-medium text-slate-900 dark:text-white">New Visitor!</p>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400" id="notification-msg"></p>
+                    </div>
+                    <div class="ml-4 flex-shrink-0 flex">
+                        <button onclick="closeNotification()"
+                            class="bg-white dark:bg-slate-800 rounded-md inline-flex text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <span class="sr-only">Close</span>
+                            <span class="material-symbols-outlined text-xl">close</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function checkNotifications() {
+            fetch('/check_notifications')
+                .then(response => response.json())
+                .then(notifications => {
+                    if (notifications.length > 0) {
+                        notifications.forEach(note => {
+                            showNotification(note.visitor_name, note.reason);
+                        });
+                    }
+                })
+                .catch(err => console.error("Error polling notifications:", err));
+        }
+
+        function showNotification(visitorName, reason) {
+            const modal = document.getElementById('notification-modal');
+            const content = document.getElementById('notification-content');
+            const msg = document.getElementById('notification-msg');
+
+            msg.textContent = `${visitorName} is here for ${reason}.`;
+
+            modal.classList.remove('hidden');
+            // Small delay to allow display check before animating
+            setTimeout(() => {
+                content.classList.remove('translate-x-full');
+            }, 10);
+
+            // Auto hide after 10 seconds
+            setTimeout(closeNotification, 10000);
+        }
+
+        function closeNotification() {
+            const modal = document.getElementById('notification-modal');
+            const content = document.getElementById('notification-content');
+
+            content.classList.add('translate-x-full');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Poll every 5 seconds
+        setInterval(checkNotifications, 5000);
+    </script>
 </body>
 
 </html>

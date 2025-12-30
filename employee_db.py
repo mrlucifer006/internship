@@ -12,6 +12,7 @@ def create_table():
         conn = get_db_connection()
         with conn:
             conn.execute("CREATE TABLE IF NOT EXISTS employee (name TEXT NOT NULL, phone TEXT NOT NULL, login_id TEXT NOT NULL, password TEXT NOT NULL, Auth_level INT NOT NULL, status BOOLEAN NOT NULL DEFAULT 0)")
+            conn.execute("CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, host_login_id TEXT NOT NULL, visitor_name TEXT NOT NULL, reason TEXT NOT NULL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, is_read BOOLEAN DEFAULT 0)")
         return True
     except Exception as e:
         print(f"Error creating table: {e}")
@@ -78,4 +79,47 @@ def check_credentials(login_id, password):
         return None
     finally:
         conn.close()            
+
+def update_employee_status(login_id, status):
+    conn = get_db_connection()
+    try:
+        with conn:
+            conn.execute("UPDATE employee SET status = ? WHERE login_id = ?", (status, login_id))
+        return True
+    except Exception as e:
+        print(f"Error updating employee status: {e}")
+        return False
+    finally:
+        conn.close()
+
+def add_notification(host_login_id, visitor_name, reason):
+    conn = get_db_connection()
+    try:
+        with conn:
+            conn.execute("INSERT INTO notifications (host_login_id, visitor_name, reason) VALUES (?, ?, ?)", (host_login_id, visitor_name, reason))
+        return True
+    except Exception as e:
+        print(f"Error adding notification: {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_unread_notifications(host_login_id):
+    conn = get_db_connection()
+    try:
+        with conn:
+            cursor = conn.execute("SELECT * FROM notifications WHERE host_login_id = ? AND is_read = 0", (host_login_id,))
+            rows = cursor.fetchall()
+            notifications = [dict(row) for row in rows]
+            
+            # Mark as read immediately
+            if notifications:
+                conn.execute("UPDATE notifications SET is_read = 1 WHERE host_login_id = ? AND is_read = 0", (host_login_id,))
+            
+            return notifications
+    except Exception as e:
+        print(f"Error getting notifications: {e}")
+        return []
+    finally:
+        conn.close()
 

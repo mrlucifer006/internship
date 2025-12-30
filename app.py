@@ -4,7 +4,7 @@ import time
 from Whatsapp_message import send_message
 from db import init_db
 from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors
-from employee_db import get_employee_phone, check_credentials, insert_employee
+from employee_db import get_employee_phone, check_credentials, insert_employee, update_employee_status, add_notification, get_employee_by_name, get_unread_notifications
 import os
 
 
@@ -29,6 +29,8 @@ def login():
         if user:
             flask.session['user'] = user['name']
             flask.session['auth_level'] = user['Auth_level'] # Store auth level
+            flask.session['login_id'] = user['login_id']
+            update_employee_status(user['login_id'], True)
             return flask.redirect(flask.url_for('home'))
 
         # Fallback: Simple Hardcoded Credentials (ADMIN)
@@ -43,8 +45,13 @@ def login():
 
 @app.route('/logout')
 def logout():
+    login_id = flask.session.get('login_id')
+    if login_id:
+        update_employee_status(login_id, False)
+    
     flask.session.pop('user', None)
     flask.session.pop('auth_level', None)
+    flask.session.pop('login_id', None)
     return flask.redirect(flask.url_for('login'))
 
 @app.route('/')
@@ -121,14 +128,26 @@ def entry_data():
     vehicle = flask.request.args.get('vehicle')
     vehicle_number = flask.request.args.get('vehicle_number')
     
-    def send_notification():
-        try:
-            # Send message to Host (host_number), about Visitor (V_name)
-            send_message(V_name, Number, reason, name, host_number) 
-        except Exception as e:
-            print(f"Failed to send WhatsApp: {e}")
+    
+    # Check Host Status
+    host = get_employee_by_name({"name": name})
+    
+    # If host is found and is Online (status=1), send internal notification
+    if host and host.get('status') == 1:
+        print(f"Host {name} is Online. Sending Popup Notification.")
+        add_notification(host['login_id'], V_name, reason)
+        
+    else:
+        # Host is Offline or not found (fallback), send WhatsApp
+        print(f"Host {name} is Offline. Sending WhatsApp.")
+        def send_notification():
+            try:
+                # Send message to Host (host_number), about Visitor (V_name)
+                send_message(V_name, Number, reason, name, host_number) 
+            except Exception as e:
+                print(f"Failed to send WhatsApp: {e}")
 
-    threading.Thread(target=send_notification).start()
+        threading.Thread(target=send_notification).start()
     
     return flask.render_template('entry_data.html', name=name, Number=Number, V_name=V_name, reason=reason, vehicle=vehicle, vehicle_number=vehicle_number)
 @app.route('/view_all')
@@ -216,3 +235,18 @@ def process_add_user():
         return flask.redirect(flask.url_for('new_user'))
 
 
+    
+@app.route('/check_notifications')
+def check_notifications():
+    if not is_logged_in():
+        return flask.jsonify([])
+        
+    login_id = flask.session.get('login_id')
+    if not login_id:
+        return flask.jsonify([])
+        
+    notifications = get_unread_notifications(login_id)
+    return flask.jsonify(notifications)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0',port=5000,debug=True)
