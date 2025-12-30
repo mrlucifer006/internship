@@ -4,12 +4,9 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Watchman Visitor Entry</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap"
-        rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
+    <title>Gate Portal - Visitor Entry</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
         tailwind.config = {
@@ -22,9 +19,7 @@
                         "brand-orange": "#f08422",
                         "background-light": "#f5f7f8",
                     },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
                     borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
                 },
             },
@@ -32,100 +27,70 @@
     </script>
     <style type="text/tailwindcss">
         :root {
-      --brand-blue: #1e73be;
-      --brand-green: #5c8a42;
-      --brand-orange: #f08422;
-    }
-    .text-primary {
-        color: var(--brand-blue);
-    }
-    .bg-primary {
-        background-color: var(--brand-blue);
-    }
-    .focus\:ring-primary:focus {
-        --tw-ring-color: var(--brand-blue);
-    }
-    .focus\:border-primary:focus {
-        border-color: var(--brand-blue);
-    }
-    .peer-checked\:bg-primary:checked {
-        background-color: var(--brand-green);
-    }
-    .group-hover\:text-primary:hover {
-        color: var(--brand-blue);
-    }.btn-action {
-        background-color: var(--brand-green);
-    }
-    .btn-action:hover {
-        background-color: #4a7036;}.btn-logout {
-        background-color: var(--brand-orange);
-    }
-    .btn-logout:hover {
-        background-color: #d1701b;}::-webkit-scrollbar {
-        width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-        background: #f1f5f9;
-    }
-    ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-5px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fade-in {
-        animation: fadeIn 0.3s ease-out forwards;
-    }
-</style>
+            --brand-blue: #1e73be;
+            --brand-green: #5c8a42;
+            --brand-orange: #f08422;
+        }
+        .btn-action { background-color: var(--brand-green); }
+        .btn-action:hover { background-color: #4a7036; }
+        .btn-logout { background-color: var(--brand-orange); }
+        .btn-logout:hover { background-color: #d1701b; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    </style>
 </head>
 
-<body class="bg-background-light font-display antialiased min-h-screen flex flex-col text-slate-600">
-    <header
-        class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 px-6 lg:px-10 py-3 bg-white shadow-sm z-10 sticky top-0">
+<body class="bg-background-light font-display antialiased min-h-screen flex flex-col text-slate-600 pb-24">
+    <header class="flex items-center justify-between border-b border-solid border-slate-200 px-6 lg:px-10 py-3 bg-white shadow-sm z-10 sticky top-0">
         <div class="flex items-center gap-4">
             <div class="size-8 flex items-center justify-center text-[var(--brand-green)]">
                 <span class="material-symbols-outlined text-3xl">security</span>
             </div>
-            <h2 class="text-lg lg:text-xl font-bold leading-tight tracking-[-0.015em] text-[#1e73be]">Watchman Portal
-            </h2>
+            <h2 class="text-lg lg:text-xl font-bold leading-tight tracking-[-0.015em] text-[#1e73be]">Gate Portal</h2>
         </div>
         <div class="flex flex-1 justify-end gap-6 items-center">
-            <button
-                class="btn-logout flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 text-white text-sm font-bold transition-colors shadow-sm">
+            {% if session.get('auth_level', 0) >= 5 %}
+            <a href="{{ url_for('new_user') }}" class="text-slate-500 hover:text-[var(--brand-blue)] font-medium text-sm transition-colors">Add New User</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="btn-logout flex min-w-[84px] items-center justify-center rounded-lg h-9 px-4 text-white text-sm font-bold transition-colors shadow-sm">
                 <span class="truncate">Logout</span>
-            </button>
-            <div class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-slate-100"
-                data-alt="Profile picture of the logged in watchman"
-                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB9oX30Bxn2vGnI1Hf-QF4jGWLz2a4pw2KwW1TQqZEwwPUJjylxI0Lxa3ENG26RYreG6arRywGXUCRZV3u966Hkvasd_BrCTSrdJ_IpN6ugN-PnxY9Ju2HSBbNdjBxG4PuHfDYAL9nxARgWM6xYjdtAIyHaPc6ZmwsIhX4ZfnJWCBmbRJ5vDyCNc1hVWJ5xkso6WplyOTjcEy7NevwG_qzVrJxJ7nlFEnmhvvpaLifcmTN5mr6c5fQhbEhFCuqybNyuSfZ78BadtS40");'>
-            </div>
+            </a>
         </div>
     </header>
-    <main class="flex-grow flex flex-col md:flex-row h-full pb-20">
-        <div class="flex-1 p-6 lg:p-10 flex justify-center overflow-y-auto pb-32">
+
+    <main class="flex-grow flex flex-col md:flex-row h-full">
+        <div class="flex-1 p-6 lg:p-10 flex justify-center overflow-y-auto">
             <div class="w-full max-w-3xl flex flex-col gap-8">
                 <div class="flex flex-col gap-2">
-                    <h1 class="text-[#1e73be] text-3xl lg:text-4xl font-bold leading-tight tracking-[-0.033em]">New
-                        Visitor Entry</h1>
+                    <h1 class="text-[#1e73be] text-3xl lg:text-4xl font-bold leading-tight tracking-[-0.033em]">New Visitor Entry</h1>
                     <p class="text-slate-500 text-base font-normal">Please verify details before logging entry.</p>
                 </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flex flex-col gap-2">
+                    {% for category, message in messages %}
+                    <div class="p-4 rounded-lg {{ 'bg-red-50 text-red-700 border border-red-200' if category == 'error' else 'bg-green-50 text-green-700 border border-green-200' }} text-sm font-medium animate-fade-in">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+
                 <div class="bg-white rounded-xl border border-slate-200 p-6 lg:p-8 shadow-sm">
-                    <form class="flex flex-col gap-6" id="visitor-form"
-                        onsubmit="event.preventDefault(); handleCheckIn();">
+                    <form id="visitor-form" class="flex flex-col gap-6" action="{{ url_for('get_data') }}" method="POST">
                         <div class="space-y-4">
-                            <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-blue)]">Host
-                                Details</h3>
+                            <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-blue)]">Host Details</h3>
                             <div class="flex flex-col md:flex-row gap-5">
                                 <label class="flex flex-col min-w-40 flex-1">
-                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Name</p>
-                                    <select
-                                        class="form-select flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 px-4 text-base font-normal leading-normal transition-all"
-                                        id="host-name" name="name" required="">
-                                        <option disabled="" selected="" value="">Select host name</option>
+                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Visiting Employee</p>
+                                    <select class="form-select w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary focus:border-primary h-12 px-4 transition-all" 
+                                            name="name" required>
+                                        <option disabled selected value="">Select host name</option>
                                         {% for emp in employees %}
                                         <option value="{{ emp.name }}">{{ emp.name }}</option>
                                         {% endfor %}
@@ -133,47 +98,41 @@
                                 </label>
                             </div>
                         </div>
+
                         <hr class="border-slate-100" />
+
                         <div class="space-y-4">
-                            <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-blue)]">Visitor
-                                Details</h3>
+                            <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-blue)]">Visitor Details</h3>
                             <div class="flex flex-col md:flex-row gap-5">
                                 <label class="flex flex-col min-w-40 flex-1">
                                     <p class="text-slate-600 text-base font-medium leading-normal pb-2">Visitor Name</p>
-                                    <input
-                                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 placeholder:text-slate-400 px-4 text-base font-normal leading-normal transition-all"
-                                        id="visitor-name" placeholder="Full name from ID" required="" type="text" />
+                                    <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 px-4" 
+                                           name="V_name" placeholder="Full name from ID" required type="text" />
                                 </label>
                                 <label class="flex flex-col min-w-40 flex-1">
-                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Visitor Phone
-                                        Number</p>
+                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Phone Number</p>
                                     <div class="relative">
                                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                                             <span class="material-symbols-outlined text-[20px]">phone</span>
                                         </span>
-                                        <input
-                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 placeholder:text-slate-400 pl-10 pr-4 text-base font-normal leading-normal transition-all"
-                                            id="visitor-phone" maxlength="10" minlength="10" pattern="[0-9]{10}"
-                                            placeholder="10-digit mobile number" required=""
-                                            title="Please enter exactly 10 digits" type="tel" />
+                                        <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 pl-10 pr-4" 
+                                               name="Number" maxlength="10" minlength="10" pattern="[0-9]{10}" placeholder="10-digit mobile" required type="tel" 
+                                               oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
                                     </div>
                                 </label>
                             </div>
                             <div class="flex flex-col md:flex-row gap-5">
                                 <label class="flex flex-col min-w-40 flex-1">
-                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Reason for Visit
-                                    </p>
-                                    <input
-                                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 placeholder:text-slate-400 px-4 text-base font-normal leading-normal transition-all"
-                                        id="visit-reason" placeholder="State the reason for visit" required=""
-                                        type="text" />
+                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Reason for Visit</p>
+                                    <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 px-4" 
+                                           name="reason" placeholder="State the reason" required type="text" />
                                 </label>
                             </div>
+
                             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div class="flex gap-3 items-center">
-                                        <div
-                                            class="bg-white p-2 rounded-full text-[#1e73be] border border-slate-200 shadow-sm">
+                                        <div class="bg-white p-2 rounded-full text-[#1e73be] border border-slate-200 shadow-sm">
                                             <span class="material-symbols-outlined">directions_car</span>
                                         </div>
                                         <div>
@@ -182,52 +141,29 @@
                                         </div>
                                     </div>
                                     <label class="inline-flex items-center cursor-pointer group">
-                                        <input class="sr-only peer" id="vehicle-toggle" type="checkbox" value="" />
-                                        <div
-                                            class="relative w-14 h-7 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary">
-                                        </div>
-                                        <span
-                                            class="ms-3 text-sm font-medium text-slate-600 group-hover:text-primary transition-colors">Yes</span>
+                                        <input class="sr-only peer" id="vehicle-toggle" type="checkbox" name="vehicle" />
+                                        <div class="relative w-14 h-7 bg-slate-300 peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+                                        <span class="ms-3 text-sm font-medium text-slate-600 group-hover:text-primary transition-colors">Yes</span>
                                     </label>
                                 </div>
-                                <div class="hidden peer-has-[:checked]:block mt-4 pt-4 border-t border-slate-200 animate-fade-in"
-                                    id="vehicle-input-container">
+                                <div class="hidden mt-4 pt-4 border-t border-slate-200 animate-fade-in" id="vehicle-input-container">
                                     <label class="flex flex-col w-full">
-                                        <p class="text-slate-600 text-base font-medium leading-normal pb-2">Vehicle
-                                            Registration Number</p>
-                                        <input
-                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-white focus:border-primary h-12 placeholder:text-slate-400 px-4 text-base font-normal leading-normal transition-all uppercase tracking-wider"
-                                            id="vehicle-reg"
-                                            pattern="^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$|^[A-Z]{2}[ -][0-9]{2}[ -][A-Z]{1,2}[ -][0-9]{4}$"
-                                            placeholder="e.g. MH 01 AB 1234"
-                                            title="Please enter a valid Indian vehicle registration number (e.g., MH 01 AB 1234)"
-                                            type="text" />
+                                        <p class="text-slate-600 text-base font-medium leading-normal pb-2">Registration Number</p>
+                                        <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 focus:ring-2 focus:ring-primary h-12 px-4 uppercase tracking-wider" 
+                                               id="vehicle-reg" name="vehicle_number" placeholder="e.g. MH 01 AB 1234" 
+                                               pattern="^[A-Z]{2}[ -]?[0-9]{1,2}(?:[ -]?[A-Z]{1,2})?[ -]?[0-9]{4}$"
+                                               oninput="this.value = this.value.toUpperCase()"/>
                                     </label>
                                 </div>
-                                <script>
-                                    document.getElementById('vehicle-toggle').addEventListener('change', function () {
-                                        const inputDiv = document.getElementById('vehicle-input-container');
-                                        const vehicleInput = document.getElementById('vehicle-reg');
-                                        if (this.checked) {
-                                            inputDiv.classList.remove('hidden');
-                                            vehicleInput.setAttribute('required', '');
-                                        } else {
-                                            inputDiv.classList.add('hidden');
-                                            vehicleInput.removeAttribute('required');
-                                        }
-                                    });
-                                </script>
                             </div>
                         </div>
+
                         <div class="flex gap-4 pt-4">
-                            <button
-                                class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 btn-action text-white text-base font-bold leading-normal tracking-[0.015em] shadow-md transition-all active:scale-[0.98]"
-                                type="submit">
+                            <button class="flex-1 rounded-lg h-12 px-6 btn-action text-white text-base font-bold shadow-md transition-all active:scale-[0.98]" type="submit">
                                 <span class="truncate">Check-In Visitor</span>
                             </button>
-                            <button
-                                class="min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-white border border-slate-300 text-slate-600 text-base font-medium leading-normal tracking-[0.015em] hover:bg-slate-50 hover:text-slate-800 transition-all shadow-sm"
-                                onclick="resetForm()" type="button">
+                            <button class="min-w-[84px] rounded-lg h-12 px-6 bg-white border border-slate-300 text-slate-600 font-medium hover:bg-slate-50 transition-all" 
+                                    type="reset" onclick="resetForm()">
                                 <span class="truncate">Reset</span>
                             </button>
                         </div>
@@ -235,113 +171,71 @@
                 </div>
             </div>
         </div>
-        <aside
-            class="hidden xl:flex w-96 flex-col border-l border-slate-200 bg-white p-6 gap-6 h-[calc(100vh-65px)] sticky top-[65px] overflow-y-auto pb-24">
+
+        <aside class="hidden xl:flex w-96 flex-col border-l border-slate-200 bg-white p-6 gap-6 h-[calc(100vh-65px)] sticky top-[65px] overflow-y-auto">
             <div class="flex items-center justify-between">
                 <h3 class="text-[#1e73be] text-lg font-bold">Recent Entries</h3>
-                <button class="text-sm text-[var(--brand-orange)] font-medium hover:text-[#d1701b] hover:underline">View
-                    All</button>
+                <a href="{{ url_for('view_all') }}" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">View All</a>
             </div>
-            <div class="flex flex-col gap-4" id="recent-entries-list">
+            <div class="flex flex-col gap-4">
+                {% for entry in entries|reverse %}
+                <div class="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors animate-fade-in">
+                    <div class="mt-1 bg-[var(--brand-green)]/10 text-[var(--brand-green)] rounded-full size-8 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-sm font-bold">check</span>
+                    </div>
+                    <div class="flex flex-col gap-1 min-w-0">
+                        <p class="text-slate-600 font-bold text-sm truncate">{{ entry.V_name }}</p>
+                        <p class="text-slate-500 text-xs">Visiting: {{ entry.name }}</p>
+                        <div class="flex gap-2 mt-1">
+                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                {{ entry.reason }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </aside>
     </main>
-    <div
-        class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-blue-100 z-50 flex justify-center items-center shadow-[0_-4px_20px_rgba(30,115,190,0.1)]">
-        <div class="flex items-center gap-4">
-            <span class="text-[#1e73be] font-bold uppercase tracking-wider text-sm">Switch Mode:</span>
-            <div class="bg-blue-50 border border-blue-200 p-1.5 rounded-full flex relative w-[340px]">
-                <button
-                    class="flex-1 flex items-center justify-center gap-2 rounded-full py-2 px-4 text-sm font-bold transition-all z-10 bg-[#1e73be] text-white shadow-md"
-                    id="mode-new-entry">
-                    <span class="material-symbols-outlined text-lg">login</span>
-                    New Entry
-                </button>
-                <button
-                    class="flex-1 flex items-center justify-center gap-2 rounded-full py-2 px-4 text-sm font-bold transition-all z-10 text-[#1e73be] hover:bg-blue-100"
-                    id="mode-visitor-exit">
-                    <span class="material-symbols-outlined text-lg">logout</span>
-                    Visitor Exit
-                </button>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-blue-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40">
+        <div class="max-w-[1600px] mx-auto px-4 py-3">
+            <div class="flex justify-center items-center gap-4">
+                <span class="text-xs font-medium text-slate-500 uppercase tracking-wide hidden sm:block">Switch Mode:</span>
+                <div class="bg-slate-100 p-1 rounded-full flex border border-slate-200">
+                    <button class="flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold bg-white text-blue-700 shadow-sm border border-slate-200 transition-all">
+                        <span class="material-symbols-outlined text-[20px]">login</span> New Entry
+                    </button>
+                    <a href="{{ url_for('check_out_page') }}" class="flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-slate-900 transition-all group">
+                        <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">logout</span> Visitor Exit
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+
     <script>
-        function handleCheckIn() {
-            const hostName = document.getElementById('host-name').value;
-            const visitorName = document.getElementById('visitor-name').value;
-            const visitorPhone = document.getElementById('visitor-phone').value;
-            const visitReason = document.getElementById('visit-reason').value;
-            const vehicleToggle = document.getElementById('vehicle-toggle');
-            const vehicleReg = document.getElementById('vehicle-reg').value;
-            // Note: The form's submit event triggers validation automatically via the 'required' and 'pattern' attributes.
-            // If we are here, basic HTML5 validation passed.
-            if (!hostName || !visitorName || !visitReason || !visitorPhone) {
-                return;
+        // Vehicle Toggle Logic
+        document.getElementById('vehicle-toggle').addEventListener('change', function () {
+            const inputDiv = document.getElementById('vehicle-input-container');
+            const vehicleInput = document.getElementById('vehicle-reg');
+            if (this.checked) {
+                inputDiv.classList.remove('hidden');
+                vehicleInput.setAttribute('required', '');
+            } else {
+                inputDiv.classList.add('hidden');
+                vehicleInput.removeAttribute('required');
+                vehicleInput.value = '';
             }
-            // Additional manual check if needed, though HTML5 handles most
-            if (vehicleToggle.checked && !vehicleReg) {
-                return;
-            }
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-            const entryHTML = `
-            <div class="p-4 rounded-lg border border-slate-200 bg-slate-50 flex flex-col gap-2 animate-fade-in shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex justify-between items-start">
-                    <div class="flex flex-col">
-                        <h4 class="font-bold text-slate-700 text-base">${visitorName}</h4>
-                        <span class="text-xs text-slate-500">${visitorPhone}</span>
-                    </div>
-                    <span class="text-xs font-semibold px-2 py-1 bg-blue-50 text-blue-600 rounded-full">${timeString}</span>
-                </div>
-                <hr class="border-slate-200 my-1"/>
-                <div class="text-sm text-slate-600 flex flex-col gap-1.5">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px] text-slate-400">person</span>
-                        <span>Visiting: <span class="font-medium text-slate-800">${hostName}</span></span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px] text-slate-400">info</span>
-                        <span>${visitReason}</span>
-                    </div>
-                    ${vehicleToggle.checked ? `
-                    <div class="flex items-center gap-2">
-                         <span class="material-symbols-outlined text-[18px] text-slate-400">directions_car</span>
-                         <span class="font-mono bg-slate-200 px-1 rounded text-slate-700 text-xs tracking-wider uppercase">${vehicleReg}</span>
-                    </div>` : ''}
-                </div>
-            </div>
-        `;
-            const list = document.getElementById('recent-entries-list');
-            const tempContainer = document.createElement('div');
-            tempContainer.innerHTML = entryHTML;
-            list.prepend(tempContainer.firstElementChild);
-            resetForm();
-        }
+        });
+
         function resetForm() {
-            document.getElementById('visitor-form').reset();
-            document.getElementById('vehicle-input-container').classList.add('hidden');
-            document.getElementById('vehicle-reg').removeAttribute('required');
+            // Form reset is handled by type="reset", but we need to hide the vehicle container
+            setTimeout(() => {
+                document.getElementById('vehicle-input-container').classList.add('hidden');
+                document.getElementById('vehicle-reg').removeAttribute('required');
+            }, 10);
         }
-        // Toggle logic for visual appearance only
-        const modeNewEntry = document.getElementById('mode-new-entry');
-        const modeVisitorExit = document.getElementById('mode-visitor-exit');
-        // Classes for active vs inactive state
-        const activeClasses = ['bg-[#1e73be]', 'text-white', 'shadow-md'];
-        const inactiveClasses = ['text-[#1e73be]', 'hover:bg-blue-100'];
-        modeNewEntry.addEventListener('click', () => {
-            modeNewEntry.classList.add(...activeClasses);
-            modeNewEntry.classList.remove(...inactiveClasses);
-            modeVisitorExit.classList.remove(...activeClasses);
-            modeVisitorExit.classList.add(...inactiveClasses);
-        });
-        modeVisitorExit.addEventListener('click', () => {
-            modeVisitorExit.classList.add(...activeClasses);
-            modeVisitorExit.classList.remove(...inactiveClasses);
-            modeNewEntry.classList.remove(...activeClasses);
-            modeNewEntry.classList.add(...inactiveClasses);
-        });
     </script>
 </body>
-
 </html>
