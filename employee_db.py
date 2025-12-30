@@ -134,3 +134,15 @@ def get_all_employees():
         return []
     finally:
         conn.close()
+
+def get_all_employees_full():
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("SELECT name, login_id, phone, Auth_level, status FROM employee")
+        rows = cursor.fetchall()
+        return [dict(row) for row in rows]
+    except Exception as e:
+        print(f"Error getting all employees full: {e}")
+        return []
+    finally:
+        conn.close()

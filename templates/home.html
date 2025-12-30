@@ -54,6 +54,11 @@
             <h2 class="text-lg lg:text-xl font-bold leading-tight tracking-[-0.015em] text-[#1e73be]">Gate Portal</h2>
         </div>
         <div class="flex flex-1 justify-end gap-6 items-center">
+            {% if session.get('auth_level', 0) >= 4 %}
+            <a href="{{ url_for('view_status') }}"
+                class="text-slate-500 hover:text-[var(--brand-blue)] font-medium text-sm transition-colors">View
+                Status</a>
+            {% endif %}
             {% if session.get('auth_level', 0) >= 5 %}
             <a href="{{ url_for('new_user') }}"
                 class="text-slate-500 hover:text-[var(--brand-blue)] font-medium text-sm transition-colors">Add New

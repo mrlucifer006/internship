@@ -225,7 +225,8 @@ def process_add_user():
         "login_id": login_id,
         "phone": phone.replace("+91", "").strip(), # Clean it if user left +91
         "password": password,
-        "Auth_level": auth_level
+        "Auth_level": auth_level,
+        "status": 0
     }
     
     if insert_employee(data):
@@ -234,7 +235,6 @@ def process_add_user():
     else:
         flask.flash("Failed to add user. Login ID might be taken.", 'error')
         return flask.redirect(flask.url_for('new_user'))
-
 
     
 @app.route('/check_notifications')
@@ -257,7 +257,25 @@ def check_updates():
     last_updated = get_latest_visitor_timestamp()
     return flask.jsonify({'last_updated': last_updated})
 
+@app.route('/view_status')
+def view_status():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+        
+    if flask.session.get('auth_level', 0) < 4:
+        flask.flash("Unauthorized access.", 'error')
+        return flask.redirect(flask.url_for('home'))
+        
+    from employee_db import get_all_employees_full
+    employees = get_all_employees_full()
+    return flask.render_template('view_status.html', employees=employees)
+
 if __name__ == '__main__':
+    from employee_db import create_table as create_employee_table
+    # Ensure DBs exist
+    init_db()
+    create_employee_table()
+
     import socket
     try:
         # Determine local IP address
