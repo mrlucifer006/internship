@@ -44,24 +44,13 @@
     </style>
 </head>
 
-<<<<<<< Updated upstream
 <body class="bg-background-light font-display antialiased min-h-screen flex flex-col text-slate-600 pb-24">
-<<<<<<< Updated upstream
-    <header class="flex items-center justify-between border-b border-solid border-slate-200 px-6 lg:px-10 py-3 bg-white shadow-sm z-10 sticky top-0">
-=======
-<body class="bg-background-light font-display antialiased min-h-screen flex flex-col text-slate-600">
-    <header
-        class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 px-6 lg:px-10 py-3 bg-white shadow-sm z-10 sticky top-0">
->>>>>>> Stashed changes
-=======
     <header
         class="flex items-center justify-between border-b border-solid border-slate-200 px-6 lg:px-10 py-3 bg-white shadow-sm z-10 sticky top-0">
->>>>>>> Stashed changes
         <div class="flex items-center gap-4">
             <div class="size-8 flex items-center justify-center text-[var(--brand-green)]">
                 <span class="material-symbols-outlined text-3xl">security</span>
             </div>
-<<<<<<< Updated upstream
             <h2 class="text-lg lg:text-xl font-bold leading-tight tracking-[-0.015em] text-[#1e73be]">Gate Portal</h2>
         </div>
         <div class="flex flex-1 justify-end gap-6 items-center">
@@ -70,23 +59,10 @@
                 class="text-slate-500 hover:text-[var(--brand-blue)] font-medium text-sm transition-colors">Add New
                 User</a>
             {% endif %}
-<<<<<<< Updated upstream
-            <a href="{{ url_for('logout') }}" class="btn-logout flex min-w-[84px] items-center justify-center rounded-lg h-9 px-4 text-white text-sm font-bold transition-colors shadow-sm">
-=======
-            <h2 class="text-lg lg:text-xl font-bold leading-tight tracking-[-0.015em] text-[#1e73be]">Watchman Portal
-            </h2>
-        </div>
-        <div class="flex flex-1 justify-end gap-6 items-center">
-            <button
-                class="btn-logout flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 text-white text-sm font-bold transition-colors shadow-sm">
->>>>>>> Stashed changes
-=======
             <a href="{{ url_for('logout') }}"
                 class="btn-logout flex min-w-[84px] items-center justify-center rounded-lg h-9 px-4 text-white text-sm font-bold transition-colors shadow-sm">
->>>>>>> Stashed changes
                 <span class="truncate">Logout</span>
-            </button>
-
+            </a>
         </div>
     </header>
 
@@ -94,13 +70,8 @@
         <div class="flex-1 p-6 lg:p-10 flex justify-center overflow-y-auto pb-32">
             <div class="w-full max-w-3xl flex flex-col gap-8">
                 <div class="flex flex-col gap-2">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                    <h1 class="text-[#1e73be] text-3xl lg:text-4xl font-bold leading-tight tracking-[-0.033em]">New Visitor Entry</h1>
-=======
                     <h1 class="text-[#1e73be] text-3xl lg:text-4xl font-bold leading-tight tracking-[-0.033em]">New
                         Visitor Entry</h1>
->>>>>>> Stashed changes
                     <p class="text-slate-500 text-base font-normal">Please verify details before logging entry.</p>
                 </div>
 
@@ -135,24 +106,6 @@
                                         <option value="{{ emp.name }}">{{ emp.name }}</option>
                                         {% endfor %}
                                     </select>
-=======
-                    <h1 class="text-[#1e73be] text-3xl lg:text-4xl font-bold leading-tight tracking-[-0.033em]">New
-                        Visitor Entry</h1>
-                    <p class="text-slate-500 text-base font-normal">Please verify details before logging entry.</p>
-                </div>
-                <div class="bg-white rounded-xl border border-slate-200 p-6 lg:p-8 shadow-sm">
-                    <form class="flex flex-col gap-6" id="visitor-form"
-                        onsubmit="event.preventDefault(); handleCheckIn();">
-                        <div class="space-y-4">
-                            <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-blue)]">Host
-                                Details</h3>
-                            <div class="flex flex-col md:flex-row gap-5">
-                                <label class="flex flex-col min-w-40 flex-1">
-                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Name</p>
-                                    <input
-                                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 placeholder:text-slate-400 px-4 text-base font-normal leading-normal transition-all"
-                                        id="host-name" placeholder="Who are they visiting?" required="" type="text" />
->>>>>>> Stashed changes
                                 </label>
                             </div>
                         </div>
@@ -165,20 +118,9 @@
                             <div class="flex flex-col md:flex-row gap-5">
                                 <label class="flex flex-col min-w-40 flex-1">
                                     <p class="text-slate-600 text-base font-medium leading-normal pb-2">Visitor Name</p>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                                    <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 px-4" 
-                                           name="V_name" placeholder="Full name from ID" required type="text" />
-=======
-                                    <input
-                                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 placeholder:text-slate-400 px-4 text-base font-normal leading-normal transition-all"
-                                        id="visitor-name" placeholder="Full name from ID" required="" type="text" />
->>>>>>> Stashed changes
-=======
                                     <input
                                         class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 px-4"
                                         name="V_name" placeholder="Full name from ID" required type="text" />
->>>>>>> Stashed changes
                                 </label>
                                 <label class="flex flex-col min-w-40 flex-1">
                                     <p class="text-slate-600 text-base font-medium leading-normal pb-2">Phone Number</p>
@@ -186,50 +128,21 @@
                                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                                             <span class="material-symbols-outlined text-[20px]">phone</span>
                                         </span>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                                        <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 pl-10 pr-4" 
-                                               name="Number" maxlength="10" minlength="10" pattern="[0-9]{10}" placeholder="10-digit mobile" required type="tel" 
-                                               oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
-=======
-                                        <input
-                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 placeholder:text-slate-400 pl-10 pr-4 text-base font-normal leading-normal transition-all"
-                                            id="visitor-phone" maxlength="10" minlength="10" pattern="[0-9]{10}"
-                                            placeholder="10-digit mobile number" required=""
-                                            title="Please enter exactly 10 digits" type="tel" />
->>>>>>> Stashed changes
-=======
                                         <input
                                             class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 pl-10 pr-4"
                                             name="Number" maxlength="10" minlength="10" pattern="[0-9]{10}"
                                             placeholder="10-digit mobile" required type="tel"
                                             oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
->>>>>>> Stashed changes
                                     </div>
                                 </label>
                             </div>
                             <div class="flex flex-col md:flex-row gap-5">
                                 <label class="flex flex-col min-w-40 flex-1">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Reason for Visit</p>
-                                    <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 px-4" 
-                                           name="reason" placeholder="State the reason" required type="text" />
-=======
-                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Reason for Visit
-                                    </p>
-                                    <input
-                                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 placeholder:text-slate-400 px-4 text-base font-normal leading-normal transition-all"
-                                        id="visit-reason" placeholder="State the reason for visit" required=""
-                                        type="text" />
->>>>>>> Stashed changes
-=======
                                     <p class="text-slate-600 text-base font-medium leading-normal pb-2">Reason for Visit
                                     </p>
                                     <input
                                         class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 px-4"
                                         name="reason" placeholder="State the reason" required type="text" />
->>>>>>> Stashed changes
                                 </label>
                             </div>
 
@@ -246,20 +159,6 @@
                                         </div>
                                     </div>
                                     <label class="inline-flex items-center cursor-pointer group">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                                        <input class="sr-only peer" id="vehicle-toggle" type="checkbox" name="vehicle" />
-                                        <div class="relative w-14 h-7 bg-slate-300 peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
-                                        <span class="ms-3 text-sm font-medium text-slate-600 group-hover:text-primary transition-colors">Yes</span>
-=======
-                                        <input class="sr-only peer" id="vehicle-toggle" type="checkbox" value="" />
-                                        <div
-                                            class="relative w-14 h-7 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary">
-                                        </div>
-                                        <span
-                                            class="ms-3 text-sm font-medium text-slate-600 group-hover:text-primary transition-colors">Yes</span>
->>>>>>> Stashed changes
-=======
                                         <input class="sr-only peer" id="vehicle-toggle" type="checkbox"
                                             name="vehicle" />
                                         <div
@@ -267,31 +166,11 @@
                                         </div>
                                         <span
                                             class="ms-3 text-sm font-medium text-slate-600 group-hover:text-primary transition-colors">Yes</span>
->>>>>>> Stashed changes
                                     </label>
                                 </div>
                                 <div class="hidden mt-4 pt-4 border-t border-slate-200 animate-fade-in"
                                     id="vehicle-input-container">
                                     <label class="flex flex-col w-full">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                                        <p class="text-slate-600 text-base font-medium leading-normal pb-2">Registration Number</p>
-                                        <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 focus:ring-2 focus:ring-primary h-12 px-4 uppercase tracking-wider" 
-                                               id="vehicle-reg" name="vehicle_number" placeholder="e.g. MH 01 AB 1234" 
-                                               pattern="^[A-Z]{2}[ -]?[0-9]{1,2}(?:[ -]?[A-Z]{1,2})?[ -]?[0-9]{4}$"
-                                               oninput="this.value = this.value.toUpperCase()"/>
-=======
-                                        <p class="text-slate-600 text-base font-medium leading-normal pb-2">Vehicle
-                                            Registration Number</p>
-                                        <input
-                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-white focus:border-primary h-12 placeholder:text-slate-400 px-4 text-base font-normal leading-normal transition-all uppercase tracking-wider"
-                                            id="vehicle-reg"
-                                            pattern="^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$|^[A-Z]{2}[ -][0-9]{2}[ -][A-Z]{1,2}[ -][0-9]{4}$"
-                                            placeholder="e.g. MH 01 AB 1234"
-                                            title="Please enter a valid Indian vehicle registration number (e.g., MH 01 AB 1234)"
-                                            type="text" />
->>>>>>> Stashed changes
-=======
                                         <p class="text-slate-600 text-base font-medium leading-normal pb-2">Registration
                                             Number</p>
                                         <input
@@ -299,7 +178,6 @@
                                             id="vehicle-reg" name="vehicle_number" placeholder="e.g. MH 01 AB 1234"
                                             pattern="^[A-Z]{2}[ -]?[0-9]{1,2}(?:[ -]?[A-Z]{1,2})?[ -]?[0-9]{4}$"
                                             oninput="this.value = this.value.toUpperCase()" />
->>>>>>> Stashed changes
                                     </label>
                                 </div>
                             </div>
@@ -311,20 +189,9 @@
                                 type="submit">
                                 <span class="truncate">Check-In Visitor</span>
                             </button>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                            <button class="min-w-[84px] rounded-lg h-12 px-6 bg-white border border-slate-300 text-slate-600 font-medium hover:bg-slate-50 transition-all" 
-                                    type="reset" onclick="resetForm()">
-=======
-                            <button
-                                class="min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-white border border-slate-300 text-slate-600 text-base font-medium leading-normal tracking-[0.015em] hover:bg-slate-50 hover:text-slate-800 transition-all shadow-sm"
-                                onclick="resetForm()" type="button">
->>>>>>> Stashed changes
-=======
                             <button
                                 class="min-w-[84px] rounded-lg h-12 px-6 bg-white border border-slate-300 text-slate-600 font-medium hover:bg-slate-50 transition-all"
                                 type="reset" onclick="resetForm()">
->>>>>>> Stashed changes
                                 <span class="truncate">Reset</span>
                             </button>
                         </div>
@@ -337,13 +204,8 @@
             class="hidden xl:flex w-96 flex-col border-l border-slate-200 bg-white p-6 gap-6 h-[calc(100vh-65px)] sticky top-[65px] overflow-y-auto">
             <div class="flex items-center justify-between">
                 <h3 class="text-[#1e73be] text-lg font-bold">Recent Entries</h3>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                <a href="{{ url_for('view_all') }}" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">View All</a>
-=======
                 <a href="{{ url_for('view_all') }}"
                     class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">View All</a>
->>>>>>> Stashed changes
             </div>
             <div class="flex flex-col gap-4">
                 {% for entry in entries|reverse %}
@@ -365,12 +227,6 @@
                     </div>
                 </div>
                 {% endfor %}
-=======
-                <button class="text-sm text-[var(--brand-orange)] font-medium hover:text-[#d1701b] hover:underline">View
-                    All</button>
-            </div>
-            <div class="flex flex-col gap-4" id="recent-entries-list">
->>>>>>> Stashed changes
             </div>
         </aside>
     </main>
@@ -423,7 +279,6 @@
     </div>
 
     <script>
-<<<<<<< Updated upstream
         // Vehicle Toggle Logic
         document.getElementById('vehicle-toggle').addEventListener('change', function () {
             const inputDiv = document.getElementById('vehicle-input-container');
@@ -438,59 +293,6 @@
             }
         });
 
-=======
-        function handleCheckIn() {
-            const hostName = document.getElementById('host-name').value;
-            const visitorName = document.getElementById('visitor-name').value;
-            const visitorPhone = document.getElementById('visitor-phone').value;
-            const visitReason = document.getElementById('visit-reason').value;
-            const vehicleToggle = document.getElementById('vehicle-toggle');
-            const vehicleReg = document.getElementById('vehicle-reg').value;
-            // Note: The form's submit event triggers validation automatically via the 'required' and 'pattern' attributes.
-            // If we are here, basic HTML5 validation passed.
-            if (!hostName || !visitorName || !visitReason || !visitorPhone) {
-                return;
-            }
-            // Additional manual check if needed, though HTML5 handles most
-            if (vehicleToggle.checked && !vehicleReg) {
-                return;
-            }
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-            const entryHTML = `
-            <div class="p-4 rounded-lg border border-slate-200 bg-slate-50 flex flex-col gap-2 animate-fade-in shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex justify-between items-start">
-                    <div class="flex flex-col">
-                        <h4 class="font-bold text-slate-700 text-base">${visitorName}</h4>
-                        <span class="text-xs text-slate-500">${visitorPhone}</span>
-                    </div>
-                    <span class="text-xs font-semibold px-2 py-1 bg-blue-50 text-blue-600 rounded-full">${timeString}</span>
-                </div>
-                <hr class="border-slate-200 my-1"/>
-                <div class="text-sm text-slate-600 flex flex-col gap-1.5">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px] text-slate-400">person</span>
-                        <span>Visiting: <span class="font-medium text-slate-800">${hostName}</span></span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px] text-slate-400">info</span>
-                        <span>${visitReason}</span>
-                    </div>
-                    ${vehicleToggle.checked ? `
-                    <div class="flex items-center gap-2">
-                         <span class="material-symbols-outlined text-[18px] text-slate-400">directions_car</span>
-                         <span class="font-mono bg-slate-200 px-1 rounded text-slate-700 text-xs tracking-wider uppercase">${vehicleReg}</span>
-                    </div>` : ''}
-                </div>
-            </div>
-        `;
-            const list = document.getElementById('recent-entries-list');
-            const tempContainer = document.createElement('div');
-            tempContainer.innerHTML = entryHTML;
-            list.prepend(tempContainer.firstElementChild);
-            resetForm();
-        }
->>>>>>> Stashed changes
         function resetForm() {
             // Form reset is handled by type="reset", but we need to hide the vehicle container
             setTimeout(() => {
@@ -498,23 +300,6 @@
                 document.getElementById('vehicle-reg').removeAttribute('required');
             }, 10);
         }
-<<<<<<< Updated upstream
-        // Toggle logic for visual appearance only
-        const modeNewEntry = document.getElementById('mode-new-entry');
-        const modeVisitorExit = document.getElementById('mode-visitor-exit');
-        modeNewEntry.addEventListener('click', () => {
-            modeNewEntry.classList.add('bg-[#3b82f6]', 'text-white', 'shadow-sm');
-            modeNewEntry.classList.remove('text-slate-400', 'hover:text-white');
-            modeVisitorExit.classList.remove('bg-[#3b82f6]', 'text-white', 'shadow-sm');
-            modeVisitorExit.classList.add('text-slate-400', 'hover:text-white');
-        });
-        modeVisitorExit.addEventListener('click', () => {
-            modeVisitorExit.classList.add('bg-[#3b82f6]', 'text-white', 'shadow-sm');
-            modeVisitorExit.classList.remove('text-slate-400', 'hover:text-white');
-            modeNewEntry.classList.remove('bg-[#3b82f6]', 'text-white', 'shadow-sm');
-            modeNewEntry.classList.add('text-slate-400', 'hover:text-white');
-        });
-=======
 
         // --- Notification Logic ---
         function checkNotifications() {
@@ -587,7 +372,6 @@
 
         // Check for updates every 5 seconds
         setInterval(checkUpdates, 5000);
->>>>>>> Stashed changes
     </script>
 </body>
 
