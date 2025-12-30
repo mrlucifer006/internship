@@ -6,7 +6,8 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Gate Portal - Visitor Entry</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
         tailwind.config = {
@@ -45,11 +46,16 @@
 
 <<<<<<< Updated upstream
 <body class="bg-background-light font-display antialiased min-h-screen flex flex-col text-slate-600 pb-24">
+<<<<<<< Updated upstream
     <header class="flex items-center justify-between border-b border-solid border-slate-200 px-6 lg:px-10 py-3 bg-white shadow-sm z-10 sticky top-0">
 =======
 <body class="bg-background-light font-display antialiased min-h-screen flex flex-col text-slate-600">
     <header
         class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 px-6 lg:px-10 py-3 bg-white shadow-sm z-10 sticky top-0">
+>>>>>>> Stashed changes
+=======
+    <header
+        class="flex items-center justify-between border-b border-solid border-slate-200 px-6 lg:px-10 py-3 bg-white shadow-sm z-10 sticky top-0">
 >>>>>>> Stashed changes
         <div class="flex items-center gap-4">
             <div class="size-8 flex items-center justify-center text-[var(--brand-green)]">
@@ -60,8 +66,11 @@
         </div>
         <div class="flex flex-1 justify-end gap-6 items-center">
             {% if session.get('auth_level', 0) >= 5 %}
-            <a href="{{ url_for('new_user') }}" class="text-slate-500 hover:text-[var(--brand-blue)] font-medium text-sm transition-colors">Add New User</a>
+            <a href="{{ url_for('new_user') }}"
+                class="text-slate-500 hover:text-[var(--brand-blue)] font-medium text-sm transition-colors">Add New
+                User</a>
             {% endif %}
+<<<<<<< Updated upstream
             <a href="{{ url_for('logout') }}" class="btn-logout flex min-w-[84px] items-center justify-center rounded-lg h-9 px-4 text-white text-sm font-bold transition-colors shadow-sm">
 =======
             <h2 class="text-lg lg:text-xl font-bold leading-tight tracking-[-0.015em] text-[#1e73be]">Watchman Portal
@@ -70,6 +79,10 @@
         <div class="flex flex-1 justify-end gap-6 items-center">
             <button
                 class="btn-logout flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 text-white text-sm font-bold transition-colors shadow-sm">
+>>>>>>> Stashed changes
+=======
+            <a href="{{ url_for('logout') }}"
+                class="btn-logout flex min-w-[84px] items-center justify-center rounded-lg h-9 px-4 text-white text-sm font-bold transition-colors shadow-sm">
 >>>>>>> Stashed changes
                 <span class="truncate">Logout</span>
             </button>
@@ -82,7 +95,12 @@
             <div class="w-full max-w-3xl flex flex-col gap-8">
                 <div class="flex flex-col gap-2">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     <h1 class="text-[#1e73be] text-3xl lg:text-4xl font-bold leading-tight tracking-[-0.033em]">New Visitor Entry</h1>
+=======
+                    <h1 class="text-[#1e73be] text-3xl lg:text-4xl font-bold leading-tight tracking-[-0.033em]">New
+                        Visitor Entry</h1>
+>>>>>>> Stashed changes
                     <p class="text-slate-500 text-base font-normal">Please verify details before logging entry.</p>
                 </div>
 
@@ -90,7 +108,8 @@
                 {% if messages %}
                 <div class="flex flex-col gap-2">
                     {% for category, message in messages %}
-                    <div class="p-4 rounded-lg {{ 'bg-red-50 text-red-700 border border-red-200' if category == 'error' else 'bg-green-50 text-green-700 border border-green-200' }} text-sm font-medium animate-fade-in">
+                    <div
+                        class="p-4 rounded-lg {{ 'bg-red-50 text-red-700 border border-red-200' if category == 'error' else 'bg-green-50 text-green-700 border border-green-200' }} text-sm font-medium animate-fade-in">
                         {{ message }}
                     </div>
                     {% endfor %}
@@ -99,14 +118,18 @@
                 {% endwith %}
 
                 <div class="bg-white rounded-xl border border-slate-200 p-6 lg:p-8 shadow-sm">
-                    <form id="visitor-form" class="flex flex-col gap-6" action="{{ url_for('get_data') }}" method="POST">
+                    <form id="visitor-form" class="flex flex-col gap-6" action="{{ url_for('get_data') }}"
+                        method="POST">
                         <div class="space-y-4">
-                            <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-blue)]">Host Details</h3>
+                            <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-blue)]">Host
+                                Details</h3>
                             <div class="flex flex-col md:flex-row gap-5">
                                 <label class="flex flex-col min-w-40 flex-1">
-                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Visiting Employee</p>
-                                    <select class="form-select w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary focus:border-primary h-12 px-4 transition-all" 
-                                            name="name" required>
+                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Visiting
+                                        Employee</p>
+                                    <select
+                                        class="form-select w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary focus:border-primary h-12 px-4 transition-all"
+                                        name="name" required>
                                         <option disabled selected value="">Select host name</option>
                                         {% for emp in employees %}
                                         <option value="{{ emp.name }}">{{ emp.name }}</option>
@@ -137,10 +160,12 @@
                         <hr class="border-slate-100" />
 
                         <div class="space-y-4">
-                            <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-blue)]">Visitor Details</h3>
+                            <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-blue)]">Visitor
+                                Details</h3>
                             <div class="flex flex-col md:flex-row gap-5">
                                 <label class="flex flex-col min-w-40 flex-1">
                                     <p class="text-slate-600 text-base font-medium leading-normal pb-2">Visitor Name</p>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                                     <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 px-4" 
                                            name="V_name" placeholder="Full name from ID" required type="text" />
@@ -149,6 +174,11 @@
                                         class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-600 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-300 bg-slate-50 focus:border-primary h-12 placeholder:text-slate-400 px-4 text-base font-normal leading-normal transition-all"
                                         id="visitor-name" placeholder="Full name from ID" required="" type="text" />
 >>>>>>> Stashed changes
+=======
+                                    <input
+                                        class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 px-4"
+                                        name="V_name" placeholder="Full name from ID" required type="text" />
+>>>>>>> Stashed changes
                                 </label>
                                 <label class="flex flex-col min-w-40 flex-1">
                                     <p class="text-slate-600 text-base font-medium leading-normal pb-2">Phone Number</p>
@@ -156,6 +186,7 @@
                                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                                             <span class="material-symbols-outlined text-[20px]">phone</span>
                                         </span>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                                         <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 pl-10 pr-4" 
                                                name="Number" maxlength="10" minlength="10" pattern="[0-9]{10}" placeholder="10-digit mobile" required type="tel" 
@@ -167,11 +198,19 @@
                                             placeholder="10-digit mobile number" required=""
                                             title="Please enter exactly 10 digits" type="tel" />
 >>>>>>> Stashed changes
+=======
+                                        <input
+                                            class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 pl-10 pr-4"
+                                            name="Number" maxlength="10" minlength="10" pattern="[0-9]{10}"
+                                            placeholder="10-digit mobile" required type="tel"
+                                            oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+>>>>>>> Stashed changes
                                     </div>
                                 </label>
                             </div>
                             <div class="flex flex-col md:flex-row gap-5">
                                 <label class="flex flex-col min-w-40 flex-1">
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                                     <p class="text-slate-600 text-base font-medium leading-normal pb-2">Reason for Visit</p>
                                     <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 px-4" 
@@ -184,13 +223,21 @@
                                         id="visit-reason" placeholder="State the reason for visit" required=""
                                         type="text" />
 >>>>>>> Stashed changes
+=======
+                                    <p class="text-slate-600 text-base font-medium leading-normal pb-2">Reason for Visit
+                                    </p>
+                                    <input
+                                        class="form-input w-full rounded-lg text-slate-600 border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-primary h-12 px-4"
+                                        name="reason" placeholder="State the reason" required type="text" />
+>>>>>>> Stashed changes
                                 </label>
                             </div>
 
                             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div class="flex gap-3 items-center">
-                                        <div class="bg-white p-2 rounded-full text-[#1e73be] border border-slate-200 shadow-sm">
+                                        <div
+                                            class="bg-white p-2 rounded-full text-[#1e73be] border border-slate-200 shadow-sm">
                                             <span class="material-symbols-outlined">directions_car</span>
                                         </div>
                                         <div>
@@ -199,6 +246,7 @@
                                         </div>
                                     </div>
                                     <label class="inline-flex items-center cursor-pointer group">
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                                         <input class="sr-only peer" id="vehicle-toggle" type="checkbox" name="vehicle" />
                                         <div class="relative w-14 h-7 bg-slate-300 peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
@@ -211,10 +259,21 @@
                                         <span
                                             class="ms-3 text-sm font-medium text-slate-600 group-hover:text-primary transition-colors">Yes</span>
 >>>>>>> Stashed changes
+=======
+                                        <input class="sr-only peer" id="vehicle-toggle" type="checkbox"
+                                            name="vehicle" />
+                                        <div
+                                            class="relative w-14 h-7 bg-slate-300 peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary">
+                                        </div>
+                                        <span
+                                            class="ms-3 text-sm font-medium text-slate-600 group-hover:text-primary transition-colors">Yes</span>
+>>>>>>> Stashed changes
                                     </label>
                                 </div>
-                                <div class="hidden mt-4 pt-4 border-t border-slate-200 animate-fade-in" id="vehicle-input-container">
+                                <div class="hidden mt-4 pt-4 border-t border-slate-200 animate-fade-in"
+                                    id="vehicle-input-container">
                                     <label class="flex flex-col w-full">
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                                         <p class="text-slate-600 text-base font-medium leading-normal pb-2">Registration Number</p>
                                         <input class="form-input w-full rounded-lg text-slate-600 border border-slate-300 focus:ring-2 focus:ring-primary h-12 px-4 uppercase tracking-wider" 
@@ -232,15 +291,27 @@
                                             title="Please enter a valid Indian vehicle registration number (e.g., MH 01 AB 1234)"
                                             type="text" />
 >>>>>>> Stashed changes
+=======
+                                        <p class="text-slate-600 text-base font-medium leading-normal pb-2">Registration
+                                            Number</p>
+                                        <input
+                                            class="form-input w-full rounded-lg text-slate-600 border border-slate-300 focus:ring-2 focus:ring-primary h-12 px-4 uppercase tracking-wider"
+                                            id="vehicle-reg" name="vehicle_number" placeholder="e.g. MH 01 AB 1234"
+                                            pattern="^[A-Z]{2}[ -]?[0-9]{1,2}(?:[ -]?[A-Z]{1,2})?[ -]?[0-9]{4}$"
+                                            oninput="this.value = this.value.toUpperCase()" />
+>>>>>>> Stashed changes
                                     </label>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex gap-4 pt-4">
-                            <button class="flex-1 rounded-lg h-12 px-6 btn-action text-white text-base font-bold shadow-md transition-all active:scale-[0.98]" type="submit">
+                            <button
+                                class="flex-1 rounded-lg h-12 px-6 btn-action text-white text-base font-bold shadow-md transition-all active:scale-[0.98]"
+                                type="submit">
                                 <span class="truncate">Check-In Visitor</span>
                             </button>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                             <button class="min-w-[84px] rounded-lg h-12 px-6 bg-white border border-slate-300 text-slate-600 font-medium hover:bg-slate-50 transition-all" 
                                     type="reset" onclick="resetForm()">
@@ -248,6 +319,11 @@
                             <button
                                 class="min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-white border border-slate-300 text-slate-600 text-base font-medium leading-normal tracking-[0.015em] hover:bg-slate-50 hover:text-slate-800 transition-all shadow-sm"
                                 onclick="resetForm()" type="button">
+>>>>>>> Stashed changes
+=======
+                            <button
+                                class="min-w-[84px] rounded-lg h-12 px-6 bg-white border border-slate-300 text-slate-600 font-medium hover:bg-slate-50 transition-all"
+                                type="reset" onclick="resetForm()">
 >>>>>>> Stashed changes
                                 <span class="truncate">Reset</span>
                             </button>
@@ -257,23 +333,32 @@
             </div>
         </div>
 
-        <aside class="hidden xl:flex w-96 flex-col border-l border-slate-200 bg-white p-6 gap-6 h-[calc(100vh-65px)] sticky top-[65px] overflow-y-auto">
+        <aside
+            class="hidden xl:flex w-96 flex-col border-l border-slate-200 bg-white p-6 gap-6 h-[calc(100vh-65px)] sticky top-[65px] overflow-y-auto">
             <div class="flex items-center justify-between">
                 <h3 class="text-[#1e73be] text-lg font-bold">Recent Entries</h3>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 <a href="{{ url_for('view_all') }}" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">View All</a>
+=======
+                <a href="{{ url_for('view_all') }}"
+                    class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">View All</a>
+>>>>>>> Stashed changes
             </div>
             <div class="flex flex-col gap-4">
                 {% for entry in entries|reverse %}
-                <div class="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors animate-fade-in">
-                    <div class="mt-1 bg-[var(--brand-green)]/10 text-[var(--brand-green)] rounded-full size-8 flex items-center justify-center shrink-0">
+                <div
+                    class="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors animate-fade-in">
+                    <div
+                        class="mt-1 bg-[var(--brand-green)]/10 text-[var(--brand-green)] rounded-full size-8 flex items-center justify-center shrink-0">
                         <span class="material-symbols-outlined text-sm font-bold">check</span>
                     </div>
                     <div class="flex flex-col gap-1 min-w-0">
                         <p class="text-slate-600 font-bold text-sm truncate">{{ entry.V_name }}</p>
                         <p class="text-slate-500 text-xs">Visiting: {{ entry.name }}</p>
                         <div class="flex gap-2 mt-1">
-                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                            <span
+                                class="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
                                 {{ entry.reason }}
                             </span>
                         </div>
@@ -290,17 +375,48 @@
         </aside>
     </main>
 
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-blue-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40">
+    <div
+        class="fixed bottom-0 left-0 right-0 bg-white border-t border-blue-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40">
         <div class="max-w-[1600px] mx-auto px-4 py-3">
             <div class="flex justify-center items-center gap-4">
-                <span class="text-xs font-medium text-slate-500 uppercase tracking-wide hidden sm:block">Switch Mode:</span>
+                <span class="text-xs font-medium text-slate-500 uppercase tracking-wide hidden sm:block">Switch
+                    Mode:</span>
                 <div class="bg-slate-100 p-1 rounded-full flex border border-slate-200">
-                    <button class="flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold bg-white text-blue-700 shadow-sm border border-slate-200 transition-all">
+                    <button
+                        class="flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold bg-white text-blue-700 shadow-sm border border-slate-200 transition-all">
                         <span class="material-symbols-outlined text-[20px]">login</span> New Entry
                     </button>
-                    <a href="{{ url_for('check_out_page') }}" class="flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-slate-900 transition-all group">
-                        <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">logout</span> Visitor Exit
+                    <a href="{{ url_for('check_out_page') }}"
+                        class="flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-slate-900 transition-all group">
+                        <span
+                            class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">logout</span>
+                        Visitor Exit
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="fixed inset-0 z-50 flex items-start justify-end p-4 pointer-events-none hidden">
+        <div class="bg-white dark:bg-slate-800 border-l-4 border-blue-500 shadow-xl rounded-lg pointer-events-auto transform transition-all duration-300 translate-x-full max-w-sm w-full"
+            id="notification-content">
+            <div class="p-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <span class="material-symbols-outlined text-blue-500 text-2xl">notifications_active</span>
+                    </div>
+                    <div class="ml-3 w-0 flex-1 pt-0.5">
+                        <p class="text-sm font-medium text-slate-900 dark:text-white">New Visitor!</p>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400" id="notification-msg"></p>
+                    </div>
+                    <div class="ml-4 flex-shrink-0 flex">
+                        <button onclick="closeNotification()"
+                            class="bg-white dark:bg-slate-800 rounded-md inline-flex text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <span class="sr-only">Close</span>
+                            <span class="material-symbols-outlined text-xl">close</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -382,6 +498,7 @@
                 document.getElementById('vehicle-reg').removeAttribute('required');
             }, 10);
         }
+<<<<<<< Updated upstream
         // Toggle logic for visual appearance only
         const modeNewEntry = document.getElementById('mode-new-entry');
         const modeVisitorExit = document.getElementById('mode-visitor-exit');
@@ -397,6 +514,81 @@
             modeNewEntry.classList.remove('bg-[#3b82f6]', 'text-white', 'shadow-sm');
             modeNewEntry.classList.add('text-slate-400', 'hover:text-white');
         });
+=======
+
+        // --- Notification Logic ---
+        function checkNotifications() {
+            fetch('/check_notifications')
+                .then(response => response.json())
+                .then(notifications => {
+                    if (notifications && notifications.length > 0) {
+                        notifications.forEach(note => {
+                            showNotification(note.visitor_name, note.reason);
+                        });
+                    }
+                })
+                .catch(err => console.error("Error polling notifications:", err));
+        }
+
+        function showNotification(visitorName, reason) {
+            const modal = document.getElementById('notification-modal');
+            const content = document.getElementById('notification-content');
+            const msg = document.getElementById('notification-msg');
+
+            msg.textContent = `${visitorName} is here for ${reason}.`;
+
+            modal.classList.remove('hidden');
+            // Small delay to allow display check before animating
+            setTimeout(() => {
+                content.classList.remove('translate-x-full');
+            }, 10);
+
+            // Auto hide after 10 seconds
+            setTimeout(closeNotification, 10000);
+        }
+
+        function closeNotification() {
+            const modal = document.getElementById('notification-modal');
+            const content = document.getElementById('notification-content');
+
+            content.classList.add('translate-x-full');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Poll every 5 seconds
+        setInterval(checkNotifications, 5000);
+
+        // --- Auto-Refresh Logic ---
+        let lastKnownUpdate = null;
+
+        // Initial Fetch
+        fetch('/check_updates')
+            .then(res => res.json())
+            .then(data => {
+                lastKnownUpdate = data.last_updated;
+            });
+
+        function checkUpdates() {
+            fetch('/check_updates')
+                .then(res => res.json())
+                .then(data => {
+                    if (lastKnownUpdate && data.last_updated && data.last_updated > lastKnownUpdate) {
+                        console.log("New entry detected. Refreshing...");
+                        window.location.reload();
+                    } else if (!lastKnownUpdate && data.last_updated) {
+                        // First sync
+                        lastKnownUpdate = data.last_updated;
+                    }
+                })
+                .catch(err => console.error("Update check failed", err));
+        }
+
+        // Check for updates every 5 seconds
+        setInterval(checkUpdates, 5000);
+>>>>>>> Stashed changes
     </script>
 </body>
+
 </html>
