@@ -23,6 +23,20 @@ init_db()
 # Reset statuses on exit
 atexit.register(reset_all_employee_statuses)
 
+@app.context_processor
+def inject_role_name():
+    def get_role_name(level):
+        if level is None: return 'Unknown'
+        roles = {
+            1: 'Foreman',
+            2: 'Supervisor',
+            3: 'Employee',
+            4: 'Admin',
+            5: 'Developer'
+        }
+        return roles.get(int(level), 'Unknown')
+    return dict(get_role_name=get_role_name)
+
 def is_logged_in():
     if 'user' not in flask.session:
         return False

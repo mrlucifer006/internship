@@ -91,6 +91,20 @@
             </div>
 
             <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+                <div class="px-3 mb-6">
+                    <div class="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 flex items-center gap-3">
+                        <div
+                            class="size-10 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-900/30">
+                            {{ session.get('user', 'U')[0]|upper }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-white font-bold text-sm truncate">{{ session.get('user', 'User') }}</p>
+                            <p class="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">{{
+                                get_role_name(session.get('auth_level')) }}</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Portals</div>
 
                 <a href="{{ url_for('home') }}"
