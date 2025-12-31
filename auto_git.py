@@ -25,6 +25,12 @@ class ChangeHandler(FileSystemEventHandler):
             commit_message = "Auto-commit: File changes detected"
             subprocess.run(["git", "commit", "-m", commit_message], check=True)
             
+            print("Pulling changes from remote...")
+            try:
+                subprocess.run(["git", "pull"], check=True)
+            except subprocess.CalledProcessError:
+                print("Warning: git pull failed (possibly conflicts). Continuing to push...")
+
             print("Pushing changes...")
             subprocess.run(["git", "push"], check=True)
             
