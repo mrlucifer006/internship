@@ -95,7 +95,8 @@ def get_all_entries():
             'vehicle_number': row['vehicle_number'],
             'entry_time': row['entry_time'],
             'exit_time': row['exit_time'],
-            'approval_status': row['approval_status'] if 'approval_status' in row.keys() else 'Approved'
+            'approval_status': row['approval_status'] if 'approval_status' in row.keys() else 'Approved',
+            'denial_reason': row['denial_reason'] if 'denial_reason' in row.keys() else None
         })
     return results
 
@@ -113,12 +114,9 @@ def get_active_visitors():
             'reason': row['reason'],
             'vehicle': row['has_vehicle'],
             'vehicle_number': row['vehicle_number'],
-            'vehicle': row['has_vehicle'],
-            'vehicle_number': row['vehicle_number'],
-            'vehicle': row['has_vehicle'],
-            'vehicle_number': row['vehicle_number'],
             'entry_time': row['entry_time'],
             'approval_status': row['approval_status'] if 'approval_status' in row.keys() else 'Approved',
+            'denial_reason': row['denial_reason'] if 'denial_reason' in row.keys() else None,
             'id': row['id']
         })
     return results
@@ -129,10 +127,12 @@ def check_out_visitor(visitor_name, phone):
         cur = conn.cursor()
         
         # Check status first
+        print(f"DEBUG: checking DB for name='{visitor_name}', phone='{phone}'")
         cur.execute("SELECT approval_status FROM visitors WHERE name = ? AND phone = ? AND exit_time IS NULL", (visitor_name, phone))
         row = cur.fetchone()
         
         if not row:
+            print("DEBUG: No active visit found in DB")
             return {"success": False, "errors": ["No active visit found."]}
             
         status = row['approval_status']
@@ -183,3 +183,4 @@ def get_latest_visitor_timestamp():
         return None
     finally:
         conn.close()
+

@@ -104,6 +104,20 @@ def update_employee_status(login_id, status):
     finally:
         conn.close()
 
+def get_employee_status(login_id):
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("SELECT status FROM employee WHERE login_id = ?", (login_id,))
+        row = cursor.fetchone()
+        if row:
+            return row['status']
+        return None
+    except Exception as e:
+        print(f"Error getting employee status: {e}")
+        return None
+    finally:
+        conn.close()
+
 def add_notification(host_login_id, visitor_name, reason, visitor_id=None):
     conn = get_db_connection()
     try:

@@ -116,36 +116,39 @@
                                     <th
                                         class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                         Visitor Name</th>
-                                    <th
-                                        class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Host</th>
-                                    <th
-                                        class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Reason</th>
-                                    <th
-                                        class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Phone</th>
-                                    <th
-                                        class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Status</th>
-                                    <th
-                                        class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        Vehicle</th>
-                                    <th
-                                        class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
-                                        Action</th>
+                                    <th <thead
+                                        class="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700">
+                                <tr>
+                                    <th scope="col" class="py-3 px-6 select-none pointer-events-none">Visitor Name</th>
+                                    <th scope="col" class="py-3 px-6 select-none pointer-events-none">Host</th>
+                                    <th scope="col" class="py-3 px-6 select-none pointer-events-none">Reason</th>
+                                    <th scope="col" class="py-3 px-6 select-none pointer-events-none">Phone</th>
+                                    <th scope="col" class="py-3 px-6 select-none pointer-events-none">Status</th>
+                                    <th scope="col" class="py-3 px-6 select-none pointer-events-none">Denial Reason</th>
+                                    <th scope="col" class="py-3 px-6 select-none pointer-events-none">Vehicle</th>
+                                    <th scope="col" class="py-3 px-6 text-center select-none pointer-events-none">Action
+                                    </th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-border-light dark:divide-border-dark">
+                            <tbody>
                                 {% for visitor in visitors %}
+                                {% if visitor.approval_status != 'Denied' or (visitor.approval_status == 'Denied' and
+                                visitor.exit_time is none) %}
                                 <tr
-                                    class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors bg-white dark:bg-card-dark">
-                                    <td class="py-4 px-6">
-                                        <div class="font-bold text-slate-800 dark:text-slate-200">{{ visitor.V_name }}
-                                        </div>
+                                    class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <td class="py-4 px-6 font-medium text-slate-900 dark:text-white whitespace-nowrap">
+                                        {{ visitor.V_name }}
                                     </td>
                                     <td class="py-4 px-6">
-                                        <div class="text-sm text-slate-600 dark:text-slate-400">{{ visitor.name }}</div>
+                                        <div class="flex items-center gap-2">
+                                            <div
+                                                class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
+                                                {{ visitor.name[:1] }}
+                                            </div>
+                                            <div class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                                {{ visitor.name }}
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="py-4 px-6">
                                         <span
@@ -172,13 +175,23 @@
                                             {% else %}
                                             <span
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-                                                {{ visitor.approval_status }}
+                                                Pending
                                             </span>
                                             {% endif %}
                                         </div>
                                     </td>
                                     <td class="py-4 px-6">
-                                        <div class="text-sm text-slate-500 dark:text-slate-400">
+                                        {% if visitor.approval_status == 'Denied' and visitor.denial_reason %}
+                                        <span
+                                            class="text-xs text-red-600 dark:text-red-400 font-medium whitespace-normal max-w-[150px] inline-block">
+                                            {{ visitor.denial_reason }}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-slate-400">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="text-sm text-slate-600 dark:text-slate-400">
                                             {% if visitor.vehicle %}
                                             {{ visitor.vehicle_number }}
                                             {% else %}
@@ -186,7 +199,7 @@
                                             {% endif %}
                                         </div>
                                     </td>
-                                    <td class="py-4 px-6 text-right">
+                                    <td class="py-4 px-6 text-center">
                                         <form action="{{ url_for('process_check_out') }}" method="POST" class="inline">
                                             <input type="hidden" name="visitor_name" value="{{ visitor.V_name }}">
                                             <input type="hidden" name="phone" value="{{ visitor.Number }}">
@@ -197,6 +210,7 @@
                                         </form>
                                     </td>
                                 </tr>
+                                {% endif %}
                                 {% else %}
                                 <tr>
                                     <td colspan="6" class="py-8 text-center text-slate-500">No active visitors found.

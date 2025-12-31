@@ -6,9 +6,10 @@ import atexit
 from Whatsapp_message import send_message
 from db import init_db
 from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp
-from employee_db import get_employee_phone, check_credentials, insert_employee, update_employee_status, add_notification, get_employee_by_name, get_unread_notifications, get_all_employees, reset_all_employee_statuses
-import os
+from employee_db import get_employee_phone, check_credentials, insert_employee, update_employee_status, add_notification, get_employee_by_name, get_unread_notifications, get_all_employees, reset_all_employee_statuses, get_employee_status
 
+# Helper: Check if logged in
+import os
 
 app = flask.Flask(__name__)
 app.secret_key = 'super_secret_key_for_demo' # Required for flash messages
@@ -20,9 +21,29 @@ init_db()
 # Reset statuses on exit
 atexit.register(reset_all_employee_statuses)
 
-# Helper: Check if logged in
 def is_logged_in():
-    return 'user' in flask.session
+    if 'user' not in flask.session:
+        return False
+    
+    # STRICT CHECK: Verify status in DB is still 1
+    # Skip check for hardcoded 'super' admin
+    if flask.session.get('user') == 'super':
+        return True
+        
+    login_id = flask.session.get('login_id')
+    if not login_id:
+         return False # Should have login_id if not super
+         
+    status = get_employee_status(login_id)
+    # If status is 0 (or None/Error), force logout
+    if status != 1: 
+        # Perform logout cleanup
+        flask.session.pop('user', None)
+        flask.session.pop('auth_level', None)
+        flask.session.pop('login_id', None)
+        return False
+        
+    return True
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -232,7 +253,10 @@ def process_check_out():
     visitor_name = flask.request.form.get('visitor_name')
     phone = flask.request.form.get('phone')
     
+    print(f"DEBUG: process_check_out called with name='{visitor_name}', phone='{phone}'")
+
     if not visitor_name or not phone:
+        print("DEBUG: Missing details")
         flask.flash("Missing visitor details for check-out.", 'error')
         return flask.redirect(flask.url_for('check_out_page'))
         

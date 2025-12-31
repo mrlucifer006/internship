@@ -123,6 +123,7 @@
                                 <th class="p-4 min-w-[130px]">Vehicle Number</th>
                                 <th class="p-4 min-w-[120px]">Entry Time</th>
                                 <th class="p-4 min-w-[120px]">Exit Time</th>
+                                <th class="p-4 min-w-[150px]">Denial Reason</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 text-sm text-slate-600">
@@ -163,6 +164,15 @@
                                     {% else %}
                                     <span
                                         class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td class="p-4">
+                                    {% if entry.approval_status == 'Denied' and entry.denial_reason %}
+                                    <span class="text-xs text-red-600 font-medium leading-tight">
+                                        {{ entry.denial_reason }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-slate-300">-</span>
                                     {% endif %}
                                 </td>
                             </tr>

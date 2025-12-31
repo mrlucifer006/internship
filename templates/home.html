@@ -242,6 +242,12 @@
                                 class="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
                                 {{ entry.reason }}
                             </span>
+                            {% if entry.approval_status == 'Denied' and entry.denial_reason %}
+                            <span
+                                class="inline-flex items-center rounded-md bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600 ring-1 ring-inset ring-red-600/10">
+                                {{ entry.denial_reason }}
+                            </span>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -310,24 +316,44 @@
                             <span id="modal-reason" class="font-semibold text-slate-800">Reason</span>
                         </p>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 pt-2">
-                        <button onclick="handleAction('deny')"
-                            class="flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-2xl border-2 border-slate-100 hover:bg-red-50 hover:border-red-100 group transition-all duration-200">
-                            <span
-                                class="material-symbols-outlined text-2xl text-slate-400 group-hover:text-red-500 transition-colors">close</span>
-                            <span
-                                class="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-red-600">Deny</span>
+                </div>
+                <!-- Action Buttons -->
+                <div id="modal-actions" class="grid grid-cols-2 gap-4 pt-2">
+                    <button onclick="showDenialReason()"
+                        class="flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-2xl border-2 border-slate-100 hover:bg-red-50 hover:border-red-100 group transition-all duration-200">
+                        <span
+                            class="material-symbols-outlined text-2xl text-slate-400 group-hover:text-red-500 transition-colors">close</span>
+                        <span
+                            class="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-red-600">Deny</span>
+                    </button>
+                    <button onclick="handleAction('approve')"
+                        class="flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group">
+                        <span
+                            class="material-symbols-outlined text-2xl text-indigo-100 group-hover:text-white">check</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-50">Accept</span>
+                    </button>
+                </div>
+
+                <!-- Denial Reason Input (Hidden by default) -->
+                <div id="modal-reason-input" class="hidden flex-col gap-3 pt-2 animate-fade-in">
+                    <textarea id="denial-reason-text"
+                        class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none transition-all placeholder:text-slate-400"
+                        rows="2" placeholder="Reason for denial..."></textarea>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="cancelDenial()"
+                            class="py-3 rounded-xl border border-slate-200 text-slate-500 font-bold text-xs uppercase tracking-wide hover:bg-slate-50 transition-colors">
+                            Cancel
                         </button>
-                        <button onclick="handleAction('approve')"
-                            class="flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group">
-                            <span
-                                class="material-symbols-outlined text-2xl text-indigo-100 group-hover:text-white">check</span>
-                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-50">Accept</span>
+                        <button onclick="confirmDeny()"
+                            class="py-3 rounded-xl bg-red-600 text-white font-bold text-xs uppercase tracking-wide shadow-md shadow-red-200 hover:bg-red-700 transition-colors">
+                            Confirm Deny
                         </button>
                     </div>
                 </div>
+
             </div>
         </div>
+    </div>
     </div>
 
     <style>
@@ -435,6 +461,9 @@
             reasonEl.textContent = reason;
             currentVisitorId = visitorId;
 
+            // Reset UI state to show actions, hide reason input
+            cancelDenial();
+
             modal.classList.remove('hidden');
 
             // Play Sound
@@ -443,13 +472,37 @@
             }
         }
 
-        function handleAction(action) {
+        // Toggle Denial Reason Input
+        function showDenialReason() {
+            document.getElementById('modal-actions').classList.add('hidden');
+            document.getElementById('modal-reason-input').classList.remove('hidden');
+            document.getElementById('modal-reason-input').classList.add('flex'); // Ensure flex is added
+            document.getElementById('denial-reason-text').focus();
+        }
+
+        function cancelDenial() {
+            document.getElementById('modal-actions').classList.remove('hidden');
+            document.getElementById('modal-reason-input').classList.add('hidden');
+            document.getElementById('modal-reason-input').classList.remove('flex');
+            document.getElementById('denial-reason-text').value = ''; // Clear text
+        }
+
+        function confirmDeny() {
+            const reason = document.getElementById('denial-reason-text').value;
+            if (!reason.trim()) {
+                alert("Please enter a reason for denial.");
+                return;
+            }
+            handleAction('deny', reason);
+        }
+
+        function handleAction(action, reason = "") {
             if (!currentVisitorId) return;
 
             fetch('/api/action_visitor', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ visitor_id: currentVisitorId, action: action })
+                body: JSON.stringify({ visitor_id: currentVisitorId, action: action, reason: reason })
             })
                 .then(res => res.json())
                 .then(data => {
