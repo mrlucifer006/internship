@@ -384,7 +384,11 @@ def action_visitor():
             now = datetime.now().isoformat()
             
             # Update status and updated_at. Do NOT set exit_time yet, so Guard sees the feedback.
-            conn.execute("UPDATE visitors SET approval_status = ?, updated_at = ? WHERE id = ?", (status, now, visitor_id))
+            if action == 'deny':
+                reason = data.get('reason', '')
+                conn.execute("UPDATE visitors SET approval_status = ?, updated_at = ?, denial_reason = ? WHERE id = ?", (status, now, reason, visitor_id))
+            else:
+                 conn.execute("UPDATE visitors SET approval_status = ?, updated_at = ? WHERE id = ?", (status, now, visitor_id))
             
         return flask.jsonify({'success': True, 'status': status})
     except Exception as e:
