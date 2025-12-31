@@ -21,12 +21,33 @@ def create_table():
                     veh_reg_no TEXT NOT NULL UNIQUE,
                     vehicle_img TEXT,
                     destination TEXT NOT NULL,
+                    driver_phone TEXT,
+                    origin TEXT,
                     time DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+            
+            # Migration check: Add columns if they don't exist (for existing DBs)
+            cursor = conn.execute("PRAGMA table_info(vehicle)")
+            columns = [info['name'] for info in cursor.fetchall()]
+            
+            if 'driver_phone' not in columns:
+                try:
+                    conn.execute("ALTER TABLE vehicle ADD COLUMN driver_phone TEXT")
+                    print("Added driver_phone column to vehicle table")
+                except Exception as e:
+                    print(f"Error adding driver_phone column: {e}")
+                    
+            if 'origin' not in columns:
+                try:
+                    conn.execute("ALTER TABLE vehicle ADD COLUMN origin TEXT")
+                    print("Added origin column to vehicle table")
+                except Exception as e:
+                    print(f"Error adding origin column: {e}")
+
         return True
     except Exception as e:
-        print(f"Error creating table: {e}")
+        print(f"Error creating/updating table: {e}")
         return False
     finally:
         conn.close()
@@ -37,14 +58,16 @@ def insert_vehicle(data):
     try:
         with conn:
             conn.execute("""
-                INSERT INTO vehicle (driver_name, veh_reg_no, vehicle_img, destination, time) 
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO vehicle (driver_name, veh_reg_no, vehicle_img, destination, time, driver_phone, origin) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
                 data["driver_name"],
                 data["veh_reg_no"],
                 data.get("vehicle_img"),  # Optional field
                 data["destination"],
-                data.get("time")  # If not provided, will use default CURRENT_TIMESTAMP
+                data.get("time"),  # If not provided, will use default CURRENT_TIMESTAMP
+                data.get("driver_phone"),
+                data.get("origin")
             ))
         return True
     except sqlite3.IntegrityError:

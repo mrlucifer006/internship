@@ -4,6 +4,8 @@ import time
 from datetime import timedelta
 import atexit
 from Whatsapp_message import send_message
+import vehicle_db
+import Logistics_message
 from db import init_db
 from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp
 from employee_db import get_employee_phone, check_credentials, insert_employee, update_employee_status, add_notification, get_employee_by_name, get_unread_notifications, get_all_employees, reset_all_employee_statuses, get_employee_status
@@ -242,7 +244,73 @@ def view_all():
 def logistics():
     if not is_logged_in():
         return flask.redirect(flask.url_for('login'))
-    return flask.render_template('logistics_entry.html')
+    
+    # Fetch recent vehicle entries
+    recent_vehicles = vehicle_db.get_all_vehicles()
+    # Optionally limit to the last 10 or so for the sidebar
+    recent_vehicles = recent_vehicles[:10] if recent_vehicles else []
+
+    return flask.render_template('logistics_entry.html', recent_vehicles=recent_vehicles)
+
+@app.route('/process_logistics_entry', methods=['POST'])
+def process_logistics_entry():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+
+    try:
+        # 1. Handle File Upload
+        photo_filename = None
+        if 'vehicle_photo' in flask.request.files:
+            file = flask.request.files['vehicle_photo']
+            if file and file.filename != '':
+                # Ensure directory exists
+                upload_folder = os.path.join(app.static_folder, 'uploads', 'vehicles')
+                os.makedirs(upload_folder, exist_ok=True)
+                
+                # Secure filename and save
+                # For simplicity, using timestamp to avoid overwrites
+                import time
+                ext = os.path.splitext(file.filename)[1]
+                safe_name = f"veh_{int(time.time())}{ext}"
+                file.save(os.path.join(upload_folder, safe_name))
+                photo_filename = safe_name
+
+        # 2. Extract Data
+        data = {
+            "driver_name": flask.request.form.get('driver_name'),
+            "driver_phone": flask.request.form.get('driver_phone'),
+            "veh_reg_no": flask.request.form.get('vehicle_number').upper(),
+            "origin": flask.request.form.get('loc_from'),
+            "destination": flask.request.form.get('loc_to'),
+            "vehicle_img": photo_filename
+        }
+
+        # 3. Insert into DB
+        if vehicle_db.insert_vehicle(data):
+            # 4. Send WhatsApp Notification (Async)
+            try:
+                def send_notification():
+                    Logistics_message.send_whatsapp_message(
+                        driver_name=data["driver_name"],
+                        driver_phone=data["driver_phone"],
+                        vehicle_number=data["veh_reg_no"],
+                        from_location=data["origin"],
+                        to_location=data["destination"]
+                    )
+                
+                threading.Thread(target=send_notification).start()
+            except Exception as e:
+                print(f"Error starting WhatsApp thread: {e}")
+
+            flask.flash("Logistics entry recorded successfully!", "success")
+        else:
+            flask.flash("Failed to record entry. Vehicle number may already exist.", "error")
+
+    except Exception as e:
+        print(f"Error processing logistics entry: {e}")
+        flask.flash("An error occurred while processing the entry.", "error")
+
+    return flask.redirect(flask.url_for('logistics'))
 
 @app.route('/check_out_page')
 def check_out_page():
