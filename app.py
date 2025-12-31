@@ -209,6 +209,12 @@ def entry_data():
 def view_all():
     if not is_logged_in():
         return flask.redirect(flask.url_for('login'))
+        
+    # Restrict to Admin (4) and Super (5). Foreman (3) and others cannot view.
+    if flask.session.get('auth_level', 0) < 4:
+        flask.flash("You do not have authority to access this page.", 'error')
+        return flask.redirect(flask.url_for('home'))
+        
     return flask.render_template('view_all.html', entries=get_all_entries())
 
 @app.route('/check_out_page')
@@ -244,8 +250,8 @@ def new_user():
     if not is_logged_in():
         return flask.redirect(flask.url_for('login'))
     
-    # Check Authority
-    if flask.session.get('auth_level', 0) < 5:
+    # Check Authority (Now Level 4+)
+    if flask.session.get('auth_level', 0) < 4:
         flask.flash("You do not have authority to access this page.", 'error')
         return flask.redirect(flask.url_for('home'))
         
@@ -256,7 +262,7 @@ def process_add_user():
     if not is_logged_in():
         return flask.redirect(flask.url_for('login'))
         
-    if flask.session.get('auth_level', 0) < 5:
+    if flask.session.get('auth_level', 0) < 4:
         flask.flash("Unauthorized action.", 'error')
         return flask.redirect(flask.url_for('home'))
 
