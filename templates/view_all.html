@@ -154,6 +154,12 @@
                                     <span
                                         class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Exited:
                                         {{ entry.exit_time }}</span>
+                                    {% elif entry.approval_status == 'Denied' %}
+                                    <span
+                                        class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Denied</span>
+                                    {% elif entry.approval_status == 'Pending' %}
+                                    <span
+                                        class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Pending</span>
                                     {% else %}
                                     <span
                                         class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
@@ -179,15 +185,15 @@
                         </tbody>
                     </table>
                 </div>
-                </div>
             </div>
-            <div class="flex justify-center mt-6">
-                <a class="inline-flex items-center gap-2 bg-[var(--brand-blue)] text-white px-6 py-2.5 rounded-lg hover:bg-[#155a96] transition-colors font-medium shadow-md"
-                    href="{{ url_for('home') }}">
-                    <span class="material-symbols-outlined">arrow_back</span>
-                    Back to Home
-                </a>
-            </div>
+        </div>
+        <div class="flex justify-center mt-6">
+            <a class="inline-flex items-center gap-2 bg-[var(--brand-blue)] text-white px-6 py-2.5 rounded-lg hover:bg-[#155a96] transition-colors font-medium shadow-md"
+                href="{{ url_for('home') }}">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Back to Home
+            </a>
+        </div>
         </div>
     </main>
 </body>
