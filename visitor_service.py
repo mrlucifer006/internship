@@ -49,10 +49,11 @@ def save_visitor(data):
     try:
         cur = conn.cursor()
         
-        # Simple duplicate check: entry matching phone & visitor name that hasn't exited
+        # Simple duplicate check: entry matching phone & visitor name that hasn't exited 
+        # But allow re-entry if the previous status was 'Denied'
         cur.execute('''
             SELECT id FROM visitors 
-            WHERE phone = ? AND name = ? AND exit_time IS NULL
+            WHERE phone = ? AND name = ? AND exit_time IS NULL AND approval_status != 'Denied'
         ''', (phone, visitor_name))
         
         if cur.fetchone():
