@@ -183,5 +183,3 @@ def get_latest_visitor_timestamp():
         return None
     finally:
         conn.close()
-
-remove_all_records()
