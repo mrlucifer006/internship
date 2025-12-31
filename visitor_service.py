@@ -184,4 +184,4 @@ def get_latest_visitor_timestamp():
     finally:
         conn.close()
 
-r
+remove_all_records()
