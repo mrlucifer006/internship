@@ -46,5 +46,10 @@ def init_db(app=None):
                 conn.execute("UPDATE visitors SET updated_at = entry_time WHERE updated_at IS NULL")
             except sqlite3.OperationalError:
                 pass
+
+            try:
+                conn.execute("ALTER TABLE visitors ADD COLUMN denial_reason TEXT")
+            except sqlite3.OperationalError:
+                pass
     finally:
         conn.close()
