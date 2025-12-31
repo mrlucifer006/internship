@@ -1,21 +1,30 @@
-
-
+# Python cache
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
 *.pyc
 *.pyo
 *.pyd
+
+# Virtual environments
+sample/
 venv/
+env/
+ENV/
+.venv
 .env/
+
+# Database files
+*.db
+
+# WhatsApp logs
+PyWhatKit_DB.txt
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
 Thumbs.db
-PyWhatKit_DB.txt
-.vscode/
-PyWhatKit_DB.txt
-vehicle.db
-PyWhatKit_DB.txt
-PyWhatKit_DB.txt
-*.txt
-PyWhatKit_DB.txt
-employee.db
-PyWhatKit_DB.txt
-visitors.db
