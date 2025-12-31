@@ -16,8 +16,11 @@
       theme: {
         extend: {
           colors: {
-            primary: "#2563eb",
+            primary: "#1e73be",
             success: "#22c55e",
+            "brand-blue": "#1e73be",
+            "brand-green": "#5c8a42",
+            "brand-orange": "#f08422",
             "background-light": "#f8fafc",
             "background-dark": "#0f172a",
             "card-light": "#ffffff",
@@ -53,81 +56,56 @@
 
 <body
   class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col overflow-hidden relative">
+
+  <!-- Background Content (Sidebar Layout) -->
   <div
-    class="absolute inset-0 z-0 flex flex-col pointer-events-none select-none bg-slate-50 dark:bg-gray-900 transition-opacity">
-    <div
-      class="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 shrink-0">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-green-600 text-2xl">security</span>
-        <span class="text-primary font-bold text-lg">Gate Portal</span>
+    class="absolute inset-0 z-0 flex h-screen bg-background-light overflow-hidden blur-[2px] pointer-events-none select-none">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0">
+      <div class="h-16 flex items-center px-6 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="size-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+            <span class="material-symbols-outlined text-xl">security</span>
+          </div>
+          <h1 class="font-bold text-white tracking-wide">GateKeeper</h1>
+        </div>
       </div>
-      <div class="flex items-center gap-4">
-        <a href="{{ url_for('logout') }}"
-          class="bg-orange-500 hover:bg-orange-600 h-9 px-4 rounded text-white text-sm font-medium flex items-center shadow-sm transition-colors">Logout</a>
-        <div class="w-9 h-9 rounded-full bg-slate-700"></div>
-      </div>
-    </div>
-    <div class="flex-grow flex p-6 gap-6 overflow-hidden">
-      <div class="flex-grow max-w-4xl flex flex-col">
-        <h1 class="text-3xl font-bold text-primary mb-1">New Visitor Entry</h1>
-        <p class="text-gray-500 mb-6">Please verify details before logging entry.</p>
-        <div
-          class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 flex-grow shadow-sm overflow-y-auto">
-          <div class="space-y-6">
-            <div>
-              <h3 class="text-blue-600 font-bold text-sm mb-4 uppercase tracking-wide">HOST DETAILS</h3>
-              <div class="mb-4">
-                <label class="block text-sm text-gray-600 mb-1">Name</label>
-                <div class="h-10 bg-gray-50 border border-gray-200 rounded w-full"></div>
-              </div>
-            </div>
-            <div>
-              <h3 class="text-blue-600 font-bold text-sm mb-4 uppercase tracking-wide">VISITOR DETAILS</h3>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm text-gray-600 mb-1">Visitor Name</label>
-                  <div class="h-10 bg-gray-50 border border-gray-200 rounded w-full"></div>
-                </div>
-                <div>
-                  <label class="block text-sm text-gray-600 mb-1">Visitor Phone Number</label>
-                  <div class="h-10 bg-gray-50 border border-gray-200 rounded w-full"></div>
-                </div>
-              </div>
-              <div class="mt-4">
-                <label class="block text-sm text-gray-600 mb-1">Reason for Visit</label>
-                <div class="h-10 bg-gray-50 border border-gray-200 rounded w-full"></div>
-              </div>
-              <div class="mt-4 p-4 bg-gray-50 rounded border border-gray-100 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-gray-400">directions_car</span>
-                  <div>
-                    <div class="font-medium text-gray-800">Vehicle Entry?</div>
-                    <div class="text-xs text-gray-500">Toggle if visitor has a vehicle</div>
-                  </div>
-                </div>
-                <div class="w-10 h-5 bg-gray-300 rounded-full"></div>
-              </div>
-            </div>
-            <div class="flex gap-4 mt-8">
-              <div class="h-11 bg-green-700 w-full rounded"></div>
-              <div class="h-11 border border-gray-300 w-24 rounded bg-white"></div>
-            </div>
+
+      <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+        <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Portals</div>
+        <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-600 text-white">
+          <span class="material-symbols-outlined text-[22px]">security</span>
+          <span class="font-medium text-sm">Gate Portal</span>
+        </div>
+        <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400">
+          <span class="material-symbols-outlined text-[22px]">local_shipping</span>
+          <span class="font-medium text-sm">Logistics Portal</span>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      <header class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 shrink-0">
+        <span class="material-symbols-outlined text-2xl text-slate-600">menu</span>
+        <span class="font-bold text-slate-800">Gate Portal</span>
+      </header>
+
+      <main class="flex-1 p-6 md:p-10 pb-32">
+        <div class="max-w-3xl mx-auto flex flex-col gap-8">
+          <div class="flex flex-col gap-2">
+            <h1 class="text-slate-800 text-3xl font-bold tracking-tight">New Visitor Entry</h1>
+            <p class="text-slate-500">Please verify details before logging entry.</p>
+          </div>
+          <div class="bg-white rounded-xl border border-slate-200 p-6 md:p-8 shadow-sm h-96">
+            <!-- Simulated Form content -->
           </div>
         </div>
-      </div>
-      <div class="w-80 hidden lg:block shrink-0">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-bold text-primary">Recent Entries</h3>
-          <span class="text-orange-500 text-sm">View All</span>
-        </div>
-        <div class="space-y-3">
-          <div class="bg-gray-50 h-20 rounded border border-gray-100"></div>
-          <div class="bg-gray-50 h-20 rounded border border-gray-100"></div>
-          <div class="bg-gray-50 h-20 rounded border border-gray-100"></div>
-        </div>
-      </div>
+      </main>
     </div>
   </div>
+
+
   <main class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-[2px]">
     <div
       class="w-full max-w-[420px] bg-white dark:bg-card-dark rounded-3xl shadow-2xl border border-white/20 overflow-hidden animate-modal flex flex-col relative font-display">
