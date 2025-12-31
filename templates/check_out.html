@@ -127,6 +127,9 @@
                                         Phone</th>
                                     <th
                                         class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                        Status</th>
+                                    <th
+                                        class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                         Vehicle</th>
                                     <th
                                         class="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
@@ -194,6 +197,7 @@
             <h3 class="text-lg font-bold text-blue-600 dark:text-blue-400 mb-4">Currently On Premises</h3>
             <div class="space-y-3">
                 {% for visitor in visitors %}
+                {% if visitor.approval_status != 'Denied' %}
                 <div
                     class="bg-white dark:bg-card-dark p-4 rounded-lg border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition cursor-pointer group">
                     <div class="flex justify-between items-start mb-2">
@@ -209,6 +213,7 @@
                         {{ visitor.V_name }}</h4>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Visiting: {{ visitor.name }}</p>
                 </div>
+                {% endif %}
                 {% else %}
                 <p class="text-slate-500 text-sm">No visitors on premises.</p>
                 {% endfor %}
