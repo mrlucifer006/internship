@@ -55,7 +55,7 @@
         </div>
         <div class="flex flex-1 justify-end gap-6 items-center">
             {% if session.get('auth_level', 0) >= 4 %}
-            <a href="{{ url_for('view_all') }}"
+            <a href="{{ url_for('view_status') }}"
                 class="text-slate-500 hover:text-[var(--brand-blue)] font-medium text-sm transition-colors">View
                 Status</a>
             {% endif %}
