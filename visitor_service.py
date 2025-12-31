@@ -184,3 +184,4 @@ def get_latest_visitor_timestamp():
     finally:
         conn.close()
 
+r
