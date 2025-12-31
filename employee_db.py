@@ -185,4 +185,4 @@ def reset_all_employee_statuses():
     finally:
         conn.close()
 
-re
+remove
