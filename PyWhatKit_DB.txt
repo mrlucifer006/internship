@@ -130,3 +130,18 @@ Time: 13:36
 Phone Number: +919342672711
 Message: New Logistics Entry! Driver name : SUMAPE Driver Phone : 1234567890 Vehicle number : TN 29 DF 4333 From location : DELHI To location : COMIBATORE
 --------------------
+Date: 31/12/2025
+Time: 14:12
+Phone Number: +919342672711
+Message: Visitor Alert Verify Test has come to meet you. Reason for visit : Verification
+--------------------
+Date: 31/12/2025
+Time: 14:23
+Phone Number: +918637455248
+Message: Visitor Alert Naveen has come to meet you. Reason for visit : XYZ
+--------------------
+Date: 31/12/2025
+Time: 14:23
+Phone Number: +919342672711
+Message: New Logistics Entry! Driver name : Test Driver Driver Phone : 1234567890 Vehicle number : TN 01 AB 1234 From location : Warehouse A To location : Factory B
+--------------------
