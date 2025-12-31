@@ -238,6 +238,12 @@ def view_all():
         
     return flask.render_template('view_all.html', entries=get_all_entries())
 
+@app.route('/logistics')
+def logistics():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+    return flask.render_template('logistics_entry.html')
+
 @app.route('/check_out_page')
 def check_out_page():
     if not is_logged_in():
