@@ -1,18 +1,24 @@
 import flask
 import threading
 import time
+from datetime import timedelta
+import atexit
 from Whatsapp_message import send_message
 from db import init_db
 from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp
-from employee_db import get_employee_phone, check_credentials, insert_employee, update_employee_status, add_notification, get_employee_by_name, get_unread_notifications, get_all_employees
+from employee_db import get_employee_phone, check_credentials, insert_employee, update_employee_status, add_notification, get_employee_by_name, get_unread_notifications, get_all_employees, reset_all_employee_statuses
 import os
 
 
 app = flask.Flask(__name__)
 app.secret_key = 'super_secret_key_for_demo' # Required for flash messages
+app.permanent_session_lifetime = timedelta(hours=24)
 
 # Initialize DB
 init_db()
+
+# Reset statuses on exit
+atexit.register(reset_all_employee_statuses)
 
 # Helper: Check if logged in
 def is_logged_in():
@@ -27,6 +33,7 @@ def login():
         # Check DB first
         user = check_credentials(username, password)
         if user:
+            flask.session.permanent = True
             flask.session['user'] = user['name']
             flask.session['auth_level'] = user['Auth_level'] # Store auth level
             flask.session['login_id'] = user['login_id']
@@ -36,6 +43,7 @@ def login():
 
         # Fallback: Simple Hardcoded Credentials (ADMIN)
         if username == 'super' and password == 'password123':
+            flask.session.permanent = True
             flask.session['user'] = username
             flask.session['auth_level'] = 5 # Grant max authority to hardcoded admin
             return flask.redirect(flask.url_for('home'))
@@ -144,9 +152,12 @@ def get_data():
                         threading.Thread(target=send_wa).start()
                         
                         flask.flash(f"Host '{host_info['name']}' is Offline. Notification sent via WhatsApp.", 'success')
+                        flask.render_template('check_out.html', visitors=get_all_entries())
+                        time.sleep(2)
                     else:
                         flask.flash("Visitor entry logged successfully! (Host not found)", 'success')
-                    
+                        flask.render_template('check_out.html', visitors=get_all_entries())
+                        time.sleep(2)
                 return flask.redirect(flask.url_for('home'))
             else:
                 for err in result["errors"]:

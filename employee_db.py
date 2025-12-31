@@ -170,3 +170,17 @@ def get_all_employees_full():
         return []
     finally:
         conn.close()
+
+def reset_all_employee_statuses():
+    """Resets the status of all employees to 0 (Offline)."""
+    conn = get_db_connection()
+    try:
+        with conn:
+            conn.execute("UPDATE employee SET status = 0")
+            print("All employee statuses have been reset to 0.")
+        return True
+    except Exception as e:
+        print(f"Error resetting employee statuses: {e}")
+        return False
+    finally:
+        conn.close()
