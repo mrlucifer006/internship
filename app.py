@@ -105,6 +105,7 @@ def login():
             # Explicitly set to 1 (integer)
             update_employee_status(user['login_id'], 1)
             return flask.redirect(flask.url_for('home'))
+        
 
         # Fallback: Simple Hardcoded Credentials (ADMIN)
         if username == 'super' and password == 'password123':
@@ -316,15 +317,23 @@ def process_logistics_entry():
         if 'vehicle_photo' in flask.request.files:
             file = flask.request.files['vehicle_photo']
             if file and file.filename != '':
-                # Ensure directory exists
-                upload_folder = os.path.join(app.static_folder, 'uploads', 'vehicles')
+                # Use persistent path next to the executable (not temp folder)
+                import sys
+                if getattr(sys, 'frozen', False):
+                    # Running as PyInstaller bundle
+                    base_path = os.path.dirname(sys.executable)
+                else:
+                    # Running as script
+                    base_path = os.path.dirname(os.path.abspath(__file__))
+                upload_folder = os.path.join(base_path, 'uploads', 'vehicles')
                 os.makedirs(upload_folder, exist_ok=True)
                 
                 # Secure filename and save
                 # For simplicity, using timestamp to avoid overwrites
                 import time
                 ext = os.path.splitext(file.filename)[1]
-                safe_name = f"veh_{int(time.time())}{ext}"
+                timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+                safe_name = f"veh_{timestamp}{ext}"
                 file.save(os.path.join(upload_folder, safe_name))
                 photo_filename = safe_name
 
