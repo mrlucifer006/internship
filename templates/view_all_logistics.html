@@ -119,14 +119,14 @@
         <header class="h-20 flex items-center justify-between px-8 flex-shrink-0">
             <h1 class="text-2xl font-bold text-[#1e73be]">All Logistics Details</h1>
             <div class="flex items-center gap-4">
-                <div class="relative">
+                <form action="{{ url_for('view_all_logistics') }}" method="GET" class="relative">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                         <span class="material-symbols-outlined text-[20px]">search</span>
                     </span>
-                    <input
+                    <input name="search" value="{{ search }}"
                         class="pl-10 pr-4 py-2 w-64 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
                         placeholder="Search logistics..." type="text" />
-                </div>
+                </form>
             </div>
         </header>
         <div class="flex-1 overflow-auto px-8 pb-8">
@@ -190,6 +190,72 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Pagination Controls -->
+                {% if pagination %}
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                    <div class="text-sm text-slate-600">
+                        Showing <span class="font-semibold">{{ ((pagination.page - 1) * pagination.per_page) + 1
+                            }}</span>
+                        to <span class="font-semibold">{{ [pagination.page * pagination.per_page, pagination.total]|min
+                            }}</span>
+                        of <span class="font-semibold">{{ pagination.total }}</span> entries
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <!-- Previous Button -->
+                        {% if pagination.has_prev %}
+                        <a href="{{ url_for('view_all_logistics', page=pagination.page-1, search=search) }}"
+                            class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                            Previous
+                        </a>
+                        {% else %}
+                        <span
+                            class="px-4 py-2 text-sm font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded-lg cursor-not-allowed flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                            Previous
+                        </span>
+                        {% endif %}
+
+                        <!-- Page Numbers -->
+                        <div class="flex items-center gap-1">
+                            {% for p in range(1, pagination.total_pages + 1) %}
+                            {% if p == pagination.page %}
+                            <span
+                                class="size-9 flex items-center justify-center text-sm font-bold text-white bg-indigo-600 rounded-lg">{{
+                                p }}</span>
+                            {% elif p <= 3 or p> pagination.total_pages - 3 or (p >= pagination.page - 1 and p <=
+                                    pagination.page + 1) %} <a
+                                    href="{{ url_for('view_all_logistics', page=p, search=search) }}"
+                                    class="size-9 flex items-center justify-center text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+                                    {{ p }}</a>
+                                    {% elif p == 4 and pagination.page > 5 %}
+                                    <span class="px-2 text-slate-400">...</span>
+                                    {% elif p == pagination.total_pages - 3 and pagination.page < pagination.total_pages
+                                        - 4 %} <span class="px-2 text-slate-400">...</span>
+                                        {% endif %}
+                                        {% endfor %}
+                        </div>
+
+                        <!-- Next Button -->
+                        {% if pagination.has_next %}
+                        <a href="{{ url_for('view_all_logistics', page=pagination.page+1, search=search) }}"
+                            class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
+                            Next
+                            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                        </a>
+                        {% else %}
+                        <span
+                            class="px-4 py-2 text-sm font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded-lg cursor-not-allowed flex items-center gap-1">
+                            Next
+                            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
             </div>
         </div>
     </main>

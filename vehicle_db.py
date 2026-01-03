@@ -1,12 +1,18 @@
 import sqlite3
 import os
+import logging
+from pagination import paginate_query, PaginationResult, safe_db_connection
+
+logger = logging.getLogger(__name__)
 
 DB_NAME = 'vehicle.db'
 
 def get_db_connection():
-    """Get a connection to the vehicle database."""
-    conn = sqlite3.connect(DB_NAME)
+    """Get a connection to the vehicle database with WAL mode for better concurrency."""
+    conn = sqlite3.connect(DB_NAME, timeout=30.0)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=30000")
     return conn
 
 def create_table():
@@ -159,6 +165,52 @@ def get_all_vehicles():
         return []
     finally:
         conn.close()
+
+
+def get_vehicles_paginated(page: int = 1, per_page: int = 50, search: str = None) -> PaginationResult:
+    """
+    Get vehicle records with pagination.
+    
+    Args:
+        page: Page number (1-indexed)
+        per_page: Items per page (max 100)
+        search: Optional search term for driver name or vehicle number
+        
+    Returns:
+        PaginationResult with data and pagination metadata
+    """
+    conn = get_db_connection()
+    try:
+        base_query = "SELECT * FROM vehicle"
+        count_query = "SELECT COUNT(*) FROM vehicle"
+        params = ()
+        
+        # Add search filter if provided
+        if search:
+            search_pattern = f"%{search}%"
+            base_query += " WHERE driver_name LIKE ? OR veh_reg_no LIKE ? OR destination LIKE ?"
+            count_query += " WHERE driver_name LIKE ? OR veh_reg_no LIKE ? OR destination LIKE ?"
+            params = (search_pattern, search_pattern, search_pattern)
+        
+        base_query += " ORDER BY time DESC"
+        
+        result = paginate_query(conn, base_query, count_query, params, page, per_page)
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error getting paginated vehicles: {e}")
+        return PaginationResult(
+            data=[],
+            page=1,
+            per_page=per_page,
+            total=0,
+            total_pages=1,
+            has_next=False,
+            has_prev=False
+        )
+    finally:
+        conn.close()
+
 
 def update_vehicle(veh_reg_no, data):
     """Update a vehicle record."""

@@ -361,13 +361,19 @@ def process_logistics_entry():
         if vehicle_db.insert_vehicle(data):
             # 4. Send WhatsApp Notification (Async)
             try:
+                # Get the full path to the uploaded image
+                vehicle_img_path = None
+                if photo_filename:
+                    vehicle_img_path = os.path.join(get_base_path(), 'uploads', 'vehicles', photo_filename)
+                
                 def send_notification():
                     Logistics_message.send_whatsapp_message(
                         driver_name=data["driver_name"],
                         driver_phone=data["driver_phone"],
                         vehicle_number=data["veh_reg_no"],
                         from_location=data["origin"],
-                        to_location=data["destination"]
+                        to_location=data["destination"],
+                        vehicle_img_path=vehicle_img_path
                     )
                 
                 threading.Thread(target=send_notification).start()
@@ -419,7 +425,28 @@ def process_logistics_exit():
 
         # 3. Insert into DB (inserts new record for history)
         if vehicle_db.insert_vehicle(data):
-            # 4. Success Message
+            # 4. Send WhatsApp Notification (Async)
+            try:
+                # Get the full path to the uploaded image
+                vehicle_img_path = None
+                if photo_filename:
+                    vehicle_img_path = os.path.join(get_base_path(), 'uploads', 'vehicles', photo_filename)
+                
+                def send_notification():
+                    Logistics_message.in_message(
+                        driver_name=data["driver_name"],
+                        driver_phone=data["driver_phone"],
+                        vehicle_number=data["veh_reg_no"],
+                        po_number=data.get("purchase_no", ""),
+                        from_location=data["origin"],
+                        to_location=data["destination"],
+                        vehicle_img_path=vehicle_img_path
+                    )
+                
+                threading.Thread(target=send_notification).start()
+            except Exception as e:
+                print(f"Error starting WhatsApp thread: {e}")
+            
             flask.flash("Logistics exit recorded successfully!", "success")
         else:
             flask.flash("Failed to record exit.", "error")
@@ -434,10 +461,21 @@ def process_logistics_exit():
 def view_all_logistics():
     if not is_logged_in():
         return flask.redirect(flask.url_for('login'))
-        
-    # Fetch all vehicle entries
-    all_vehicles = vehicle_db.get_all_vehicles()
-    return flask.render_template('view_all_logistics.html', vehicles=all_vehicles)
+    
+    # Get pagination parameters
+    page = flask.request.args.get('page', 1, type=int)
+    per_page = flask.request.args.get('per_page', 50, type=int)
+    search = flask.request.args.get('search', None, type=str)
+    
+    # Fetch paginated vehicle entries
+    result = vehicle_db.get_vehicles_paginated(page=page, per_page=per_page, search=search)
+    
+    return flask.render_template(
+        'view_all_logistics.html', 
+        vehicles=result.data,
+        pagination=result,
+        search=search or ''
+    )
 
 @app.route('/check_out_page')
 def check_out_page():
