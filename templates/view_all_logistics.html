@@ -51,214 +51,251 @@
 </head>
 
 <body class="bg-[#f5f7fa] font-display antialiased h-screen flex overflow-hidden">
-    <aside class="w-64 bg-sidebar-bg flex-shrink-0 flex flex-col h-full text-white">
-        <div class="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
-            <div class="flex items-center gap-3">
-                <div
-                    class="size-8 rounded bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-900/20">
-                    <span class="material-symbols-outlined text-white text-xl">local_shipping</span>
-                </div>
-                <span class="font-bold text-lg tracking-tight">Logistics</span>
-            </div>
-        </div>
-        <div class="p-4">
-            <div class="bg-slate-800/50 rounded-xl p-3 flex items-center gap-3 mb-2 border border-slate-700/50">
-                <div
-                    class="size-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
-                    S</div>
-                <div class="flex flex-col overflow-hidden">
-                    <span class="text-sm font-bold truncate">super</span>
-                    <span class="text-[10px] text-indigo-300 uppercase font-bold tracking-wider">Developer</span>
-                </div>
-            </div>
-        </div>
-        <nav class="flex-1 overflow-y-auto custom-scrollbar">
-            <div class="px-3 mb-2 mt-2">
-                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Portals</span>
-            </div>
-            <a href="{{ url_for('home') }}"
-                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <span
-                    class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">security</span>
-                <span class="text-sm font-medium">Gate Portal</span>
-            </a>
-            <a href="{{ url_for('logistics') }}"
-                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#4f46e5] text-white shadow-md shadow-indigo-900/20 transition-all">
-                <span class="material-symbols-outlined text-[20px]">local_shipping</span>
-                <span class="text-sm font-medium">Logistics Portal</span>
-            </a>
+    <div class="flex h-screen bg-[#f5f7fa] overflow-hidden">
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden"
+            onclick="toggleSidebar()"></div>
 
-            {% if session.get('auth_level', 0) >= 4 %}
-            <div class="px-3 mb-2 mt-8">
-                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Admin</span>
-            </div>
-            <a href="{{ url_for('view_status') }}"
-                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <span
-                    class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">bar_chart</span>
-                <span class="text-sm font-medium">View Status</span>
-            </a>
-            <a href="{{ url_for('new_user') }}"
-                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <span
-                    class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">person_add</span>
-                <span class="text-sm font-medium">Add New User</span>
-            </a>
-            {% endif %}
-        </nav>
-        <div class="p-4 border-t border-gray-800/50">
-            <a href="{{ url_for('logout') }}"
-                class="flex w-full items-center gap-3 px-3 py-2.5 text-slate-400 rounded-lg hover:text-white hover:bg-red-900/30 transition-all group">
-                <span
-                    class="material-symbols-outlined text-[20px] group-hover:text-red-400 transition-colors">logout</span>
-                <span class="text-sm font-medium">Logout</span>
-            </a>
-        </div>
-    </aside>
-    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f5f7fa]">
-        <header class="h-20 flex items-center justify-between px-8 flex-shrink-0">
-            <h1 class="text-2xl font-bold text-[#1e73be]">All Logistics Details</h1>
-            <div class="flex items-center gap-4">
-                <form action="{{ url_for('view_all_logistics') }}" method="GET" class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                        <span class="material-symbols-outlined text-[20px]">search</span>
-                    </span>
-                    <input name="search" value="{{ search }}"
-                        class="pl-10 pr-4 py-2 w-64 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
-                        placeholder="Search logistics..." type="text" />
-                </form>
-            </div>
-        </header>
-        <div class="flex-1 overflow-auto px-8 pb-8">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                            <tr>
-                                <th class="table-th">Driver Name</th>
-                                <th class="table-th">Phone Number</th>
-                                <th class="table-th">Vehicle Number</th>
-                                <th class="table-th">From (Origin)</th>
-                                <th class="table-th">To (Destination)</th>
-                                <th class="table-th">Purchase No.</th>
-                                <th class="table-th text-center">Vehicle Photo</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            {% if vehicles %}
-                            {% for vehicle in vehicles %}
-                            <tr class="hover:bg-slate-50 transition-colors group">
-                                <td class="table-td font-medium text-slate-800">{{ vehicle.driver_name }}</td>
-                                <td class="table-td">{{ vehicle.driver_phone }}</td>
-                                <td class="table-td font-mono font-medium">{{ vehicle.veh_reg_no }}</td>
-                                <td class="table-td">{{ vehicle.origin }}</td>
-                                <td class="table-td">
-                                    <div class="flex flex-col">
-                                        <span>{{ vehicle.destination }}</span>
-                                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">{{
-                                            vehicle.entry_type|default('Entry') }}</span>
-                                    </div>
-                                </td>
-                                <td class="table-td">{{ vehicle.purchase_no or '-' }}</td>
-                                <td class="table-td text-center">
-                                    {% if vehicle.vehicle_img %}
-                                    <a href="{{ url_for('serve_upload', filename='vehicles/' + vehicle.vehicle_img) }}"
-                                        target="_blank"
-                                        class="inline-flex items-center justify-center size-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
-                                        <span class="material-symbols-outlined text-lg">image</span>
-                                    </a>
-                                    {% else %}
-                                    <span class="text-slate-300">-</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            {% else %}
-                            <tr>
-                                <td class="px-6 py-16 text-center text-slate-500" colspan="7">
-                                    <div class="flex flex-col items-center justify-center">
-                                        <div class="bg-slate-50 p-4 rounded-full mb-3">
-                                            <span class="material-symbols-outlined text-4xl text-slate-300">inbox</span>
-                                        </div>
-                                        <p class="text-base font-medium text-slate-600">No entries found</p>
-                                        <p class="text-sm text-slate-400 mt-1">There are currently no logistics details
-                                            to display.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination Controls -->
-                {% if pagination %}
-                <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-                    <div class="text-sm text-slate-600">
-                        Showing <span class="font-semibold">{{ ((pagination.page - 1) * pagination.per_page) + 1
-                            }}</span>
-                        to <span class="font-semibold">{{ [pagination.page * pagination.per_page, pagination.total]|min
-                            }}</span>
-                        of <span class="font-semibold">{{ pagination.total }}</span> entries
+        <aside id="sidebar"
+            class="fixed md:static inset-y-0 left-0 w-64 bg-sidebar-bg flex-shrink-0 flex flex-col h-full text-white transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
+            <div class="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="size-8 rounded bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-900/20">
+                        <span class="material-symbols-outlined text-white text-xl">local_shipping</span>
                     </div>
+                    <span class="font-bold text-lg tracking-tight">Logistics</span>
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="bg-slate-800/50 rounded-xl p-3 flex items-center gap-3 mb-2 border border-slate-700/50">
+                    <div
+                        class="size-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+                        S</div>
+                    <div class="flex flex-col overflow-hidden">
+                        <span class="text-sm font-bold truncate">super</span>
+                        <span class="text-[10px] text-indigo-300 uppercase font-bold tracking-wider">Developer</span>
+                    </div>
+                </div>
+            </div>
+            <nav class="flex-1 overflow-y-auto custom-scrollbar">
+                <div class="px-3 mb-2 mt-2">
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Portals</span>
+                </div>
+                <a href="{{ url_for('home') }}"
+                    class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span
+                        class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">security</span>
+                    <span class="text-sm font-medium">Gate Portal</span>
+                </a>
+                <a href="{{ url_for('logistics') }}"
+                    class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#4f46e5] text-white shadow-md shadow-indigo-900/20 transition-all">
+                    <span class="material-symbols-outlined text-[20px]">local_shipping</span>
+                    <span class="text-sm font-medium">Logistics Portal</span>
+                </a>
 
-                    <div class="flex items-center gap-2">
-                        <!-- Previous Button -->
-                        {% if pagination.has_prev %}
-                        <a href="{{ url_for('view_all_logistics', page=pagination.page-1, search=search) }}"
-                            class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                            Previous
-                        </a>
-                        {% else %}
-                        <span
-                            class="px-4 py-2 text-sm font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded-lg cursor-not-allowed flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                            Previous
-                        </span>
-                        {% endif %}
+                {% if session.get('auth_level', 0) >= 4 %}
+                <div class="px-3 mb-2 mt-8">
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Admin</span>
+                </div>
+                <a href="{{ url_for('view_status') }}"
+                    class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span
+                        class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">bar_chart</span>
+                    <span class="text-sm font-medium">View Status</span>
+                </a>
+                <a href="{{ url_for('new_user') }}"
+                    class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span
+                        class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">person_add</span>
+                    <span class="text-sm font-medium">Add New User</span>
+                </a>
+                {% endif %}
+            </nav>
+            <div class="p-4 border-t border-gray-800/50">
+                <a href="{{ url_for('logout') }}"
+                    class="flex w-full items-center gap-3 px-3 py-2.5 text-slate-400 rounded-lg hover:text-white hover:bg-red-900/30 transition-all group">
+                    <span
+                        class="material-symbols-outlined text-[20px] group-hover:text-red-400 transition-colors">logout</span>
+                    <span class="text-sm font-medium">Logout</span>
+                </a>
+            </div>
+        </aside>
 
-                        <!-- Page Numbers -->
-                        <div class="flex items-center gap-1">
-                            {% for p in range(1, pagination.total_pages + 1) %}
-                            {% if p == pagination.page %}
-                            <span
-                                class="size-9 flex items-center justify-center text-sm font-bold text-white bg-indigo-600 rounded-lg">{{
-                                p }}</span>
-                            {% elif p <= 3 or p> pagination.total_pages - 3 or (p >= pagination.page - 1 and p <=
-                                    pagination.page + 1) %} <a
-                                    href="{{ url_for('view_all_logistics', page=p, search=search) }}"
-                                    class="size-9 flex items-center justify-center text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
-                                    {{ p }}</a>
-                                    {% elif p == 4 and pagination.page > 5 %}
-                                    <span class="px-2 text-slate-400">...</span>
-                                    {% elif p == pagination.total_pages - 3 and pagination.page < pagination.total_pages
-                                        - 4 %} <span class="px-2 text-slate-400">...</span>
-                                        {% endif %}
-                                        {% endfor %}
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <!-- Mobile Header -->
+            <header
+                class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 shrink-0">
+                <button onclick="toggleSidebar()"
+                    class="material-symbols-outlined text-2xl text-slate-600 hover:text-slate-900 transition-colors"
+                    aria-label="Toggle navigation menu">menu</button>
+                <span class="font-bold text-slate-800">All Logistics</span>
+                <div
+                    class="size-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs">
+                    S</div>
+            </header>
+
+            <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f5f7fa]">
+                <header class="hidden md:flex h-20 items-center justify-between px-8 flex-shrink-0">
+                    <h1 class="text-2xl font-bold text-[#1e73be]">All Logistics Details</h1>
+                    <div class="flex items-center gap-4">
+                        <form action="{{ url_for('view_all_logistics') }}" method="GET" class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                <span class="material-symbols-outlined text-[20px]">search</span>
+                            </span>
+                            <input name="search" value="{{ search }}"
+                                class="pl-10 pr-4 py-2 w-64 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
+                                placeholder="Search logistics..." type="text" />
+                        </form>
+                    </div>
+                </header>
+                <div class="flex-1 overflow-auto px-8 pb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="table-th">Driver Name</th>
+                                        <th class="table-th">Phone Number</th>
+                                        <th class="table-th">Vehicle Number</th>
+                                        <th class="table-th">From (Origin)</th>
+                                        <th class="table-th">To (Destination)</th>
+                                        <th class="table-th">Purchase No.</th>
+                                        <th class="table-th text-center">Vehicle Photo</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    {% if vehicles %}
+                                    {% for vehicle in vehicles %}
+                                    <tr class="hover:bg-slate-50 transition-colors group">
+                                        <td class="table-td font-medium text-slate-800">{{ vehicle.driver_name }}</td>
+                                        <td class="table-td">{{ vehicle.driver_phone }}</td>
+                                        <td class="table-td font-mono font-medium">{{ vehicle.veh_reg_no }}</td>
+                                        <td class="table-td">{{ vehicle.origin }}</td>
+                                        <td class="table-td">
+                                            <div class="flex flex-col">
+                                                <span>{{ vehicle.destination }}</span>
+                                                <span
+                                                    class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">{{
+                                                    vehicle.entry_type|default('Entry') }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="table-td">{{ vehicle.purchase_no or '-' }}</td>
+                                        <td class="table-td text-center">
+                                            {% if vehicle.vehicle_img %}
+                                            <a href="{{ url_for('serve_upload', filename='vehicles/' + vehicle.vehicle_img) }}"
+                                                target="_blank"
+                                                class="inline-flex items-center justify-center size-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
+                                                <span class="material-symbols-outlined text-lg">image</span>
+                                            </a>
+                                            {% else %}
+                                            <span class="text-slate-300">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td class="px-6 py-16 text-center text-slate-500" colspan="7">
+                                            <div class="flex flex-col items-center justify-center">
+                                                <div class="bg-slate-50 p-4 rounded-full mb-3">
+                                                    <span
+                                                        class="material-symbols-outlined text-4xl text-slate-300">inbox</span>
+                                                </div>
+                                                <p class="text-base font-medium text-slate-600">No entries found</p>
+                                                <p class="text-sm text-slate-400 mt-1">There are currently no logistics
+                                                    details
+                                                    to display.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
                         </div>
 
-                        <!-- Next Button -->
-                        {% if pagination.has_next %}
-                        <a href="{{ url_for('view_all_logistics', page=pagination.page+1, search=search) }}"
-                            class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
-                            Next
-                            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-                        </a>
-                        {% else %}
-                        <span
-                            class="px-4 py-2 text-sm font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded-lg cursor-not-allowed flex items-center gap-1">
-                            Next
-                            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-                        </span>
+                        <!-- Pagination Controls -->
+                        {% if pagination %}
+                        <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                            <div class="text-sm text-slate-600">
+                                Showing <span class="font-semibold">{{ ((pagination.page - 1) * pagination.per_page) + 1
+                                    }}</span>
+                                to <span class="font-semibold">{{ [pagination.page * pagination.per_page,
+                                    pagination.total]|min
+                                    }}</span>
+                                of <span class="font-semibold">{{ pagination.total }}</span> entries
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <!-- Previous Button -->
+                                {% if pagination.has_prev %}
+                                <a href="{{ url_for('view_all_logistics', page=pagination.page-1, search=search) }}"
+                                    class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                                    Previous
+                                </a>
+                                {% else %}
+                                <span
+                                    class="px-4 py-2 text-sm font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded-lg cursor-not-allowed flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                                    Previous
+                                </span>
+                                {% endif %}
+
+                                <!-- Page Numbers -->
+                                <div class="flex items-center gap-1">
+                                    {% for p in range(1, pagination.total_pages + 1) %}
+                                    {% if p == pagination.page %}
+                                    <span
+                                        class="size-9 flex items-center justify-center text-sm font-bold text-white bg-indigo-600 rounded-lg">{{
+                                        p }}</span>
+                                    {% elif p <= 3 or p> pagination.total_pages - 3 or (p >= pagination.page - 1 and p
+                                        <= pagination.page + 1) %} <a
+                                            href="{{ url_for('view_all_logistics', page=p, search=search) }}"
+                                            class="size-9 flex items-center justify-center text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+                                            {{ p }}</a>
+                                            {% elif p == 4 and pagination.page > 5 %}
+                                            <span class="px-2 text-slate-400">...</span>
+                                            {% elif p == pagination.total_pages - 3 and pagination.page <
+                                                pagination.total_pages - 4 %} <span class="px-2 text-slate-400">
+                                                ...</span>
+                                                {% endif %}
+                                                {% endfor %}
+                                </div>
+
+                                <!-- Next Button -->
+                                {% if pagination.has_next %}
+                                <a href="{{ url_for('view_all_logistics', page=pagination.page+1, search=search) }}"
+                                    class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
+                                    Next
+                                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                                </a>
+                                {% else %}
+                                <span
+                                    class="px-4 py-2 text-sm font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded-lg cursor-not-allowed flex items-center gap-1">
+                                    Next
+                                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
                         {% endif %}
+
                     </div>
                 </div>
-                {% endif %}
-
-            </div>
+            </main>
         </div>
-    </main>
+    </div>
+
+    <script>
+        // Mobile Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+    </script>
 </body>
 
 </html>

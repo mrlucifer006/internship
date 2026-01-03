@@ -48,6 +48,11 @@ build/
 dist/
 *.egg-info/
 *.db
-*.db
 employee.db
 
+# Backup files and encryption
+backups/
+*.encrypted
+.backup_key
+credentials.json
+token.json

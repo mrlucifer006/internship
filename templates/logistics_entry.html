@@ -50,8 +50,13 @@
 
 <body class="bg-background-light font-display antialiased min-h-screen flex flex-col text-slate-600">
     <div class="flex h-screen bg-background-light overflow-hidden">
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden"
+            onclick="toggleSidebar()"></div>
+
         <!-- Sidebar -->
-        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-all duration-300 z-20">
+        <aside id="sidebar"
+            class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
             <div class="h-16 flex items-center px-6 border-b border-slate-800">
                 <div class="flex items-center gap-3">
                     <div
@@ -123,7 +128,9 @@
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
             <header
                 class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 shrink-0">
-                <span class="material-symbols-outlined text-2xl text-slate-600">menu</span>
+                <button onclick="toggleSidebar()"
+                    class="material-symbols-outlined text-2xl text-slate-600 hover:text-slate-900 transition-colors"
+                    aria-label="Toggle navigation menu">menu</button>
                 <span class="font-bold text-slate-800">Logistics</span>
                 <div
                     class="size-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs">
@@ -304,13 +311,20 @@
 
                 <!-- Right Sidebar (Recent Logistics) -->
                 <aside
-                    class="hidden xl:flex w-80 flex-col border-l border-slate-200 bg-white/50 backdrop-blur-sm p-6 gap-6 overflow-y-auto">
+                    class="w-full xl:w-80 flex flex-col xl:border-l border-t xl:border-t-0 border-slate-200 bg-white/50 backdrop-blur-sm p-6 gap-6 overflow-y-auto max-h-[600px] xl:max-h-full mb-24 xl:mb-0">
                     <div class="flex items-center justify-between">
                         <h3 class="text-slate-800 font-bold text-base">Recent Logistics</h3>
-                        <a href="{{ url_for('view_all_logistics') }}"
-                            class="text-xs font-bold text-indigo-600 hover:text-indigo-800">VIEW ALL</a>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ url_for('view_all_logistics') }}"
+                                class="text-xs font-bold text-indigo-600 hover:text-indigo-800">VIEW ALL</a>
+                            <button onclick="toggleRecentEntries()"
+                                class="xl:hidden text-slate-600 hover:text-slate-900 transition-colors p-1">
+                                <span id="recent-entries-icon"
+                                    class="material-symbols-outlined transition-transform">expand_more</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex flex-col gap-4" id="recent-entries-list">
+                    <div id="recent-entries-list" class="flex flex-col gap-4 hidden xl:flex">
                         {% if recent_vehicles %}
                         {% for vehicle in recent_vehicles %}
                         <div
@@ -413,6 +427,23 @@
         modeVisitorExit.addEventListener('click', () => {
             // Logic to switch to exit mode (future implementation)
         });
+
+        // Mobile Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        // Toggle Recent Entries on Mobile
+        function toggleRecentEntries() {
+            const list = document.getElementById('recent-entries-list');
+            const icon = document.getElementById('recent-entries-icon');
+            list.classList.toggle('hidden');
+            list.classList.toggle('flex');
+            icon.classList.toggle('rotate-180');
+        }
     </script>
 </body>
 

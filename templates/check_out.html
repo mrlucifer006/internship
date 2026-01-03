@@ -78,8 +78,13 @@
 
 <body class="bg-background-light font-display antialiased min-h-screen flex flex-col text-slate-600">
     <div class="flex h-screen bg-background-light overflow-hidden">
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden"
+            onclick="toggleSidebar()"></div>
+
         <!-- Sidebar -->
-        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-all duration-300 z-20">
+        <aside id="sidebar"
+            class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
             <div class="h-16 flex items-center px-6 border-b border-slate-800">
                 <div class="flex items-center gap-3">
                     <div
@@ -153,8 +158,10 @@
             <!-- Mobile Header -->
             <header
                 class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 shrink-0">
-                <span class="material-symbols-outlined text-2xl text-slate-600">menu</span>
-                <span class="font-bold text-slate-800">Gate Portal</span>
+                <button onclick="toggleSidebar()"
+                    class="material-symbols-outlined text-2xl text-slate-600 hover:text-slate-900 transition-colors"
+                    aria-label="Toggle navigation menu">menu</button>
+                <span class="font-bold text-slate-800">Check-Out Portal</span>
                 <div
                     class="size-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xs">
                     {{ session.get('user', 'U')[0]|upper }}</div>
@@ -357,6 +364,16 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Mobile Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+    </script>
 </body>
 
 </html>
