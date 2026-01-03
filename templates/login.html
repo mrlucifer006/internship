@@ -2,30 +2,10 @@
 <html lang="en">
 
 <head>
-    {# Primary Meta Tags #}
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Login - Visitor Management System | Secure Gate Portal</title>
-    <meta name="description"
-        content="Secure login portal for visitor management system. Access gate security, logistics tracking, and employee management features." />
-    <meta name="keywords" content="visitor management login, security portal, gate access, employee authentication" />
-    <meta name="robots" content="noindex, nofollow" />
-
-    {# Open Graph / Facebook #}
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Login - Visitor Management System" />
-    <meta property="og:description" content="Secure login portal for enterprise visitor and logistics management" />
-    <meta property="og:site_name" content="Visitor Management System" />
-
-    {# Twitter Card #}
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Login - Visitor Management System" />
-    <meta name="twitter:description" content="Secure access to visitor and logistics management portal" />
-
-    {# Theme #}
-    <meta name="theme-color" content="#1e73be" />
-    <meta name="application-name" content="Visitor Management System" />
+    {% set page_title = "Login" %}
+    {% set page_description = "Secure login portal for visitor management system. Access gate security, logistics
+    tracking, and employee management features." %}
+    {% include 'seo_meta.html' %}
 
     {# Fonts and Styles #}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
@@ -41,18 +21,6 @@
                 },
             },
         }
-    </script>
-
-    {# Structured Data #}
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Visitor Management System",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web Browser",
-      "description": "Professional visitor and logistics management system with secure authentication"
-    }
     </script>
 </head>
 

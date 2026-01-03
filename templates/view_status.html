@@ -2,9 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Employee Status</title>
+    {% set page_title = "Employee Status" %}
+    {% include 'seo_meta.html' %}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
@@ -211,7 +210,7 @@
     </div>
 
     <script>
-        const CURRENT_AUTH_LEVEL = {{ session.get('auth_level', 0) }};
+        const CURRENT_AUTH_LEVEL = parseInt("{{ session.get('auth_level', 0) }}");
 
         function getRoleName(level) {
             const roles = {

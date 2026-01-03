@@ -1,62 +1,64 @@
 {#
-SEO Meta Tags Template
-Include this in the
+SEO Meta Tags Component
+-----------------------
+Usage:
+{% set page_title = "My Page Title" %}
+{% set page_description = "Custom description for this page." %}
+{% include 'seo_meta.html' %}
+#}
 
-<head> section of all pages
+{% set app_name = "Visitor Management System" %}
+{% set default_title = page_title ~ " | " ~ app_name if page_title is defined else app_name ~ " - Secure Gate Portal" %}
+{% set default_description = page_description if page_description is defined else "Professional visitor management and
+logistics tracking system for secure gate entry and employee access control." %}
+{% set default_keywords = page_keywords if page_keywords is defined else "visitor management, gate security, logistics
+tracking, visitor check-in, secure entry, employee portal" %}
+{% set current_url = request.url %}
 
-    Usage:
-    {% include 'seo_meta.html' %}
+{# Primary Meta Tags #}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>{{ default_title }}</title>
+<meta name="description" content="{{ default_description }}">
+<meta name="keywords" content="{{ default_keywords }}">
+<meta name="author" content="{{ app_name }}">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1e73be">
+<meta name="application-name" content="{{ app_name }}">
 
-    Or with custom values:
-    {% set page_title = "Custom Page Title" %}
-    {% set page_description = "Custom description" %}
-    {% include 'seo_meta.html' %}
-    #}
+{# Open Graph / Facebook #}
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ current_url }}">
+<meta property="og:title" content="{{ default_title }}">
+<meta property="og:description" content="{{ default_description }}">
+<meta property="og:site_name" content="{{ app_name }}">
+<meta property="og:locale" content="en_US">
+{#
+<meta property="og:image" content="{{ url_for('static', filename='og-image.jpg', _external=True) }}"> #}
 
-    {% set app_name = "Visitor Management System" %}
-    {% set app_tagline = "Professional Gate & Logistics Management Portal" %}
-    {% set default_title = page_title if page_title is defined else (app_name ~ " - " ~ app_tagline) %}
-    {% set default_description = page_description if page_description is defined else "Comprehensive visitor management
-    system for secure entry tracking, employee authentication, and logistics coordination with real-time notifications."
-    %}
-    {% set default_keywords = "visitor management, gate security, logistics tracking, employee access control, visitor
-    check-in, security portal" %}
+{# Twitter Card #}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="{{ current_url }}">
+<meta name="twitter:title" content="{{ default_title }}">
+<meta name="twitter:description" content="{{ default_description }}">
+{#
+<meta name="twitter:image" content="{{ url_for('static', filename='twitter-card.jpg', _external=True) }}"> #}
 
-    {# Primary Meta Tags #}
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>{{ default_title }}</title>
-    <meta name="description" content="{{ default_description }}">
-    <meta name="keywords" content="{{ default_keywords }}">
-    <meta name="author" content="Visitor Management System">
-    <meta name="robots" content="noindex, nofollow"> {# Internal app - no indexing #}
+{# Canonical Link #}
+<link rel="canonical" href="{{ current_url }}">
 
-    {# Open Graph / Facebook #}
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="{{ default_title }}">
-    <meta property="og:description" content="{{ default_description }}">
-    <meta property="og:site_name" content="{{ app_name }}">
-
-    {# Twitter Card #}
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="{{ default_title }}">
-    <meta name="twitter:description" content="{{ default_description }}">
-
-    {# Additional SEO #}
-    <meta name="application-name" content="{{ app_name }}">
-    <meta name="theme-color" content="#1e73be">
-    <link rel="canonical" href="{{ request.url }}">
-
-    {# Structured Data - Organization #}
-    <script type="application/ld+json">
+{# Structured Data (JSON-LD) #}
+<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "{{ app_name }}",
-  "description": "{{ default_description }}",
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web Browser",
+  "browserRequirements": "Requires JavaScript. Optimized for Chrome, Edge, Safari, Firefox.",
+  "url": "{{ request.url_root }}",
+  "description": "{{ default_description }}",
   "offers": {
     "@type": "Offer",
     "price": "0",

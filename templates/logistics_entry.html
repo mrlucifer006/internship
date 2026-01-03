@@ -2,9 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Logistics Details Entry</title>
+    {% set page_title = "Logistics Entry" %}
+    {% include 'seo_meta.html' %}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap"
         rel="stylesheet" />
     <link
@@ -447,12 +446,12 @@
                     <span class="material-symbols-outlined text-[18px]">login</span>
                     <span class="hidden sm:inline">Vehicle Entry</span>
                 </button>
-                <button
+                <a href="{{ url_for('logistics_exit') }}"
                     class="flex items-center gap-2 px-5 py-2.5 rounded-full text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all hover:text-slate-900"
-                    id="mode-visitor-exit" onclick="window.location.href='{{ url_for('logistics_exit') }}';">
+                    id="mode-visitor-exit">
                     <span class="material-symbols-outlined text-[18px]">logout</span>
                     <span class="hidden sm:inline">Vehicle Exit</span>
-                </button>
+                </a>
             </div>
         </div>
     </div>

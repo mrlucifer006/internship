@@ -2,9 +2,8 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <title>Entry Details Success Pop-up</title>
+  {% set page_title = "Entry Details Success Pop-up" %}
+  {% include 'seo_meta.html' %}
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
@@ -167,12 +166,12 @@
             </div>
           </div>
         </div>
-        <button onclick="window.location.href='{{ url_for('home') }}';"
+        <a href="{{ url_for('home') }}"
           class="w-full bg-primary hover:bg-blue-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 group text-[15px]">
           <span
             class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
           Back to Home
-        </button>
+        </a>
       </div>
       <div
         class="bg-gray-50/80 dark:bg-gray-800/80 px-8 py-3.5 text-center border-t border-gray-100 dark:border-gray-700 backdrop-blur-sm">

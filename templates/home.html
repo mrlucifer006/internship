@@ -2,31 +2,9 @@
 <html lang="en">
 
 <head>
-    {# Primary Meta Tags #}
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Visitor Entry - Gate Portal | Visitor Management System</title>
-    <meta name="description"
-        content="Professional visitor check-in portal for secure gate management. Track visitor entries, approvals, and logistics with real-time notifications." />
-    <meta name="keywords"
-        content="visitor check-in, gate entry, visitor tracking, security portal, logistics management" />
-    <meta name="robots" content="noindex, nofollow" />
-
-    {# Open Graph / Facebook #}
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Visitor Entry Portal" />
-    <meta property="og:description" content="Secure visitor and logistics management system with real-time tracking" />
-    <meta property="og:site_name" content="Visitor Management System" />
-
-    {# Twitter Card #}
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Visitor Entry Portal" />
-    <meta name="twitter:description" content="Professional visitor management with real-time approvals" />
-
-    {# Theme and App #}
-    <meta name="theme-color" content="#1e73be" />
-    <meta name="application-name" content="Visitor Management System" />
+    {% set page_title = "Visitor Entry - Gate Portal" %}
+    {% set page_keywords = "visitor check-in, gate entry, visitor tracking, security portal, logistics management" %}
+    {% include 'seo_meta.html' %}
 
     {# Fonts and Styles #}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
@@ -66,24 +44,6 @@
         }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
     </style>
-
-    {# Structured Data - Breadcrumb #}
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Visitor Management System",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web Browser",
-      "description": "Professional visitor tracking and logistics management portal",
-      "featureList": [
-        "Visitor check-in and check-out",
-        "Real-time approval notifications",
-        "Logistics vehicle tracking",
-        "Employee access control"
-      ]
-    }
-    </script>
 </head>
 
 <body>
