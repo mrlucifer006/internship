@@ -47,9 +47,4 @@ htmlcov/
 build/
 dist/
 *.egg-info/
-employee.db
-employee.db
 *.db
-*.db
-employee.db
-*.py
