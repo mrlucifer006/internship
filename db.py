@@ -17,8 +17,11 @@ def get_db_connection():
     conn.execute("PRAGMA busy_timeout=30000")
     return conn
 
-def trigger_backup():
+def trigger_backup(reason=None):
     """Triggers a database backup in a background thread."""
+    if reason:
+        logger.info(f"Backup triggered due to: {reason}")
+        
     def run_backup():
         try:
             # Re-instantiate locally to avoid thread sharing issues if any

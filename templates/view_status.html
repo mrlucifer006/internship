@@ -151,6 +151,11 @@
                                         <th
                                             class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">
                                             Status</th>
+                                        {% if session.get('auth_level', 0) >= 4 %}
+                                        <th
+                                            class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">
+                                            Action</th>
+                                        {% endif %}
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100" id="employee-table-body">
@@ -183,6 +188,19 @@
                                             </span>
                                             {% endif %}
                                         </td>
+                                        {% if session.get('auth_level', 0) >= 4 %}
+                                        <td class="p-4 text-center">
+                                            <form action="{{ url_for('delete_user', login_id=emp.login_id) }}"
+                                                method="POST"
+                                                onsubmit="return confirm('Are you sure you want to delete user {{ emp.login_id }}?');">
+                                                <button type="submit"
+                                                    class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50"
+                                                    title="Delete User">
+                                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                                </button>
+                                            </form>
+                                        </td>
+                                        {% endif %}
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -195,6 +213,8 @@
     </div>
 
     <script>
+        const CURRENT_AUTH_LEVEL = {{ session.get('auth_level', 0) }};
+
         function getRoleName(level) {
             const roles = {
                 1: 'Foreman',
@@ -235,12 +255,26 @@
                                 </span>`;
                         }
 
+                        // Delete Button HTML
+                        let actionHtml = '';
+                        if (CURRENT_AUTH_LEVEL >= 4) {
+                            actionHtml = `
+                                <td class="p-4 text-center">
+                                    <form action="/delete_user/${emp.login_id}" method="POST" onsubmit="return confirm('Are you sure you want to delete user ${emp.login_id}?');">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Delete User">
+                                            <span class="material-symbols-outlined text-[20px]">delete</span>
+                                        </button>
+                                    </form>
+                                </td>`;
+                        }
+
                         tr.innerHTML = `
                             <td class="p-4 text-sm font-semibold text-slate-700">${emp.name}</td>
                             <td class="p-4 text-sm text-slate-600 font-mono">${emp.login_id}</td>
                             <td class="p-4 text-sm text-slate-600">${getRoleName(emp.Auth_level)}</td>
                             <td class="p-4 text-sm text-slate-600 font-mono">${emp.phone}</td>
                             <td class="p-4 text-center">${statusHtml}</td>
+                            ${actionHtml}
                         `;
                         tbody.appendChild(tr);
                     });

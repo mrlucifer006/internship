@@ -598,6 +598,33 @@ def api_employees():
     if not is_logged_in():
         return flask.jsonify({'error': 'Unauthorized'}), 401
     
+    from employee_db import get_all_employees_full
+    employees = get_all_employees_full()
+    return flask.jsonify(employees)
+
+@app.route('/delete_user/<login_id>', methods=['POST'])
+def delete_user(login_id):
+    if 'user' not in flask.session:
+        return flask.redirect(flask.url_for('login'))
+        
+    # Check Auth Level (Must be 4 or higher)
+    auth_level = flask.session.get('auth_level', 0)
+    if auth_level < 4:
+        flask.flash('You do not have permission to delete users.', 'error')
+        return flask.redirect(flask.url_for('view_status'))
+        
+    from employee_db import delete_employee
+    
+    if 'login_id' in flask.session and flask.session['login_id'] == login_id:
+        flask.flash('You cannot delete your own account.', 'error')
+        return flask.redirect(flask.url_for('view_status'))
+
+    if delete_employee(login_id):
+        flask.flash(f'User {login_id} deleted successfully.', 'success')
+    else:
+        flask.flash(f'Failed to delete user {login_id}.', 'error')
+        
+    return flask.redirect(flask.url_for('view_status'))
     if flask.session.get('auth_level', 0) < 4:
         return flask.jsonify({'error': 'Unauthorized'}), 403
         

@@ -236,3 +236,27 @@ def reset_all_employee_statuses():
     finally:
         conn.close()
 
+def delete_employee(login_id):
+    """Deletes an employee and triggers a backup."""
+    conn = get_db_connection()
+    try:
+        with conn:
+            # Check if user exists
+            cursor = conn.execute("SELECT name FROM employee WHERE login_id = ?", (login_id,))
+            user = cursor.fetchone()
+            
+            if user:
+                conn.execute("DELETE FROM employee WHERE login_id = ?", (login_id,))
+                print(f"Employee {login_id} deleted successfully.")
+                logger.info(f"Employee deleted: {login_id}")
+                trigger_backup(f"Deleted user: {login_id}")
+                return True
+            else:
+                logger.warning(f"Attempted delete on non-existent user: {login_id}")
+                return False
+    except Exception as e:
+        logger.error(f"Error deleting employee {login_id}: {e}")
+        return False
+    finally:
+        conn.close()
+
