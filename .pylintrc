@@ -1,0 +1,45 @@
+[pylint]
+# Minimum Python version
+py-version=3.10
+
+# Maximum line length
+max-line-length=120
+
+# Good variable names which should always be accepted
+good-names=i,j,k,ex,Run,_,id,db,app,logger
+
+# List of members which are set dynamically
+generated-members=REQUEST,acl_users,aq_parent
+
+[MESSAGES CONTROL]
+# Disable specific warnings
+disable=
+    C0111,  # missing-docstring
+    C0103,  # invalid-name
+    R0903,  # too-few-public-methods
+    R0913,  # too-many-arguments
+    W0703,  # broad-except
+    C0200,  # consider-using-enumerate
+    R1705,  # no-else-return
+
+[FORMAT]
+# Allow snake_case for method names
+method-naming-style=snake_case
+function-naming-style=snake_case
+variable-naming-style=snake_case
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=7
+
+# Maximum number of locals for function / method body
+max-locals=20
+
+# Maximum number of return / yield for function / method body
+max-returns=6
+
+# Maximum number of branch for function / method body
+max-branches=15
+
+# Maximum number of statements in function / method body
+max-statements=60

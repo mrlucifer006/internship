@@ -15,11 +15,18 @@ ENV/
 .venv
 .env/
 
+# Environment variables
+.env
+
 # Database files
 *.db
 
 # WhatsApp logs
 PyWhatKit_DB.txt
+
+# Application logs
+*.log
+logs/
 
 # IDE
 .vscode/
@@ -28,3 +35,14 @@ PyWhatKit_DB.txt
 # OS
 .DS_Store
 Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Build artifacts
+build/
+dist/
+*.egg-info/

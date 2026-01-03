@@ -1,5 +1,9 @@
 import sqlite3
 import re
+import bcrypt
+import logging
+
+logger = logging.getLogger(__name__)
 
 DB_NAME = 'employee.db'
 
@@ -28,14 +32,74 @@ def create_table():
     finally:
         conn.close()
 
+def hash_password(password):
+    """
+    Hash a password using bcrypt.
+    
+    Args:
+        password: Plain text password
+    
+    Returns:
+        Hashed password as a string
+    """
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
+
+
+def verify_password(plain_password, hashed_password):
+    """
+    Verify a password against a hash.
+    Supports both bcrypt hashed passwords and plain text for backward compatibility.
+    
+    Args:
+        plain_password: Plain text password to verify
+        hashed_password: Hashed password from database
+    
+    Returns:
+        True if password matches, False otherwise
+    """
+    if not hashed_password:
+        return False
+    
+    # Check if it's a bcrypt hash (starts with $2b$)
+    if hashed_password.startswith('$2b$'):
+        try:
+            return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+        except Exception as e:
+            logger.error(f"Error verifying password: {e}")
+            return False
+    else:
+        # Backward compatibility: plain text comparison
+        # TODO: Remove this after all passwords are migrated
+        logger.warning("Plain text password detected. Please migrate to hashed passwords.")
+        return plain_password == hashed_password
+
+
 def insert_employee(data):
+    """
+    Insert a new employee with hashed password.
+    
+    Args:
+        data: Dictionary containing employee information
+    
+    Returns:
+        True if successful, False otherwise
+    """
     conn = get_db_connection()
     try:
+        # Hash the password before storing
+        hashed_pwd = hash_password(data["password"])
+        
         with conn:
-            conn.execute("INSERT INTO employee (name, phone, login_id, password, Auth_level, status) VALUES (?, ?, ?, ?, ?, ?)", (data["name"], "+91"+data["phone"], data["login_id"], data["password"], data["Auth_level"], data["status"]))
+            conn.execute(
+                "INSERT INTO employee (name, phone, login_id, password, Auth_level, status) VALUES (?, ?, ?, ?, ?, ?)",
+                (data["name"], "+91"+data["phone"], data["login_id"], hashed_pwd, data["Auth_level"], data["status"])
+            )
+            logger.info(f"Employee created: {data['login_id']}")
             return True
     except Exception as e:
-        print(f"Error inserting employee: {e}")
+        logger.error(f"Error inserting employee: {e}")
         return False
     finally:
         conn.close()
@@ -50,7 +114,7 @@ def get_employee_by_name(data):
         else:
             return "Employee not found"
     except Exception as e:
-        print(f"Error getting employee by name: {e}")
+        logger.error(f"Error getting employee by name: {e}")
         return None
     finally:
         conn.close()
@@ -66,24 +130,43 @@ def get_employee_phone(name):
             else:
                 return None
     except Exception as e:
-        print(f"Error getting employee phone: {e}")
+        logger.error(f"Error getting employee phone: {e}")
         return False
     finally:
         conn.close()
 
 def check_credentials(login_id, password):
+    """
+    Check employee credentials with password verification.
+    Supports both hashed and plain-text passwords for migration.
+    
+    Args:
+        login_id: Employee login ID
+        password: Plain text password to verify
+    
+    Returns:
+        Employee dictionary if credentials are valid, None otherwise
+    """
     conn = get_db_connection()
     try:
-        # Note: formatting query this way to ensure safety. 
-        # Ideally, hash passwords! But for now, plain text as per existing schema hints.
-        cursor = conn.execute("SELECT * FROM employee WHERE login_id = ? AND password = ?", (login_id, password))
+        # Fetch employee by login_id only
+        cursor = conn.execute("SELECT * FROM employee WHERE login_id = ?", (login_id,))
         row = cursor.fetchone()
+        
         if row:
-            return dict(row)
+            employee = dict(row)
+            # Verify password using bcrypt or plain text
+            if verify_password(password, employee['password']):
+                logger.info(f"Successful login: {login_id}")
+                return employee
+            else:
+                logger.warning(f"Failed login attempt for: {login_id}")
+                return None
         else:
+            logger.warning(f"Login attempt for non-existent user: {login_id}")
             return None
     except Exception as e:
-        print(f"Login Check Error: {e}")
+        logger.error(f"Login Check Error: {e}")
         return None
     finally:
         conn.close()            
@@ -99,7 +182,7 @@ def update_employee_status(login_id, status):
                 print(f"Updated status to {status} for {login_id}")
         return True
     except Exception as e:
-        print(f"Error updating employee status: {e}")
+        logger.error(f"Error updating employee status: {e}")
         return False
     finally:
         conn.close()
@@ -113,7 +196,7 @@ def get_employee_status(login_id):
             return row['status']
         return None
     except Exception as e:
-        print(f"Error getting employee status: {e}")
+        logger.error(f"Error getting employee status: {e}")
         return None
     finally:
         conn.close()
@@ -125,7 +208,7 @@ def add_notification(host_login_id, visitor_name, reason, visitor_id=None):
             conn.execute("INSERT INTO notifications (host_login_id, visitor_name, reason, visitor_id) VALUES (?, ?, ?, ?)", (host_login_id, visitor_name, reason, visitor_id))
         return True
     except Exception as e:
-        print(f"Error adding notification: {e}")
+        logger.error(f"Error adding notification: {e}")
         return False
     finally:
         conn.close()
@@ -144,7 +227,7 @@ def get_unread_notifications(host_login_id):
             
             return notifications
     except Exception as e:
-        print(f"Error getting notifications: {e}")
+        logger.error(f"Error getting notifications: {e}")
         return []
     finally:
         conn.close()
@@ -169,7 +252,7 @@ def get_all_employees():
         rows = cursor.fetchall()
         return [dict(row) for row in rows]
     except Exception as e:
-        print(f"Error getting all employees: {e}")
+        logger.error(f"Error getting all employees: {e}")
         return []
     finally:
         conn.close()
@@ -181,7 +264,7 @@ def get_all_employees_full():
         rows = cursor.fetchall()
         return [dict(row) for row in rows]
     except Exception as e:
-        print(f"Error getting all employees full: {e}")
+        logger.error(f"Error getting all employees full: {e}")
         return []
     finally:
         conn.close()
@@ -195,7 +278,7 @@ def reset_all_employee_statuses():
             print("All employee statuses have been reset to 0.")
         return True
     except Exception as e:
-        print(f"Error resetting employee statuses: {e}")
+        logger.error(f"Error resetting employee statuses: {e}")
         return False
     finally:
         conn.close()

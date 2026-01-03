@@ -1,6 +1,9 @@
 from db import get_db_connection
 from datetime import datetime
 import sqlite3
+import logging
+
+logger = logging.getLogger(__name__)
 
 def save_visitor(data):
     """
@@ -128,12 +131,12 @@ def check_out_visitor(visitor_name, phone):
         cur = conn.cursor()
         
         # Check status first
-        print(f"DEBUG: checking DB for name='{visitor_name}', phone='{phone}'")
+        logger.debug(f"checking DB for name='{visitor_name}', phone='{phone}'")
         cur.execute("SELECT approval_status FROM visitors WHERE name = ? AND phone = ? AND exit_time IS NULL", (visitor_name, phone))
         row = cur.fetchone()
         
         if not row:
-            print("DEBUG: No active visit found in DB")
+            logger.warning("No active visit found in DB")
             return {"success": False, "errors": ["No active visit found."]}
             
         status = row['approval_status']

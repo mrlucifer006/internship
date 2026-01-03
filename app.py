@@ -1,21 +1,49 @@
 import flask
 import threading
 import time
-from datetime import timedelta
-import atexit
-from Whatsapp_message import send_message
-import vehicle_db
-import Logistics_message
-from db import init_db
-from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp
-from employee_db import get_employee_phone, check_credentials, insert_employee, update_employee_status, add_notification, get_employee_by_name, get_unread_notifications, get_all_employees, reset_all_employee_statuses, get_employee_status
-
-# Helper: Check if logged in
 import os
+import atexit
+import logging
+from datetime import timedelta
 
+# Import configuration and logging
+from config import get_config
+from logging_config import setup_logging
+
+# Import database modules
+from db import init_db
+import vehicle_db
+
+# Import services
+from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp
+from employee_db import (
+    get_employee_phone, check_credentials, insert_employee, 
+    update_employee_status, add_notification, get_employee_by_name, 
+    get_unread_notifications, get_all_employees, reset_all_employee_statuses, 
+    get_employee_status
+)
+
+# Import messaging modules
+from Whatsapp_message import send_message
+import Logistics_message
+
+# Initialize Flask app
 app = flask.Flask(__name__)
-app.secret_key = 'super_secret_key_for_demo' # Required for flash messages
-app.permanent_session_lifetime = timedelta(hours=24)
+
+# Load configuration
+config_obj = get_config()
+app.config.from_object(config_obj)
+app.secret_key = config_obj.SECRET_KEY
+app.permanent_session_lifetime = config_obj.PERMANENT_SESSION_LIFETIME
+
+# Setup logging
+setup_logging(app, config_obj.LOG_LEVEL, config_obj.LOG_FILE)
+logger = logging.getLogger(__name__)
+
+# Log configuration warnings
+warnings = config_obj.validate()
+for warning in warnings:
+    logger.warning(warning)
 
 # Initialize DB
 init_db()
@@ -120,7 +148,7 @@ def get_data():
         return flask.redirect(flask.url_for('login'))
     try:
         if flask.request.method == 'POST':
-            print(f"\nDEBUG: Received Form Data: {dict(flask.request.form)}") # DEBUG: Check what is actually received
+            logger.debug(f"Received Form Data: {dict(flask.request.form)}")
             name = flask.request.form.get('name')
             if not name:
                  flask.flash("Host Name is required.", 'error')
@@ -181,10 +209,10 @@ def get_data():
                         # Function to run in thread
                         def send_wa():
                             try:
-                                print(f"Sending WhatsApp to {host_info['name']} at {host_phone}")
+                                logger.info(f"Sending WhatsApp to {host_info['name']} at {host_phone}")
                                 send_message(V_name, Number, reason, host_info['name'], host_phone)
                             except Exception as e:
-                                print(f"WhatsApp Error: {e}")
+                                logger.error(f"WhatsApp Error: {e}")
                                 
                         threading.Thread(target=send_wa).start()
                         
@@ -203,9 +231,9 @@ def get_data():
             
         return flask.redirect(flask.url_for('home'))
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return f"Internal Server Error: {e}", 500
+        logger.exception("Error processing visitor data")
+        flask.flash("An internal error occurred. Please try again.", 'error')
+        return flask.redirect(flask.url_for('home'))
 
 @app.route('/entry_data',methods = ['GET','POST'])
 def entry_data():
@@ -226,18 +254,18 @@ def entry_data():
     
     # If host is found and is Online (status=1), send internal notification
     if host and host.get('status') == 1:
-        print(f"Host {name} is Online. Sending Popup Notification.")
+        logger.info(f"Host {name} is Online. Sending Popup Notification.")
         add_notification(host['login_id'], V_name, reason)
         
     else:
         # Host is Offline or not found (fallback), send WhatsApp
-        print(f"Host {name} is Offline. Sending WhatsApp.")
+        logger.info(f"Host {name} is Offline. Sending WhatsApp.")
         def send_notification():
             try:
                 # Send message to Host (host_number), about Visitor (V_name)
                 send_message(V_name, Number, reason, name, host_number) 
             except Exception as e:
-                print(f"Failed to send WhatsApp: {e}")
+                logger.error(f"Failed to send WhatsApp: {e}")
 
         threading.Thread(target=send_notification).start()
     
@@ -341,10 +369,10 @@ def process_check_out():
     visitor_name = flask.request.form.get('visitor_name')
     phone = flask.request.form.get('phone')
     
-    print(f"DEBUG: process_check_out called with name='{visitor_name}', phone='{phone}'")
+    logger.debug(f"process_check_out called with name='{visitor_name}', phone='{phone}'")
 
     if not visitor_name or not phone:
-        print("DEBUG: Missing details")
+        logger.warning("Missing visitor details for check-out")
         flask.flash("Missing visitor details for check-out.", 'error')
         return flask.redirect(flask.url_for('check_out_page'))
         
@@ -514,11 +542,70 @@ def action_visitor():
     finally:
         conn.close()
 
+# Health check endpoint
+@app.route('/health')
+def health_check():
+    """Health check endpoint for monitoring and container orchestration."""
+    try:
+        # Test database connectivity
+        from db import get_db_connection
+        conn = get_db_connection()
+        conn.execute('SELECT 1').fetchone()
+        conn.close()
+        
+        return flask.jsonify({
+            'status': 'healthy',
+            'service': 'visitor_management',
+            'timestamp': time.time()
+        }), 200
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return flask.jsonify({
+            'status': 'unhealthy',
+            'error': str(e)
+        }), 503
+
+
+# Error handlers
+@app.errorhandler(404)
+def not_found_error(error):
+    """Handle 404 errors."""
+    if flask.request.path.startswith('/api/'):
+        return flask.jsonify({'error': 'Not found'}), 404
+    return flask.render_template('errors/404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Handle 500 errors."""
+    logger.exception("Internal server error")
+    if flask.request.path.startswith('/api/'):
+        return flask.jsonify({'error': 'Internal server error'}), 500
+    return flask.render_template('errors/500.html'), 500
+
+
+@app.errorhandler(403)
+def forbidden_error(error):
+    """Handle 403 errors."""
+    if flask.request.path.startswith('/api/'):
+        return flask.jsonify({'error': 'Forbidden'}), 403
+    return flask.render_template('errors/403.html'), 403
+
+
+# Register SEO routes blueprint
+from seo_routes import seo_bp
+app.register_blueprint(seo_bp)
+
+
 if __name__ == '__main__':
     from employee_db import create_table as create_employee_table
+    
+    logger.info("Initializing databases...")
     # Ensure DBs exist
     init_db()
     create_employee_table()
+    vehicle_db.create_table()
+    logger.info("Database initialization complete")
 
     import socket
     try:
@@ -527,8 +614,14 @@ if __name__ == '__main__':
         s.connect(("8.8.8.8", 80))
         ip_address = s.getsockname()[0]
         s.close()
-        print(f"\nExample App running on: http://{ip_address}:5000\n")
+        logger.info(f"Starting server on http://{ip_address}:{config_obj.PORT}")
+        print(f"\n🚀 Visitor Management System running on: http://{ip_address}:{config_obj.PORT}\n")
     except Exception as e:
-        print(f"Could not determine IP: {e}")
+        logger.warning(f"Could not determine IP: {e}")
+        print(f"\n🚀 Visitor Management System running on: http://localhost:{config_obj.PORT}\n")
     
-    app.run(host='0.0.0.0',port=5000,debug=True)
+    app.run(
+        host=config_obj.HOST,
+        port=config_obj.PORT,
+        debug=config_obj.DEBUG
+    )

@@ -1,0 +1,8 @@
+# User-agent: *
+# Disallow all search engines from indexing this internal application
+
+User-agent: *
+Disallow: /
+
+# This is an internal visitor management system
+# Not intended for public search engine indexing

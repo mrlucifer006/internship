@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - Visitor Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .error-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 6rem;
+            margin: 0;
+            color: #667eea;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin: 1rem 0;
+            color: #333;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="error-container">
+        <h1>404</h1>
+        <h2>Page Not Found</h2>
+        <p>The page you're looking for doesn't exist or has been moved.</p>
+        <a href="{{ url_for('home') }}" class="btn">Go to Home</a>
+    </div>
+</body>
+
+</html>

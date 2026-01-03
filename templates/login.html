@@ -2,13 +2,34 @@
 <html lang="en">
 
 <head>
+    {# Primary Meta Tags #}
     <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Login - Gate Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap"
-        rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Login - Visitor Management System | Secure Gate Portal</title>
+    <meta name="description"
+        content="Secure login portal for visitor management system. Access gate security, logistics tracking, and employee management features." />
+    <meta name="keywords" content="visitor management login, security portal, gate access, employee authentication" />
+    <meta name="robots" content="noindex, nofollow" />
+
+    {# Open Graph / Facebook #}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Login - Visitor Management System" />
+    <meta property="og:description" content="Secure login portal for enterprise visitor and logistics management" />
+    <meta property="og:site_name" content="Visitor Management System" />
+
+    {# Twitter Card #}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Login - Visitor Management System" />
+    <meta name="twitter:description" content="Secure access to visitor and logistics management portal" />
+
+    {# Theme #}
+    <meta name="theme-color" content="#1e73be" />
+    <meta name="application-name" content="Visitor Management System" />
+
+    {# Fonts and Styles #}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script>
@@ -20,6 +41,18 @@
                 },
             },
         }
+    </script>
+
+    {# Structured Data #}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Visitor Management System",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Professional visitor and logistics management system with secure authentication"
+    }
     </script>
 </head>
 
@@ -49,22 +82,23 @@
         {% endif %}
         {% endwith %}
 
-        <form action="{{ url_for('login') }}" method="POST" class="flex flex-col gap-5">
+        <form action="{{ url_for('login') }}" method="POST" class="flex flex-col gap-5" role="form"
+            aria-label="Login form">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                <input type="text" name="username" required
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input type="text" id="username" name="username" required autocomplete="username"
                     class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary h-11 px-4 text-base placeholder-gray-400"
-                    placeholder="Enter username">
+                    placeholder="Enter username" aria-required="true">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input type="password" name="password" required
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password"
                     class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary h-11 px-4 text-base placeholder-gray-400"
-                    placeholder="••••••••">
+                    placeholder="••••••••" aria-required="true">
             </div>
 
-            <button type="submit"
+            <button type="submit" aria-label="Sign in to visitor management system"
                 class="w-full bg-[#1e73be] hover:bg-blue-700 text-white font-bold h-12 rounded-lg transition-colors shadow-sm mt-2">
                 Sign In
             </button>
