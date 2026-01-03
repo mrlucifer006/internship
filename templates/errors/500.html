@@ -1,72 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Internal Server Error - Visitor Management</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            color: #333;
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>500 Internal Server Error - Gate Portal</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#195de6",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    animation: {
+                        'float-slow': 'float 8s ease-in-out infinite',
+                        'float-medium': 'float 6s ease-in-out infinite reverse',
+                        'float-fast': 'float 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                },
+            },
         }
-
-        .error-container {
-            background: white;
-            padding: 3rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 500px;
+    </script>
+<style>
+        .perspective-container {
+            perspective: 1000px;
         }
-
-        h1 {
-            font-size: 6rem;
-            margin: 0;
-            color: #f5576c;
+        .preserve-3d {
+            transform-style: preserve-3d;
         }
-
-        h2 {
-            font-size: 1.8rem;
-            margin: 1rem 0;
-            color: #333;
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
-
-        p {
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .btn {
-            display: inline-block;
-            margin-top: 1.5rem;
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            transition: transform 0.2s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
+        .dark .glass-panel {
+            background: rgba(17, 22, 33, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-[#111318] dark:text-white transition-colors duration-200 overflow-hidden" onmousemove="handleMouseMove(event)">
+<div class="relative flex h-screen min-h-screen w-full items-center justify-center overflow-hidden perspective-container">
+<div class="absolute inset-0 w-full h-full pointer-events-none z-0 preserve-3d flex items-center justify-center" id="scene">
+<div class="absolute w-[800px] h-[800px] rounded-full border-[2px] border-primary/5 dark:border-primary/10 transition-transform duration-100 ease-out parallax-layer" data-depth="0.02"></div>
+<div class="absolute top-[15%] left-[15%] w-24 h-24 bg-gradient-to-br from-primary/20 to-transparent rounded-xl shadow-lg animate-float-slow parallax-layer transition-transform duration-100 ease-out" data-depth="0.05" style="transform: rotate(15deg);">
+<div class="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-sm rounded-xl border border-white/20"></div>
+</div>
+<div class="absolute bottom-[20%] right-[15%] w-32 h-32 bg-gradient-to-tl from-primary/10 to-transparent rounded-2xl shadow-xl animate-float-medium parallax-layer transition-transform duration-100 ease-out" data-depth="0.08" style="transform: rotate(-10deg);">
+<div class="absolute inset-0 bg-white/5 dark:bg-black/5 backdrop-blur-sm rounded-2xl border border-white/10"></div>
+</div>
+<div class="absolute top-[20%] right-[25%] w-16 h-16 rounded-full bg-primary/10 shadow-inner animate-float-fast parallax-layer transition-transform duration-100 ease-out" data-depth="0.04"></div>
+<div class="absolute bottom-[25%] left-[20%] w-12 h-24 rounded-full bg-gradient-to-t from-gray-200/50 to-transparent dark:from-gray-700/30 animate-float-slow parallax-layer transition-transform duration-100 ease-out" data-depth="0.06" style="transform: rotate(45deg);"></div>
+<div class="absolute inset-0 bg-[linear-gradient(rgba(25,93,230,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(25,93,230,0.03)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] -z-10 parallax-layer" data-depth="0.01"></div>
+</div>
+<main class="relative z-10 flex flex-col items-center justify-center p-4 w-full parallax-layer" data-depth="0.01">
+<div class="layout-content-container flex flex-col max-w-[640px] w-full items-center text-center">
+<div class="glass-panel p-12 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-transform duration-200 ease-out transform-style-3d hover:scale-[1.01]" id="card">
+<div class="mb-8 flex h-32 w-32 mx-auto items-center justify-center rounded-full bg-gradient-to-b from-primary/10 to-transparent ring-1 ring-primary/20 shadow-lg relative group">
+<div class="absolute inset-0 rounded-full bg-primary/5 blur-xl group-hover:bg-primary/10 transition-all duration-500"></div>
+<span class="material-symbols-outlined text-[64px] text-primary relative z-10 drop-shadow-sm">dns</span>
+</div>
+<div class="flex flex-col items-center gap-2 mb-6">
+<h1 class="text-primary text-9xl font-black leading-none tracking-tighter opacity-90 drop-shadow-sm select-none" style="text-shadow: 0 4px 12px rgba(25, 93, 230, 0.2);">
+                            500
+                        </h1>
+<h2 class="text-3xl font-bold leading-tight tracking-[-0.015em] text-[#111318] dark:text-white mt-4">
+                            Internal Server Error
+                        </h2>
+</div>
+<p class="text-[#636f88] dark:text-[#9ca3af] text-lg font-normal leading-relaxed max-w-[480px] mx-auto">
+                        Oops! We are experiencing a temporary server problem. Please try again later or contact the system administrator if the issue persists.
+                    </p>
+</div>
+</div>
+</main>
+</div>
+<script>
+        function handleMouseMove(event) {
+            const layers = document.querySelectorAll('.parallax-layer');
+            const card = document.getElementById('card');
+            const x = (window.innerWidth - event.pageX * 2) / 100;
+            const y = (window.innerHeight - event.pageY * 2) / 100;
+            layers.forEach(layer => {
+                const depth = layer.getAttribute('data-depth');
+                const moveX = x * depth * 100;
+                const moveY = y * depth * 100;
+                let currentTransform = layer.style.transform || '';
+                let rotation = '';
+                if (currentTransform.includes('rotate')) {
+                    const match = currentTransform.match(/rotate\(([^)]+)\)/);
+                    if (match) rotation = ` rotate(${match[1]})`;
+                }
+                layer.style.transform = `translate3d(${moveX}px, ${moveY}px, 0)${rotation}`;
+            });
+            if (card) {
+                const cardX = (window.innerWidth / 2 - event.pageX) / 50;
+                const cardY = (window.innerHeight / 2 - event.pageY) / 50;
+                card.style.transform = `perspective(1000px) rotateY(${cardX}deg) rotateX(${cardY}deg)`;
+            }
+        }
+    </script>
 
-<body>
-    <div class="error-container">
-        <h1>500</h1>
-        <h2>Internal Server Error</h2>
-        <p>Something went wrong on our end. Please try again later or contact support if the problem persists.</p>
-        <a href="{{ url_for('home') }}" class="btn">Go to Home</a>
-    </div>
-</body>
-
-</html>
+</body></html>
