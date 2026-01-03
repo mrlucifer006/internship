@@ -27,6 +27,7 @@ PyWhatKit_DB.txt
 # Application logs
 *.log
 logs/
+uploads/
 
 # IDE
 .vscode/
@@ -46,4 +47,8 @@ htmlcov/
 build/
 dist/
 *.egg-info/
+employee.db
+employee.db
+*.db
+*.db
 employee.db

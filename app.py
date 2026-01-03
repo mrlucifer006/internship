@@ -130,6 +130,22 @@ def logout():
     flask.session.pop('login_id', None)
     return flask.redirect(flask.url_for('login'))
 
+def get_base_path():
+    """Get the persistent base path for file storage (works for both script and exe)."""
+    import sys
+    if getattr(sys, 'frozen', False):
+        # Running as PyInstaller bundle
+        return os.path.dirname(sys.executable)
+    else:
+        # Running as script
+        return os.path.dirname(os.path.abspath(__file__))
+
+@app.route('/uploads/<path:filename>')
+def serve_upload(filename):
+    """Serve uploaded files from the persistent uploads directory."""
+    upload_dir = os.path.join(get_base_path(), 'uploads')
+    return flask.send_from_directory(upload_dir, filename)
+
 @app.route('/')
 def index():
     return flask.redirect(flask.url_for('login'))
@@ -318,14 +334,7 @@ def process_logistics_entry():
             file = flask.request.files['vehicle_photo']
             if file and file.filename != '':
                 # Use persistent path next to the executable (not temp folder)
-                import sys
-                if getattr(sys, 'frozen', False):
-                    # Running as PyInstaller bundle
-                    base_path = os.path.dirname(sys.executable)
-                else:
-                    # Running as script
-                    base_path = os.path.dirname(os.path.abspath(__file__))
-                upload_folder = os.path.join(base_path, 'uploads', 'vehicles')
+                upload_folder = os.path.join(get_base_path(), 'uploads', 'vehicles')
                 os.makedirs(upload_folder, exist_ok=True)
                 
                 # Secure filename and save
@@ -386,11 +395,13 @@ def process_logistics_exit():
         if 'vehicle_photo' in flask.request.files:
             file = flask.request.files['vehicle_photo']
             if file and file.filename != '':
-                upload_folder = os.path.join(app.static_folder, 'uploads', 'vehicles')
+                # Use persistent path next to the executable (not temp folder)
+                upload_folder = os.path.join(get_base_path(), 'uploads', 'vehicles')
                 os.makedirs(upload_folder, exist_ok=True)
                 import time
                 ext = os.path.splitext(file.filename)[1]
-                safe_name = f"veh_exit_{int(time.time())}{ext}"
+                timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+                safe_name = f"veh_exit_{timestamp}{ext}"
                 file.save(os.path.join(upload_folder, safe_name))
                 photo_filename = safe_name
 

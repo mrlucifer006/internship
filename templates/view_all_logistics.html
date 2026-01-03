@@ -162,7 +162,7 @@
                                 <td class="table-td">{{ vehicle.purchase_no or '-' }}</td>
                                 <td class="table-td text-center">
                                     {% if vehicle.vehicle_img %}
-                                    <a href="{{ url_for('static', filename='uploads/vehicles/' + vehicle.vehicle_img) }}"
+                                    <a href="{{ url_for('serve_upload', filename='vehicles/' + vehicle.vehicle_img) }}"
                                         target="_blank"
                                         class="inline-flex items-center justify-center size-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
                                         <span class="material-symbols-outlined text-lg">image</span>
