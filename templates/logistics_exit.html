@@ -75,49 +75,65 @@
             </div>
         </div>
         <nav class="flex-1 overflow-y-auto px-3 py-6 space-y-1">
-            <div class="px-3 mb-2 mt-2">
-                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Portals</span>
+            <div class="px-3 mb-6">
+                <div class="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 flex items-center gap-3">
+                    <div
+                        class="size-10 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-900/30">
+                        {{ session.get('user', 'U')[0]|upper }}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-white font-bold text-sm truncate">{{ session.get('user', 'User') }}</p>
+                        <p class="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">{{
+                            get_role_name(session.get('auth_level')) }}</p>
+                    </div>
+                </div>
             </div>
-            <a class="flex items-center gap-3 px-3 py-2.5 text-slate-400 rounded-lg hover:text-white hover:bg-sidebar-hover transition-colors group"
-                href="#">
+
+            <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Portals</div>
+
+            <a href="{{ url_for('home') }}"
+                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
                 <span
-                    class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">security</span>
-                <span class="text-sm font-medium">Gate Portal</span>
+                    class="material-symbols-outlined text-[22px] group-hover:text-indigo-400 transition-colors">security</span>
+                <span class="font-medium text-sm">Gate Portal</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 bg-[#4f46e5] text-white rounded-lg shadow-md shadow-indigo-900/20"
-                href="#">
-                <span class="material-symbols-outlined text-[20px]">local_shipping</span>
-                <span class="text-sm font-medium">Logistics Portal</span>
+
+            <a href="{{ url_for('logistics') }}"
+                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-600 text-white shadow-md shadow-indigo-900/20 transition-all">
+                <span class="material-symbols-outlined text-[22px]">local_shipping</span>
+                <span class="font-medium text-sm">Logistics Portal</span>
             </a>
-            <div class="px-3 mb-2 mt-8">
-                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Admin</span>
-            </div>
-            <a class="flex items-center gap-3 px-3 py-2.5 text-slate-400 rounded-lg hover:text-white hover:bg-sidebar-hover transition-colors group"
-                href="#">
+
+            {% if session.get('auth_level', 0) >= 4 %}
+            <div class="px-3 mt-8 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Admin</div>
+            <a href="{{ url_for('view_status') }}"
+                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
                 <span
-                    class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">bar_chart</span>
-                <span class="text-sm font-medium">View Status</span>
+                    class="material-symbols-outlined text-[22px] group-hover:text-amber-400 transition-colors">bar_chart</span>
+                <span class="font-medium text-sm">View Status</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 text-slate-400 rounded-lg hover:text-white hover:bg-sidebar-hover transition-colors group"
-                href="#">
+            <a href="{{ url_for('new_user') }}"
+                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
                 <span
-                    class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">person_add</span>
-                <span class="text-sm font-medium">Add New User</span>
+                    class="material-symbols-outlined text-[22px] group-hover:text-emerald-400 transition-colors">person_add</span>
+                <span class="font-medium text-sm">Add New User</span>
             </a>
+            {% endif %}
         </nav>
-        <div class="p-4 border-t border-gray-800/50">
-            <button
-                class="flex w-full items-center gap-3 px-3 py-2.5 text-slate-400 rounded-lg hover:text-white hover:bg-sidebar-hover transition-colors group">
+
+        <div class="p-4 border-t border-slate-800">
+            <a href="{{ url_for('logout') }}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-red-900/30 transition-all group">
                 <span
-                    class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">logout</span>
-                <span class="text-sm font-medium">Logout</span>
-            </button>
+                    class="material-symbols-outlined text-[22px] group-hover:text-red-400 transition-colors">logout</span>
+                <span class="font-medium text-sm">Logout</span>
+            </a>
         </div>
     </aside>
     <div class="flex-1 flex flex-row overflow-hidden relative">
         <main class="flex-1 flex flex-col h-full overflow-hidden bg-[#f8fafc] relative">
-            <div class="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth">
-                <div class="max-w-3xl mx-auto w-full pb-28">
+            <div class="flex-1 overflow-y-auto p-6 md:p-10 pb-32 scroll-smooth">
+                <div class="max-w-3xl mx-auto w-full">
                     <div class="flex items-start justify-between mb-8">
                         <div>
                             <h1 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-tight mb-2">New
@@ -130,7 +146,8 @@
                     <div
                         class="bg-white rounded-xl border border-slate-200 shadow-[0_2px_10px_rgba(0,0,0,0.02)] p-6 lg:p-8">
                         <form class="flex flex-col gap-8" id="logistics-form"
-                            onsubmit="event.preventDefault(); handleLogisticsCheckIn();">
+                            action="{{ url_for('process_logistics_exit') }}" method="POST"
+                            enctype="multipart/form-data">
                             <div class="space-y-5">
                                 <h3
                                     class="text-xs font-bold uppercase tracking-wider text-[#4f46e5] flex items-center gap-2">
@@ -142,8 +159,8 @@
                                         <span class="text-slate-700 text-sm font-semibold">Driver Name</span>
                                         <input
                                             class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 px-4 text-sm focus:bg-white transition-all placeholder:text-slate-400"
-                                            id="driver-name" placeholder="Full name from License" required=""
-                                            type="text" />
+                                            id="driver-name" name="driver_name" placeholder="Full name from License"
+                                            required="" type="text" />
                                     </label>
                                     <label class="flex flex-col gap-2">
                                         <span class="text-slate-700 text-sm font-semibold">Driver Phone Number</span>
@@ -154,8 +171,8 @@
                                             </span>
                                             <input
                                                 class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 pl-10 pr-4 text-sm focus:bg-white transition-all placeholder:text-slate-400"
-                                                id="driver-phone" maxlength="10" minlength="10"
-                                                oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length &gt; 10) this.value = this.value.slice(0, 10);"
+                                                id="driver-phone" name="driver_phone" maxlength="10" minlength="10"
+                                                oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length > 10) this.value = this.value.slice(0, 10);"
                                                 pattern="\d{10}" placeholder="10-digit mobile number" required=""
                                                 title="Please enter exactly 10 digits" type="tel" />
                                         </div>
@@ -173,9 +190,9 @@
                                         <span class="text-slate-700 text-sm font-semibold">Vehicle Number</span>
                                         <input
                                             class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 px-4 text-sm focus:bg-white transition-all placeholder:text-slate-400 uppercase tracking-wider font-medium"
-                                            id="vehicle-number" pattern="[A-Za-z]{2}\d{2}[A-Za-z]{2}\d{4}"
-                                            placeholder="e.g. MH01AB1234" required="" title="Format: MH01AB1234"
-                                            type="text" />
+                                            id="vehicle-number" name="vehicle_number"
+                                            pattern="[A-Za-z]{2}\d{2}[A-Za-z]{2}\d{4}" placeholder="e.g. MH01AB1234"
+                                            required="" title="Format: MH01AB1234" type="text" />
                                     </label>
                                     <label class="flex flex-col gap-2">
                                         <span class="text-slate-700 text-sm font-semibold">Purchase Number</span>
@@ -186,7 +203,8 @@
                                             </span>
                                             <input
                                                 class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 pl-10 pr-4 text-sm focus:bg-white transition-all placeholder:text-slate-400"
-                                                id="purchase-number" placeholder="PO or Invoice No." type="text" />
+                                                id="purchase-number" name="purchase_number"
+                                                placeholder="PO or Invoice No." type="text" />
                                         </div>
                                     </label>
                                 </div>
@@ -201,7 +219,8 @@
                                             </span>
                                             <input
                                                 class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 pl-10 pr-4 text-sm focus:bg-white transition-all placeholder:text-slate-400"
-                                                id="loc-from" placeholder="City or Warehouse" required="" type="text" />
+                                                id="loc-from" name="loc_from" placeholder="City or Warehouse"
+                                                required="" type="text" />
                                         </div>
                                     </label>
                                     <label class="flex flex-col gap-2">
@@ -213,8 +232,8 @@
                                             </span>
                                             <input
                                                 class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 pl-10 pr-4 text-sm focus:bg-white transition-all placeholder:text-slate-400"
-                                                id="loc-to" placeholder="Department or Location" required=""
-                                                type="text" />
+                                                id="loc-to" name="loc_to" placeholder="Department or Location"
+                                                required="" type="text" />
                                         </div>
                                     </label>
                                 </div>
@@ -241,7 +260,7 @@
                                             <p class="text-xs text-slate-400">SVG, PNG, JPG (MAX. 5MB)</p>
                                         </div>
                                         <input accept="image/*" class="hidden" id="vehicle-photo-upload"
-                                            onchange="handleFileSelect(this)" type="file" />
+                                            name="vehicle_photo" onchange="handleFileSelect(this)" type="file" />
                                     </label>
                                     <div class="mt-3 hidden flex items-center gap-2 p-2.5 bg-green-50 text-green-700 text-sm rounded-lg border border-green-200 animate-fade-in"
                                         id="file-upload-success">
@@ -253,7 +272,7 @@
                             </div>
                             <div class="flex gap-4 pt-4 border-t border-slate-100">
                                 <button
-                                    class="flex-1 cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-[var(--brand-orange)] hover:bg-[#d9771f] text-white text-sm font-bold tracking-wide shadow-md transition-all active:scale-[0.98] flex gap-2"
+                                    class="flex-1 cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold tracking-wide shadow-md transition-all active:scale-[0.98] flex gap-2"
                                     type="submit">
                                     <span class="material-symbols-outlined text-xl">logout</span>
                                     <span>Record Exit</span>
@@ -268,29 +287,70 @@
                     </div>
                 </div>
             </div>
-            <div class="absolute bottom-6 w-full flex justify-center pointer-events-none z-10">
-                <div class="bg-white border border-slate-200 p-1.5 rounded-full flex shadow-xl pointer-events-auto">
-                    <button
-                        class="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors"
-                        id="mode-new-entry">
-                        <span class="material-symbols-outlined text-[18px]">login</span>
-                        Vehicle Entry
-                    </button>
-                    <button
-                        class="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold bg-[#111827] text-white shadow-md transition-all"
-                        id="mode-visitor-exit">
-                        <span class="material-symbols-outlined text-[18px]">logout</span>
-                        Vehicle Exit
-                    </button>
-                </div>
+            <div
+                class="fixed bottom-1 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border border-slate-200/60 p-1.5 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-30 flex gap-1">
+                <button
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-full text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all hover:text-slate-900"
+                    id="mode-new-entry" onclick="window.location.href='{{ url_for('logistics') }}';">
+                    <span class="material-symbols-outlined text-[18px]">login</span>
+                    <span class="hidden sm:inline">Vehicle Entry</span>
+                </button>
+                <button
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-bold shadow-sm transition-transform hover:scale-105"
+                    id="mode-visitor-exit">
+                    <span class="material-symbols-outlined text-[18px]">logout</span>
+                    <span class="hidden sm:inline">Vehicle Exit</span>
+                </button>
             </div>
         </main>
         <aside class="hidden xl:flex w-80 flex-col border-l border-slate-200 bg-white h-full z-10 shadow-sm">
             <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                 <h3 class="text-slate-800 text-sm font-bold uppercase tracking-wide">Recent Logistics</h3>
-                <button class="text-xs text-[var(--brand-blue)] font-bold hover:underline">VIEW ALL</button>
+                <a href="{{ url_for('view_all_logistics') }}"
+                    class="text-xs text-[var(--brand-blue)] font-bold hover:underline">VIEW ALL</a>
             </div>
             <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-slate-50/30" id="recent-entries-list">
+                {% if recent_vehicles %}
+                {% for vehicle in recent_vehicles %}
+                <div
+                    class="p-4 rounded-lg border border-slate-200 bg-white flex flex-col gap-2 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div class="flex flex-col">
+                            <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wide">{{ vehicle.veh_reg_no
+                                }}
+                            </h4>
+                            <span class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Vehicle
+                                No.</span>
+                        </div>
+                        <span
+                            class="text-[10px] font-bold px-2 py-1 {{ 'bg-blue-50 text-blue-600 border-blue-100' if vehicle.entry_type == 'Entry' else 'bg-orange-50 text-orange-600 border-orange-100' }} rounded-full border uppercase tracking-wide">
+                            {{ vehicle.entry_type|default('Entry') }} {{ vehicle.time.split(' ')[1][:5] if vehicle.time
+                            and ' ' in vehicle.time else 'Now' }}
+                        </span>
+                    </div>
+                    <hr class="border-slate-100 my-1" />
+                    <div class="text-xs text-slate-600 flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px] text-slate-400">person</span>
+                            <span class="font-bold text-slate-700">{{ vehicle.driver_name }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px] text-slate-400">route</span>
+                            <span class="truncate" title="{{ vehicle.origin }} to {{ vehicle.destination }}">
+                                {{ vehicle.origin }} <span class="text-slate-400">→</span> {{ vehicle.destination }}
+                            </span>
+                        </div>
+                        {% if vehicle.vehicle_img %}
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px] text-slate-400">image</span>
+                            <span class="text-[10px] text-green-600 font-bold uppercase tracking-wide">Photo
+                                Attached</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
                 <div
                     class="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-lg bg-white">
                     <div class="bg-slate-50 p-3 rounded-full mb-3">
@@ -299,6 +359,7 @@
                     <p class="text-slate-600 font-medium text-sm">No recent entries</p>
                     <p class="text-slate-400 text-xs mt-1">New logistics entries will appear here</p>
                 </div>
+                {% endif %}
             </div>
         </aside>
     </div>

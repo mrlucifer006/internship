@@ -53,10 +53,13 @@
 <body class="bg-[#f5f7fa] font-display antialiased h-screen flex overflow-hidden">
     <aside class="w-64 bg-sidebar-bg flex-shrink-0 flex flex-col h-full text-white">
         <div class="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
-            <div class="size-8 rounded bg-blue-600 flex items-center justify-center">
-                <span class="material-symbols-outlined text-white text-xl">shield</span>
+            <div class="flex items-center gap-3">
+                <div
+                    class="size-8 rounded bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-900/20">
+                    <span class="material-symbols-outlined text-white text-xl">local_shipping</span>
+                </div>
+                <span class="font-bold text-lg tracking-tight">Logistics</span>
             </div>
-            <span class="font-bold text-lg tracking-tight">GateKeeper</span>
         </div>
         <div class="p-4">
             <div class="bg-slate-800/50 rounded-xl p-3 flex items-center gap-3 mb-2 border border-slate-700/50">
@@ -69,29 +72,45 @@
                 </div>
             </div>
         </div>
-        <div class="flex-1 overflow-y-auto custom-scrollbar">
-            <div class="sidebar-section-title">Portals</div>
-            <a class="sidebar-link" href="#">
-                <span class="material-symbols-outlined text-[20px]">security</span>
+        <nav class="flex-1 overflow-y-auto custom-scrollbar">
+            <div class="px-3 mb-2 mt-2">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Portals</span>
+            </div>
+            <a href="{{ url_for('home') }}"
+                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                <span
+                    class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">security</span>
                 <span class="text-sm font-medium">Gate Portal</span>
             </a>
-            <a class="sidebar-link active" href="#">
+            <a href="{{ url_for('logistics') }}"
+                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#4f46e5] text-white shadow-md shadow-indigo-900/20 transition-all">
                 <span class="material-symbols-outlined text-[20px]">local_shipping</span>
                 <span class="text-sm font-medium">Logistics Portal</span>
             </a>
-            <div class="sidebar-section-title">Admin</div>
-            <a class="sidebar-link" href="#">
-                <span class="material-symbols-outlined text-[20px]">bar_chart</span>
+
+            {% if session.get('auth_level', 0) >= 4 %}
+            <div class="px-3 mb-2 mt-8">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Admin</span>
+            </div>
+            <a href="{{ url_for('view_status') }}"
+                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                <span
+                    class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">bar_chart</span>
                 <span class="text-sm font-medium">View Status</span>
             </a>
-            <a class="sidebar-link" href="#">
-                <span class="material-symbols-outlined text-[20px]">person_add</span>
+            <a href="{{ url_for('new_user') }}"
+                class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                <span
+                    class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">person_add</span>
                 <span class="text-sm font-medium">Add New User</span>
             </a>
-        </div>
-        <div class="p-4 border-t border-slate-800">
-            <a class="flex items-center gap-3 px-2 py-2 text-slate-400 hover:text-white transition-colors" href="#">
-                <span class="material-symbols-outlined text-[20px]">logout</span>
+            {% endif %}
+        </nav>
+        <div class="p-4 border-t border-gray-800/50">
+            <a href="{{ url_for('logout') }}"
+                class="flex w-full items-center gap-3 px-3 py-2.5 text-slate-400 rounded-lg hover:text-white hover:bg-red-900/30 transition-all group">
+                <span
+                    class="material-symbols-outlined text-[20px] group-hover:text-red-400 transition-colors">logout</span>
                 <span class="text-sm font-medium">Logout</span>
             </a>
         </div>
@@ -123,12 +142,40 @@
                                 <th class="table-th">To (Destination)</th>
                                 <th class="table-th">Purchase No.</th>
                                 <th class="table-th text-center">Vehicle Photo</th>
-                                <th class="table-th text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
+                            {% if vehicles %}
+                            {% for vehicle in vehicles %}
+                            <tr class="hover:bg-slate-50 transition-colors group">
+                                <td class="table-td font-medium text-slate-800">{{ vehicle.driver_name }}</td>
+                                <td class="table-td">{{ vehicle.driver_phone }}</td>
+                                <td class="table-td font-mono font-medium">{{ vehicle.veh_reg_no }}</td>
+                                <td class="table-td">{{ vehicle.origin }}</td>
+                                <td class="table-td">
+                                    <div class="flex flex-col">
+                                        <span>{{ vehicle.destination }}</span>
+                                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">{{
+                                            vehicle.entry_type|default('Entry') }}</span>
+                                    </div>
+                                </td>
+                                <td class="table-td">{{ vehicle.purchase_no or '-' }}</td>
+                                <td class="table-td text-center">
+                                    {% if vehicle.vehicle_img %}
+                                    <a href="{{ url_for('static', filename='uploads/vehicles/' + vehicle.vehicle_img) }}"
+                                        target="_blank"
+                                        class="inline-flex items-center justify-center size-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
+                                        <span class="material-symbols-outlined text-lg">image</span>
+                                    </a>
+                                    {% else %}
+                                    <span class="text-slate-300">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
                             <tr>
-                                <td class="px-6 py-16 text-center text-slate-500" colspan="8">
+                                <td class="px-6 py-16 text-center text-slate-500" colspan="7">
                                     <div class="flex flex-col items-center justify-center">
                                         <div class="bg-slate-50 p-4 rounded-full mb-3">
                                             <span class="material-symbols-outlined text-4xl text-slate-300">inbox</span>
@@ -139,23 +186,9 @@
                                     </div>
                                 </td>
                             </tr>
+                            {% endif %}
                         </tbody>
                     </table>
-                </div>
-                <div class="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-white">
-                    <div class="text-sm text-slate-500">
-                        Showing <span class="font-medium text-slate-900">0</span> to <span
-                            class="font-medium text-slate-900">0</span> of <span
-                            class="font-medium text-slate-900">0</span> entries
-                    </div>
-                    <div class="flex gap-2">
-                        <button
-                            class="px-3 py-1 text-sm border border-slate-200 rounded text-slate-400 cursor-not-allowed bg-slate-50"
-                            disabled="">Previous</button>
-                        <button
-                            class="px-3 py-1 text-sm border border-slate-200 rounded text-slate-400 cursor-not-allowed bg-slate-50"
-                            disabled="">Next</button>
-                    </div>
                 </div>
             </div>
         </div>

@@ -294,6 +294,17 @@ def logistics():
 
     return flask.render_template('logistics_entry.html', recent_vehicles=recent_vehicles)
 
+@app.route('/logistics_exit')
+def logistics_exit():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+    
+    # Fetch recent vehicle entries (same as entry mostly)
+    recent_vehicles = vehicle_db.get_all_vehicles()
+    recent_vehicles = recent_vehicles[:10] if recent_vehicles else []
+
+    return flask.render_template('logistics_exit.html', recent_vehicles=recent_vehicles)
+
 @app.route('/process_logistics_entry', methods=['POST'])
 def process_logistics_entry():
     if not is_logged_in():
@@ -324,7 +335,8 @@ def process_logistics_entry():
             "veh_reg_no": flask.request.form.get('vehicle_number').upper(),
             "origin": flask.request.form.get('loc_from'),
             "destination": flask.request.form.get('loc_to'),
-            "vehicle_img": photo_filename
+            "vehicle_img": photo_filename,
+            "entry_type": "Entry"
         }
 
         # 3. Insert into DB
@@ -353,6 +365,59 @@ def process_logistics_entry():
         flask.flash("An error occurred while processing the entry.", "error")
 
     return flask.redirect(flask.url_for('logistics'))
+
+@app.route('/process_logistics_exit', methods=['POST'])
+def process_logistics_exit():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+
+    try:
+        # 1. Handle File Upload
+        photo_filename = None
+        if 'vehicle_photo' in flask.request.files:
+            file = flask.request.files['vehicle_photo']
+            if file and file.filename != '':
+                upload_folder = os.path.join(app.static_folder, 'uploads', 'vehicles')
+                os.makedirs(upload_folder, exist_ok=True)
+                import time
+                ext = os.path.splitext(file.filename)[1]
+                safe_name = f"veh_exit_{int(time.time())}{ext}"
+                file.save(os.path.join(upload_folder, safe_name))
+                photo_filename = safe_name
+
+        # 2. Extract Data
+        data = {
+            "driver_name": flask.request.form.get('driver_name'),
+            "driver_phone": flask.request.form.get('driver_phone'),
+            "veh_reg_no": flask.request.form.get('vehicle_number').upper(),
+            "origin": flask.request.form.get('loc_from'),
+            "destination": flask.request.form.get('loc_to'),
+            "purchase_no": flask.request.form.get('purchase_number'),
+            "vehicle_img": photo_filename,
+            "entry_type": "Exit"
+        }
+
+        # 3. Insert into DB (inserts new record for history)
+        if vehicle_db.insert_vehicle(data):
+            # 4. Success Message
+            flask.flash("Logistics exit recorded successfully!", "success")
+        else:
+            flask.flash("Failed to record exit.", "error")
+
+    except Exception as e:
+        print(f"Error processing logistics exit: {e}")
+        flask.flash("An error occurred while processing the exit.", "error")
+
+    return flask.redirect(flask.url_for('logistics_exit'))
+
+@app.route('/view_all_logistics')
+def view_all_logistics():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+        
+    # Fetch all vehicle entries
+    all_vehicles = vehicle_db.get_all_vehicles()
+    return flask.render_template('view_all_logistics.html', vehicles=all_vehicles)
 
 @app.route('/check_out_page')
 def check_out_page():
