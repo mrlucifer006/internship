@@ -19,3 +19,4 @@ black==23.12.1
 
 # Utilities
 click==8.1.7
+pywin32==306
