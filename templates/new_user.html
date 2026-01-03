@@ -176,7 +176,7 @@
                                             class="absolute left-4 text-text-secondary material-symbols-outlined text-[20px]">call</span>
                                         <input
                                             class="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 pl-11 py-3 text-base text-text-main placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
-                                            type="tel" value="+91" name="phone" required />
+                                            type="tel" name="phone" required />
                                     </div>
                                 </label>
                                 <label class="flex flex-col gap-2">
@@ -186,10 +186,11 @@
                                             class="absolute left-4 text-text-secondary material-symbols-outlined text-[20px]">lock</span>
                                         <input
                                             class="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 pl-11 py-3 text-base text-text-main placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
-                                            placeholder="••••••••" type="password" name="password" required />
+                                            placeholder="••••••••" type="password" name="password" id="password-input"
+                                            required />
                                         <button
                                             class="absolute right-4 text-text-secondary hover:text-primary transition-colors"
-                                            type="button">
+                                            type="button" onclick="togglePassword(this)">
                                             <span class="material-symbols-outlined text-[20px]">visibility</span>
                                         </button>
                                     </div>
@@ -202,7 +203,7 @@
                                         <h3 class="text-text-main text-lg font-bold">Authority Level</h3>
                                     </div>
                                     <div class="px-3 py-1 bg-primary/10 rounded text-primary text-sm font-bold"
-                                        id="slider-value-display">Level 3</div>
+                                        id="slider-value-display">Level 3 - Employee</div>
                                 </div>
                                 <div class="pt-6 pb-2 px-2">
                                     <div class="relative w-full h-12 flex items-center">
@@ -263,9 +264,21 @@
                 2: 'Supervisor',
                 3: 'Employee',
                 4: 'Admin',
-                5: 'Admin'
+                5: 'Developer'
             };
             display.textContent = `Level ${val} - ${roles[val]}`;
+        }
+
+        function togglePassword(btn) {
+            const input = document.getElementById('password-input');
+            const icon = btn.querySelector('span');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
         }
     </script>
 
