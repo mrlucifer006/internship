@@ -15,7 +15,7 @@ from db import init_db
 import vehicle_db
 
 # Import services
-from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp
+from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp, get_entries_paginated
 from employee_db import (
     get_employee_phone, check_credentials, insert_employee, 
     update_employee_status, add_notification, get_employee_by_name, 
@@ -151,13 +151,19 @@ def index():
     return flask.redirect(flask.url_for('login'))
 
 @app.route('/home')
-def home ():
+def home():
     if not is_logged_in():
         return flask.redirect(flask.url_for('login'))
         
-    entries = get_all_entries() # For now, showing all. Could be recent.
+    page = flask.request.args.get('page', 1, type=int)
+    per_page = 10 # Default to 10 for sidebar list
+    
+    # Use paginated fetching
+    pagination = get_entries_paginated(page=page, per_page=per_page)
+    entries = pagination.data # For backward compatibility if templates use 'entries' directly
+    
     employees = get_all_employees()
-    return flask.render_template('home.html', entries=entries, employees=employees)
+    return flask.render_template('home.html', entries=entries, employees=employees, pagination=pagination)
 
 @app.route('/data',methods=['GET','POST'])
 def get_data():

@@ -180,12 +180,43 @@
 
             <main class="flex-1 flex flex-col xl:flex-row overflow-hidden relative">
                 <!-- Form Area -->
-                <div class="flex-1 overflow-y-auto p-6 md:p-10 pb-32 scroll-smooth">
+                <div class="flex-1 overflow-y-auto p-6 md:p-10 pb-32 scroll-smooth relative">
+                    <!-- Skeleton Overlay -->
+                    <div id="main-skeleton"
+                        class="absolute inset-0 z-20 bg-background-light p-6 md:p-10 transition-opacity duration-500">
+                        <div class="max-w-3xl mx-auto flex flex-col gap-8">
+                            <div class="flex flex-col gap-2">
+                                <div class="h-10 w-48 bg-slate-200 rounded animate-pulse"></div>
+                                <div class="h-5 w-64 bg-slate-200 rounded animate-pulse"></div>
+                            </div>
+                            <div class="bg-white rounded-xl border border-slate-200 p-6 md:p-8 shadow-sm space-y-8">
+                                <div class="space-y-4">
+                                    <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
+                                    <div class="h-11 w-full bg-slate-100 rounded animate-pulse"></div>
+                                </div>
+                                <hr class="border-slate-100" />
+                                <div class="space-y-4">
+                                    <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
+                                    <div class="grid md:grid-cols-2 gap-5">
+                                        <div class="h-11 w-full bg-slate-100 rounded animate-pulse"></div>
+                                        <div class="h-11 w-full bg-slate-100 rounded animate-pulse"></div>
+                                    </div>
+                                    <div class="h-11 w-full bg-slate-100 rounded animate-pulse"></div>
+                                </div>
+                                <div class="flex gap-4 pt-2">
+                                    <div class="flex-1 h-11 bg-indigo-200 rounded animate-pulse"></div>
+                                    <div class="w-32 h-11 bg-slate-100 rounded animate-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="max-w-3xl mx-auto flex flex-col gap-8">
                         <div class="flex flex-col gap-2">
                             <h1 class="text-slate-800 text-3xl font-bold tracking-tight">New Visitor Entry</h1>
                             <p class="text-slate-500">Please verify details before logging entry.</p>
                         </div>
+                        <!-- ... rest of form ... -->
 
                         {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
@@ -369,7 +400,48 @@
                         </div>
                         {% endfor %}
                     </div>
+
+                    <!-- Pagination Controls -->
+                    {% if pagination and pagination.total_pages > 1 %}
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-200 mt-auto">
+                        <div class="flex gap-2">
+                            {% if pagination.has_prev %}
+                            <a href="{{ url_for('home', page=pagination.page - 1) }}"
+                                class="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
+                                title="Previous Page">
+                                <span class="material-symbols-outlined text-sm">chevron_left</span>
+                            </a>
+                            {% else %}
+                            <button disabled
+                                class="p-2 rounded-lg border border-slate-100 text-slate-300 cursor-not-allowed">
+                                <span class="material-symbols-outlined text-sm">chevron_left</span>
+                            </button>
+                            {% endif %}
+
+                            {% if pagination.has_next %}
+                            <a href="{{ url_for('home', page=pagination.page + 1) }}"
+                                class="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
+                                title="Next Page">
+                                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                            </a>
+                            {% else %}
+                            <button disabled
+                                class="p-2 rounded-lg border border-slate-100 text-slate-300 cursor-not-allowed">
+                                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                        <span class="text-xs font-medium text-slate-500">
+                            Page {{ pagination.page }} of {{ pagination.total_pages }}
+                        </span>
+                    </div>
+                    {% endif %}
                 </aside>
+
+                <!-- Pagination Controls for Sidebar (Mobile & Desktop) -->
+                <div class="xl:hidden fixed bottom-20 right-4 flex flex-col gap-2 z-20">
+                    <!-- Mobile specific controls could go here if needed, but sidebar handles it mostly -->
+                </div>
             </main>
 
             <!-- Bottom Mode Switcher -->
@@ -653,6 +725,21 @@
             list.classList.toggle('block');
             icon.classList.toggle('rotate-180');
         }
+
+        // Skeleton Loading Simulation
+        window.addEventListener('load', () => {
+            const skeleton = document.getElementById('main-skeleton');
+            if (skeleton) {
+                // Minimum display time to prevent flickering (e.g. 500ms)
+                setTimeout(() => {
+                    skeleton.style.opacity = '0';
+                    skeleton.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        skeleton.remove();
+                    }, 500);
+                }, 400);
+            }
+        });
     </script>
     <!-- Notification Sound -->
     <audio id="notification-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"

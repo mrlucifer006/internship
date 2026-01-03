@@ -1,4 +1,5 @@
 from db import get_db_connection, trigger_backup
+from pagination import paginate_query, PaginationResult
 from datetime import datetime
 import sqlite3
 import logging
@@ -187,6 +188,55 @@ def get_latest_visitor_timestamp():
         return None
     except Exception:
         return None
+    finally:
+        conn.close()
+
+
+def get_entries_paginated(page: int = 1, per_page: int = 50) -> PaginationResult:
+    """
+    Get visitor entries with pagination.
+    """
+    conn = get_db_connection()
+    try:
+        base_query = "SELECT * FROM visitors"
+        count_query = "SELECT COUNT(*) FROM visitors"
+        
+        # We can add filtering here if needed (e.g., search)
+        
+        base_query += " ORDER BY id DESC" # Show newest first
+        
+        result = paginate_query(conn, base_query, count_query, (), page, per_page)
+        
+        mapped_data = []
+        for row in result.data:
+            mapped_data.append({
+                'V_name': row['name'],
+                'Number': row['phone'],
+                'name': row['person_to_visit'],
+                'reason': row['reason'],
+                'vehicle': row['has_vehicle'],
+                'vehicle_number': row['vehicle_number'],
+                'entry_time': row['entry_time'],
+                'exit_time': row['exit_time'],
+                'approval_status': row['approval_status'] if 'approval_status' in row.keys() else 'Approved',
+                'denial_reason': row['denial_reason'] if 'denial_reason' in row.keys() else None,
+                'id': row['id']
+            })
+        result.data = mapped_data
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error getting paginated entries: {e}")
+        return PaginationResult(
+            data=[],
+            page=1,
+            per_page=per_page,
+            total=0,
+            total_pages=1,
+            has_next=False,
+            has_prev=False
+        )
     finally:
         conn.close()
 

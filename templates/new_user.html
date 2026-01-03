@@ -40,6 +40,23 @@
         }
         .text-primary { color: var(--brand-blue); }
         .bg-primary { background-color: var(--brand-blue); }
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        .skeleton {
+            background: #f6f7f8;
+            background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+            background-repeat: no-repeat;
+            background-size: 1000px 100%; 
+            display: inline-block;
+            position: relative; 
+            animation-duration: 1s;
+            animation-fill-mode: forwards; 
+            animation-iteration-count: infinite;
+            animation-name: shimmer;
+            animation-timing-function: linear;
+        }
     </style>
 </head>
 
@@ -133,7 +150,49 @@
                     {{ session.get('user', 'U')[0]|upper }}</div>
             </header>
 
-            <main class="flex-1 overflow-y-auto p-6 md:p-10 flex justify-center">
+            <main class="flex-1 overflow-y-auto p-6 md:p-10 flex justify-center relative">
+                <!-- Skeleton Overlay -->
+                <div id="form-skeleton"
+                    class="absolute inset-0 z-20 bg-[#f5f7f8] p-6 md:p-10 flex justify-center transition-opacity duration-500">
+                    <div class="w-full max-w-[960px] flex flex-col gap-6">
+                        <div class="flex flex-col gap-2">
+                            <div class="h-10 w-48 bg-slate-200 rounded animate-pulse"></div>
+                        </div>
+                        <div class="bg-white rounded-xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-8">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
+                                    <div class="h-12 w-full bg-slate-100 rounded animate-pulse"></div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
+                                    <div class="h-12 w-full bg-slate-100 rounded animate-pulse"></div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
+                                    <div class="h-12 w-full bg-slate-100 rounded animate-pulse"></div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
+                                    <div class="h-12 w-full bg-slate-100 rounded animate-pulse"></div>
+                                </div>
+                            </div>
+                            <div class="h-px bg-gray-200 w-full"></div>
+                            <div class="space-y-6">
+                                <div class="flex justify-between">
+                                    <div class="h-6 w-32 bg-slate-200 rounded animate-pulse"></div>
+                                    <div class="h-6 w-32 bg-slate-200 rounded animate-pulse"></div>
+                                </div>
+                                <div class="h-12 w-full bg-slate-100 rounded animate-pulse"></div>
+                            </div>
+                            <div class="flex justify-end gap-4 pt-4">
+                                <div class="h-12 w-24 bg-slate-100 rounded animate-pulse"></div>
+                                <div class="h-12 w-32 bg-indigo-100 rounded animate-pulse"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="w-full max-w-[960px] flex flex-col gap-6">
                     <div class="flex flex-col gap-2">
                         <h1
@@ -300,6 +359,20 @@
             sidebar.classList.toggle('-translate-x-full');
             overlay.classList.toggle('hidden');
         }
+
+        // Skeleton Loading Simulation
+        window.addEventListener('load', () => {
+            const skeleton = document.getElementById('form-skeleton');
+            if (skeleton) {
+                setTimeout(() => {
+                    skeleton.style.opacity = '0';
+                    skeleton.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        skeleton.remove();
+                    }, 500);
+                }, 400);
+            }
+        });
     </script>
 
 </body>

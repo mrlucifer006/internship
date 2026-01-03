@@ -68,6 +68,23 @@
         .status-badge-out {
             @apply bg-gray-100 text-gray-700 border-gray-200;
         }
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        .skeleton {
+            background: #f6f7f8;
+            background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+            background-repeat: no-repeat;
+            background-size: 1000px 100%; 
+            display: inline-block;
+            position: relative; 
+            animation-duration: 1s;
+            animation-fill-mode: forwards; 
+            animation-iteration-count: infinite;
+            animation-name: shimmer;
+            animation-timing-function: linear;
+        }
     </style>
 </head>
 
@@ -162,7 +179,36 @@
                     {{ session.get('user', 'U')[0]|upper }}</div>
             </header>
 
-            <main class="flex-1 overflow-y-auto p-6 lg:p-10">
+            <main class="flex-1 overflow-y-auto p-6 lg:p-10 relative">
+                <!-- Skeleton Overlay -->
+                <div id="table-skeleton"
+                    class="absolute inset-0 z-20 bg-background-light p-6 lg:p-10 transition-opacity duration-500">
+                    <div class="w-full max-w-[1400px] mx-auto flex flex-col gap-6">
+                        <div class="flex justify-between items-center h-10 mb-4">
+                            <div class="h-8 w-48 bg-slate-200 rounded animate-pulse"></div>
+                            <div class="h-10 w-64 bg-slate-200 rounded animate-pulse"></div>
+                        </div>
+                        <div
+                            class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-4">
+                            <!-- Fake Header -->
+                            <div class="flex gap-4 border-b border-slate-100 pb-4">
+                                <div class="h-4 w-1/6 bg-slate-200 rounded animate-pulse"></div>
+                                <div class="h-4 w-1/6 bg-slate-200 rounded animate-pulse"></div>
+                                <div class="h-4 w-1/6 bg-slate-200 rounded animate-pulse"></div>
+                                <div class="h-4 w-1/6 bg-slate-200 rounded animate-pulse"></div>
+                                <div class="h-4 w-1/6 bg-slate-200 rounded animate-pulse"></div>
+                                <div class="h-4 w-1/6 bg-slate-200 rounded animate-pulse"></div>
+                            </div>
+                            <!-- Fake Rows -->
+                            <div class="h-12 w-full bg-slate-100 rounded animate-pulse"></div>
+                            <div class="h-12 w-full bg-slate-100 rounded animate-pulse"></div>
+                            <div class="h-12 w-full bg-slate-100 rounded animate-pulse"></div>
+                            <div class="h-12 w-full bg-slate-100 rounded animate-pulse"></div>
+                            <div class="h-12 w-full bg-slate-100 rounded animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="w-full max-w-[1400px] mx-auto flex flex-col gap-6">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex flex-col gap-1">
@@ -282,6 +328,21 @@
             sidebar.classList.toggle('-translate-x-full');
             overlay.classList.toggle('hidden');
         }
+
+        // Skeleton Loading Simulation
+        window.addEventListener('load', () => {
+            const skeleton = document.getElementById('table-skeleton');
+            if (skeleton) {
+                // Minimum display time to prevent flickering (e.g. 500ms)
+                setTimeout(() => {
+                    skeleton.style.opacity = '0';
+                    skeleton.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        skeleton.remove();
+                    }, 500);
+                }, 400);
+            }
+        });
     </script>
 </body>
 

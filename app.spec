@@ -20,6 +20,8 @@ a = Analysis(
         'Whatsapp_message',
         'Logistics_message',
         'seo_routes',
+        'db_backup',
+        'pagination',
         'flask',
         'flask.json',
     ],
