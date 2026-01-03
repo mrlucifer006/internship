@@ -398,6 +398,13 @@
                                 </div>
                             </div>
                         </div>
+                        {% else %}
+                        <div
+                            class="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                            <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">inbox</span>
+                            <p class="text-slate-500 font-medium text-sm">No recent entries</p>
+                            <p class="text-slate-400 text-xs mt-1">New visitor entries will appear here</p>
+                        </div>
                         {% endfor %}
                     </div>
 
