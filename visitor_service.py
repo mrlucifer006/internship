@@ -1,4 +1,4 @@
-from db import get_db_connection
+from db import get_db_connection, trigger_backup
 from datetime import datetime
 import sqlite3
 import logging
@@ -73,6 +73,7 @@ def save_visitor(data):
         phone, host_name, reason, has_vehicle, vehicle_number, datetime.now().isoformat(), approval_status, datetime.now().isoformat()))
         conn.commit()
         visitor_id = cur.lastrowid
+        trigger_backup() # BACKUP TRIGGER
     except Exception as e:
         conn.close()
         return {"success": False, "errors": [str(e)]}
@@ -157,6 +158,7 @@ def check_out_visitor(visitor_name, phone):
             msg = "Visitor checked out successfully."
             
         conn.commit()
+        trigger_backup() # BACKUP TRIGGER
         return {"success": True, "message": msg}
     finally:
         conn.close()

@@ -100,7 +100,7 @@ class DatabaseBackup:
             source_conn.close()
             backup_conn.close()
             
-            logger.info(f"✓ Backup created: {temp_backup_path.name}")
+            logger.info(f"[SUCCESS] Backup created: {temp_backup_path.name}")
             
             if encrypt:
                 if not self.encryption:

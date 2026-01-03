@@ -2,45 +2,15 @@ import sqlite3
 import re
 import bcrypt
 import logging
+from db import get_db_connection, trigger_backup
 
 logger = logging.getLogger(__name__)
 
-DB_NAME = 'employee.db'
-
-def get_db_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-def create_table():
-    try:
-        conn = get_db_connection()
-        with conn:
-            conn.execute("CREATE TABLE IF NOT EXISTS employee (name TEXT NOT NULL, phone TEXT NOT NULL, login_id TEXT NOT NULL, password TEXT NOT NULL, Auth_level INT NOT NULL, status BOOLEAN NOT NULL DEFAULT 0)")
-            conn.execute("CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, host_login_id TEXT NOT NULL, visitor_name TEXT NOT NULL, reason TEXT NOT NULL, visitor_id INTEGER, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, is_read BOOLEAN DEFAULT 0)")
-            
-            # Migration
-            try:
-                conn.execute("ALTER TABLE notifications ADD COLUMN visitor_id INTEGER")
-            except Exception:
-                pass
-                
-        return True
-    except Exception as e:
-        print(f"Error creating table: {e}")
-        return False
-    finally:
-        conn.close()
+# NOTE: DB_NAME is now managed in db.py
 
 def hash_password(password):
     """
     Hash a password using bcrypt.
-    
-    Args:
-        password: Plain text password
-    
-    Returns:
-        Hashed password as a string
     """
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
@@ -51,13 +21,6 @@ def verify_password(plain_password, hashed_password):
     """
     Verify a password against a hash.
     Supports both bcrypt hashed passwords and plain text for backward compatibility.
-    
-    Args:
-        plain_password: Plain text password to verify
-        hashed_password: Hashed password from database
-    
-    Returns:
-        True if password matches, False otherwise
     """
     if not hashed_password:
         return False
@@ -71,7 +34,6 @@ def verify_password(plain_password, hashed_password):
             return False
     else:
         # Backward compatibility: plain text comparison
-        # TODO: Remove this after all passwords are migrated
         logger.warning("Plain text password detected. Please migrate to hashed passwords.")
         return plain_password == hashed_password
 
@@ -79,12 +41,6 @@ def verify_password(plain_password, hashed_password):
 def insert_employee(data):
     """
     Insert a new employee with hashed password.
-    
-    Args:
-        data: Dictionary containing employee information
-    
-    Returns:
-        True if successful, False otherwise
     """
     conn = get_db_connection()
     try:
@@ -97,6 +53,7 @@ def insert_employee(data):
                 (data["name"], "+91"+data["phone"], data["login_id"], hashed_pwd, data["Auth_level"], data["status"])
             )
             logger.info(f"Employee created: {data['login_id']}")
+            trigger_backup() # BACKUP TRIGGER
             return True
     except Exception as e:
         logger.error(f"Error inserting employee: {e}")
@@ -138,14 +95,6 @@ def get_employee_phone(name):
 def check_credentials(login_id, password):
     """
     Check employee credentials with password verification.
-    Supports both hashed and plain-text passwords for migration.
-    
-    Args:
-        login_id: Employee login ID
-        password: Plain text password to verify
-    
-    Returns:
-        Employee dictionary if credentials are valid, None otherwise
     """
     conn = get_db_connection()
     try:
@@ -180,6 +129,7 @@ def update_employee_status(login_id, status):
                 print(f"Warning: update_employee_status - No employee found with login_id: {login_id}")
             else:
                 print(f"Updated status to {status} for {login_id}")
+                trigger_backup() # BACKUP TRIGGER
         return True
     except Exception as e:
         logger.error(f"Error updating employee status: {e}")
@@ -206,6 +156,7 @@ def add_notification(host_login_id, visitor_name, reason, visitor_id=None):
     try:
         with conn:
             conn.execute("INSERT INTO notifications (host_login_id, visitor_name, reason, visitor_id) VALUES (?, ?, ?, ?)", (host_login_id, visitor_name, reason, visitor_id))
+        trigger_backup() # BACKUP TRIGGER
         return True
     except Exception as e:
         logger.error(f"Error adding notification: {e}")
@@ -224,6 +175,7 @@ def get_unread_notifications(host_login_id):
             # Mark as read immediately
             if notifications:
                 conn.execute("UPDATE notifications SET is_read = 1 WHERE host_login_id = ? AND is_read = 0", (host_login_id,))
+                trigger_backup() # BACKUP TRIGGER
             
             return notifications
     except Exception as e:
@@ -276,6 +228,7 @@ def reset_all_employee_statuses():
         with conn:
             conn.execute("UPDATE employee SET status = 0")
             print("All employee statuses have been reset to 0.")
+            trigger_backup() # BACKUP TRIGGER
         return True
     except Exception as e:
         logger.error(f"Error resetting employee statuses: {e}")
