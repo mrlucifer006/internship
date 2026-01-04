@@ -198,14 +198,6 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment guide.
 
 ## Troubleshooting
 
-### Database Errors
-
-- **Error**: "database is locked"
-  - **Solution**: Check if another instance is running. Stop it before starting a new one.
-
-- **Error**: "no such table: employee"
-  - **Solution**: Delete `.db` files and restart. Tables will be recreated automatically.
-
 ### WhatsApp Notifications Failing
 
 - Ensure WhatsApp Web is logged in on the server

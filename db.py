@@ -25,7 +25,7 @@ def get_supabase_client() -> Client:
 
 def get_db_connection():
     """
-    Deprecated: Shim for legacy code using sqlite connection.
+    Deprecated: Shim for legacy code.
     Should be replaced calls with get_supabase_client().
     """
     return get_supabase_client()
