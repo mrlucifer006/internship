@@ -191,7 +191,7 @@ def get_data():
             if vehicle:
                 vehicle_number = flask.request.form.get('vehicle_number')
             # --- CHECK HOST STATUS ---
-            from employee_db import get_employee_by_name, add_notification
+            from employee_db import get_employee_by_name
             host_info = get_employee_by_name({'name': name}) # name is Host Name
             
             is_host_online = False
@@ -213,7 +213,7 @@ def get_data():
             if result["success"]:
                 # Send Notification if Host is Online
                 if is_host_online and result.get("visitor_id"):
-                     add_notification(host_info['login_id'], V_name, reason, visitor_id=result["visitor_id"])
+                     logger.info(f"Host is online. Entry {result.get('visitor_id')} is pending.")
                      flask.flash("Visitor entry pending. Waiting for Host approval.", 'warning')
                 else:
                     # Host is Offline: Send WhatsApp and Notify Guard
