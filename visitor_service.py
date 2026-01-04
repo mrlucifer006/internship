@@ -123,7 +123,7 @@ def check_out_visitor(visitor_name, phone):
         visitor_id = visitor['id']
         status = visitor['status']
         
-        if status != 1:
+        if status not in [0, 1]:
             # Delete from Supabase and local cache
             supabase.table('visitors').delete().eq('id', visitor_id).execute()
             remove_local_visitor(visitor_id)
