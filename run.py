@@ -4,67 +4,63 @@ This script is the entry point for PyInstaller.
 """
 import sys
 import os
-import webbrowser
+import threading
+import webview
 import time
-from threading import Timer
 
-def open_browser():
-    """Open browser after a short delay to allow Flask to start."""
-    time.sleep(2)
-    webbrowser.open('http://localhost:5000')
+# Import Flask app and initialization
+if getattr(sys, 'frozen', False):
+    # Running as compiled executable
+    application_path = sys._MEIPASS
+    sys.path.insert(0, application_path)
+    
+    from app import app, initialize_application
+    
+    # Set template and static folders for bundled app
+    app.template_folder = os.path.join(application_path, 'templates')
+    app.static_folder = os.path.join(application_path, 'static')
+    
+    # Ensure database files are accessible
+    os.chdir(os.path.dirname(sys.executable))
+else:
+    # Running as normal Python script
+    from app import app, initialize_application
 
-if __name__ == '__main__':
-    # Import app after path setup for frozen executable
-    if getattr(sys, 'frozen', False):
-        # Running as compiled executable
-        application_path = sys._MEIPASS
-        
-        # Add the bundle directory to the path
-        sys.path.insert(0, application_path)
-        
-        # Import Flask app
-        from app import app
-        
-        # Set template and static folders for bundled app
-        app.template_folder = os.path.join(application_path, 'templates')
-        app.static_folder = os.path.join(application_path, 'static')
-        
-        # Ensure database files are accessible
-        os.chdir(os.path.dirname(sys.executable))
-    else:
-        # Running as normal Python script
-        from app import app
-    
-    # Open browser automatically
-    Timer(1, open_browser).start()
-    
+def start_server():
+    """Starts the Flask server."""
     # Initialize Application Logic (DB tables, backups, etc.)
     try:
-        app.initialize_application()
-    except AttributeError:
-        # Fallback if app doesn't have the method (during dev) or circular import issues
-        print("Warning: initialize_application not found on app object.")
-    
-    # Run Flask app
-    print("=" * 60)
-    print("Visitor Management System")
-    print("=" * 60)
-    print(f"Starting server at http://localhost:5000")
-    print("Press Ctrl+C to stop the server")
-    print("=" * 60)
-    
+        initialize_application()
+    except Exception as e:
+        print(f"Error during application initialization: {e}")
+
+    # Run Server
     try:
-        # User requested "Gunicorn" (Production Server).
-        # On Windows, 'Waitress' is the recommended WSGI server equivalent to Gunicorn.
         from waitress import serve
-        print("Using Waitress Production Server (Windows-compatible alternative to Gunicorn)")
         serve(app, host='0.0.0.0', port=5000, threads=6)
     except ImportError:
-        print("Waitress not installed. Falling back to Flask Development Server.")
-        print("To use Production Server: pip install waitress")
-        try:
-            app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
-        except KeyboardInterrupt:
-            pass
-    except KeyboardInterrupt:
-        print("\nServer stopped.")
+        app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+
+if __name__ == '__main__':
+    # Start the server in a separate thread
+    t = threading.Thread(target=start_server)
+    t.daemon = True
+    t.start()
+    
+    # Give server a moment to start
+    # Wait loop could be better, but simple delay works for local Flask
+    time.sleep(1) 
+
+    # Create the native window
+    webview.create_window(
+        'Visitor Management System', 
+        'http://localhost:5000',
+        width=1280,
+        height=720,
+        resizable=True,
+        maximized=True
+    )
+    
+    # Start the GUI loop
+    webview.start()
+

@@ -4,6 +4,8 @@ werkzeug==3.0.1
 pywhatkit==5.4
 watchdog==3.0.0
 gunicorn==21.2.0
+pywebview==5.1
+waitress==3.0.0
 
 # Configuration & Security
 python-dotenv==1.0.0

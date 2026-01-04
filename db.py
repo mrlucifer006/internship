@@ -19,6 +19,7 @@ os.makedirs(instance_dir, exist_ok=True)
 
 # Set absolute DB path
 DB_NAME = os.path.join(instance_dir, "visitor_management.db")
+print(f"DEBUG: Database path set to: {DB_NAME}")
 
 logger = logging.getLogger(__name__)
 
