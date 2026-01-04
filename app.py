@@ -746,6 +746,11 @@ def initialize_application():
     except Exception as e:
         logger.error(f"Failed to sync data on startup: {e}")
 
+    # Start the background sync thread
+    sync_thread = threading.Thread(target=continuous_sync, daemon=True)
+    sync_thread.start()
+    logger.info("Continuous sync thread started from initialize_application.")
+
 
 def continuous_sync():
     """Continuously sync data from Supabase in a background thread."""
@@ -756,7 +761,7 @@ def continuous_sync():
             logger.info("Periodic sync finished.")
         except Exception as e:
             logger.error(f"Error in continuous sync thread: {e}")
-        time.sleep(10)
+        time.sleep(config_obj.SYNC_INTERVAL)
 
 
 if __name__ == '__main__':

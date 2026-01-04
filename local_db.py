@@ -70,6 +70,4 @@ def sync_data_from_supabase():
     except Exception as e:
         logger.error(f"Error syncing data from Supabase: {e}")
 
-if __name__ == '__main__':
-    init_db()
-    sync_data_from_supabase()
+

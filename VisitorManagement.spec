@@ -53,6 +53,7 @@ a = Analysis(
         'waitress',
         'cryptography',
         'cache_manager',
+        'db_supabase',
     ],
     hookspath=[],
     hooksconfig={},

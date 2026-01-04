@@ -38,6 +38,9 @@ class Config:
     PORT = int(os.getenv('PORT', 5000))
     DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
     
+    # Sync Configuration
+    SYNC_INTERVAL = int(os.getenv('SYNC_INTERVAL', 10))
+    
     @classmethod
     def validate(cls):
         """Validate required configuration values."""
