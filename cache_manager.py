@@ -472,3 +472,4 @@ def get_paginated_local_vehicles(page=1, per_page=10, search=None):
     finally:
         conn.close()
 
+
