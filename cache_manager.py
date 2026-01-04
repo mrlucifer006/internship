@@ -191,6 +191,7 @@ def update_local_employee(data):
                 data.get('password'),
                 data.get('Auth_level'),
                 data.get('status'),
+                data.get('login_id'),
                 data.get('id')
             ))
         else:
