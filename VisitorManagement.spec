@@ -17,9 +17,7 @@ for root, dirs, files in os.walk('static'):
         static_files.append((os.path.join(root, file), root))
 
 # Database files
-db_files = [
-    ('instance/visitor_management.db', 'instance')
-]
+db_files = []
 
 a = Analysis(
     ['run.py'],
@@ -34,7 +32,12 @@ a = Analysis(
         'jinja2.ext',
         'werkzeug',
         'werkzeug.security',
-        'sqlite3',
+        'supabase',
+        'postgrest',
+        'gotrue',
+        'realtime',
+        'storage3',
+        'supafunc',
         'pywhatkit',
         'watchdog',
         'employee_db',
@@ -47,7 +50,6 @@ a = Analysis(
         'pagination',
         'logging_config',
         'config',
-        'db_backup',
         'waitress',
         'cryptography',
     ],

@@ -758,37 +758,13 @@ def initialize_application():
     
     # Initialize connection check
     init_db()
-    
-    # VERIFY TABLE CREATION
-    try:
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='employee'")
-        if cursor.fetchone():
-            logger.info("Database tables verified successfully.")
-        else:
-            logger.error("! Critical: 'employee' table verification failed after initialization.")
-        conn.close()
-    except Exception as e:
-        logger.error(f"! Database verification failed: {e}")
-    
-    # --- AUTO-BACKUP ON STARTUP ---
-    try:
-        backup_manager = DatabaseBackup(db_path=DB_NAME)
-        backup_path = backup_manager.create_backup()
-        logger.info(f"[SUCCESS] Startup backup created: {backup_path}")
-        print(f"OK Startup backup created: {backup_path.name}")
-    except Exception as e:
-        logger.error(f"Startup backup failed: {e}")
-        print(f"! Startup backup failed: {e}")
-    
-    logger.info("Database initialization complete")
+
 
 
 if __name__ == '__main__':
     
     # Initialize App Logic
-    initialize_application()
+    init_db()
 
     # Replaced localized create_table calls with init_db() above
     # create_employee_table() # Removed
