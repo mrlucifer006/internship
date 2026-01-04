@@ -747,6 +747,16 @@ def initialize_application():
         logger.error(f"Failed to sync data on startup: {e}")
 
 
+def continuous_sync():
+    """Continuously sync data from Supabase in a background thread."""
+    while True:
+        try:
+            logger.info("Starting periodic sync from Supabase...")
+            sync_data_from_supabase(force=True)
+            logger.info("Periodic sync finished.")
+        except Exception as e:
+            logger.error(f"Error in continuous sync thread: {e}")
+        time.sleep(10)
 
 
 if __name__ == '__main__':
@@ -754,7 +764,10 @@ if __name__ == '__main__':
     # Initialize App Logic
     init_db()
     init_cache()
-    sync_data_from_supabase()
+
+    # Start the background sync thread
+    sync_thread = threading.Thread(target=continuous_sync, daemon=True)
+    sync_thread.start()
 
     # Replaced localized create_table calls with init_db() above
     # create_employee_table() # Removed
