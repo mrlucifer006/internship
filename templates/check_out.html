@@ -233,19 +233,20 @@
                                         </thead>
                                         <tbody>
                                             {% for visitor in visitors %}
-                                            {% if visitor.approval_status != 'Denied' or (visitor.approval_status ==
-                                            'Denied' and visitor.exit_time is none) %}
+                                            {% if visitor.status != -1 or (visitor.status ==
+                                            -1 and visitor.exit_time is none) %}
                                             <tr
                                                 class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
                                                 <td class="py-4 px-6 font-medium text-slate-900 whitespace-nowrap">{{
-                                                    visitor.V_name }}</td>
+                                                    visitor.name }}</td>
                                                 <td class="py-4 px-6">
                                                     <div class="flex items-center gap-2">
                                                         <div
                                                             class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
-                                                            {{ visitor.name[:1] }}
+                                                            {{ visitor.person_to_visit[:1] }}
                                                         </div>
-                                                        <div class="text-sm font-medium text-slate-700">{{ visitor.name
+                                                        <div class="text-sm font-medium text-slate-700">{{
+                                                            visitor.person_to_visit
                                                             }}</div>
                                                     </div>
                                                 </td>
@@ -256,15 +257,15 @@
                                                     </span>
                                                 </td>
                                                 <td class="py-4 px-6">
-                                                    <div class="text-sm text-slate-600 font-mono">{{ visitor.Number }}
+                                                    <div class="text-sm text-slate-600 font-mono">{{ visitor.phone }}
                                                     </div>
                                                 </td>
                                                 <td class="py-4 px-6">
                                                     <div class="text-sm font-medium">
-                                                        {% if visitor.approval_status == 'Approved' %}
+                                                        {% if visitor.status == 1 %}
                                                         <span
                                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Approved</span>
-                                                        {% elif visitor.approval_status == 'Denied' %}
+                                                        {% elif visitor.status == -1 %}
                                                         <span
                                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Denied</span>
                                                         {% else %}
@@ -274,7 +275,7 @@
                                                     </div>
                                                 </td>
                                                 <td class="py-4 px-6">
-                                                    {% if visitor.approval_status == 'Denied' and visitor.denial_reason
+                                                    {% if visitor.status == -1 and visitor.denial_reason
                                                     %}
                                                     <span
                                                         class="text-xs text-red-600 font-medium whitespace-normal max-w-[150px] inline-block">{{
@@ -285,7 +286,7 @@
                                                 </td>
                                                 <td class="py-4 px-6">
                                                     <div class="text-sm text-slate-600">
-                                                        {% if visitor.vehicle %}
+                                                        {% if visitor.has_vehicle %}
                                                         {{ visitor.vehicle_number }}
                                                         {% else %}
                                                         -
@@ -296,8 +297,8 @@
                                                     <form action="{{ url_for('process_check_out') }}" method="POST"
                                                         class="inline">
                                                         <input type="hidden" name="visitor_name"
-                                                            value="{{ visitor.V_name }}">
-                                                        <input type="hidden" name="phone" value="{{ visitor.Number }}">
+                                                            value="{{ visitor.name }}">
+                                                        <input type="hidden" name="phone" value="{{ visitor.phone }}">
                                                         <button type="submit"
                                                             class="bg-success hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition shadow-sm whitespace-nowrap">
                                                             Check-Out
@@ -324,7 +325,7 @@
                         <h3 class="text-lg font-bold text-[#1e73be] mb-4">Currently On Premises</h3>
                         <div class="space-y-3">
                             {% for visitor in visitors %}
-                            {% if visitor.approval_status != 'Denied' %}
+                            {% if visitor.status != -1 %}
                             <div
                                 class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer group">
                                 <div class="flex justify-between items-start mb-2">
@@ -335,8 +336,8 @@
                                     <span class="text-xs text-slate-400">Recently</span>
                                 </div>
                                 <h4 class="font-bold text-slate-800 group-hover:text-[#1e73be] transition">{{
-                                    visitor.V_name }}</h4>
-                                <p class="text-xs text-slate-500 mt-1">Visiting: {{ visitor.name }}</p>
+                                    visitor.name }}</h4>
+                                <p class="text-xs text-slate-500 mt-1">Visiting: {{ visitor.person_to_visit }}</p>
                             </div>
                             {% endif %}
                             {% else %}
