@@ -753,69 +753,10 @@ app.register_blueprint(seo_bp)
 
 
 def initialize_application():
-    """Performs all startup tasks: DB check, restore, backup, and table initialization."""
-    from db import DB_NAME
-    from db_backup import DatabaseBackup
-    import sqlite3
+    """Performs startup tasks: DB check."""
+    logger.info(f"Initializing application with Supabase backend.")
     
-    db_path = DB_NAME
-    should_restore = False
-    
-    logger.info(f"Checking database state at: {os.path.abspath(db_path)}")
-
-    # Check if DB exists
-    if not os.path.exists(db_path):
-        logger.warning("! Database file missing. Logic will trigger restoration.")
-        should_restore = True
-    elif os.path.getsize(db_path) == 0:
-        logger.warning("! Database file is 0 bytes. Logic will trigger restoration.")
-        should_restore = True
-    else:
-        # File exists, check content
-        try:
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            
-            # 1. Check if 'employee' table exists
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='employee'")
-            if not cursor.fetchone():
-                logger.warning("! Database file exists but 'employee' table is missing. Logic will trigger restoration.")
-                should_restore = True
-            else:
-                # 2. Check if 'employee' table has data
-                cursor.execute("SELECT COUNT(*) FROM employee")
-                count = cursor.fetchone()[0]
-                logger.info(f"Employee table row count: {count}")
-                if count == 0:
-                     logger.warning("! Database exists but 'employee' table is empty. Logic will trigger restoration.")
-                     should_restore = True
-            conn.close()
-        except Exception as e:
-            logger.error(f"! Database validation failed ({e}). Logic will trigger restoration.")
-            should_restore = True
-         
-    if should_restore:
-        logger.info("Starting auto-restoration process...")
-        try:
-             restore_manager = DatabaseBackup(db_path=DB_NAME)
-             backups = restore_manager.list_backups()
-             if backups:
-                 latest_backup = backups[0] 
-                 logger.info(f"+ Found latest backup: {latest_backup.name}")
-                 
-                 # Perform Restore
-                 restore_manager.restore_backup(latest_backup)
-                 logger.info(f"[SUCCESS] Successfully restored from {latest_backup.name}")
-                 print(f"OK AUTO-RESTORED DATA FROM: {latest_backup.name}")
-             else:
-                 logger.warning("! No backups found in backups/ directory. Starting fresh.")
-        except Exception as e:
-            logger.error(f"X Auto-restoration failed: {e}")
-            print(f"X Auto-restoration failed: {e}")
-    else:
-        logger.info("Database integrity check passed. No restoration needed.")
-
-    # Ensure DBs exist (will create if still missing after restore attempt)
+    # Initialize connection check
     init_db()
     
     # VERIFY TABLE CREATION

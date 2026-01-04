@@ -1,12 +1,11 @@
-import sqlite3
 import re
 import bcrypt
 import logging
-from db import get_db_connection, trigger_backup
+from db import get_supabase_client
 
 logger = logging.getLogger(__name__)
 
-# NOTE: DB_NAME is now managed in db.py
+supabase = get_supabase_client()
 
 def hash_password(password):
     """
@@ -42,68 +41,61 @@ def insert_employee(data):
     """
     Insert a new employee with hashed password.
     """
-    conn = get_db_connection()
     try:
         # Hash the password before storing
         hashed_pwd = hash_password(data["password"])
         
-        with conn:
-            conn.execute(
-                "INSERT INTO employee (name, phone, login_id, password, Auth_level, status) VALUES (?, ?, ?, ?, ?, ?)",
-                (data["name"], "+91"+data["phone"], data["login_id"], hashed_pwd, data["Auth_level"], data["status"])
-            )
+        payload = {
+            "name": data["name"],
+            "phone": "+91" + data["phone"],
+            "login_id": data["login_id"],
+            "password": hashed_pwd,
+            "Auth_level": data["Auth_level"],
+            "status": data["status"]
+        }
+
+        response = supabase.table('employee').insert(payload).execute()
+        
+        if response.data:
             logger.info(f"Employee created: {data['login_id']}")
-            trigger_backup() # BACKUP TRIGGER
             return True
+        return False
     except Exception as e:
         logger.error(f"Error inserting employee: {e}")
         return False
-    finally:
-        conn.close()
 
 def get_employee_by_name(data):
-    conn = get_db_connection()
     try:
-        cursor = conn.execute("SELECT * FROM employee WHERE name = ?", (data["name"],))
-        row = cursor.fetchone()
-        if row:
-            return dict(row)
+        response = supabase.table('employee').select("*").eq('name', data["name"]).execute()
+        if response.data and len(response.data) > 0:
+            return response.data[0]
         else:
-            return "Employee not found"
+            return "Employee not found" # Keeping original return string behavior
     except Exception as e:
         logger.error(f"Error getting employee by name: {e}")
         return None
-    finally:
-        conn.close()
 
 def get_employee_phone(name):
-    conn = get_db_connection()
     try:
-        with conn:
-            cursor = conn.execute("SELECT phone FROM employee WHERE name = ?", (name,))
-            row = cursor.fetchone()
-            if row:
-                return row['phone']
-            else:
-                return None
+        response = supabase.table('employee').select("phone").eq('name', name).execute()
+        if response.data and len(response.data) > 0:
+            return response.data[0]['phone']
+        else:
+            return None
     except Exception as e:
         logger.error(f"Error getting employee phone: {e}")
         return False
-    finally:
-        conn.close()
 
 def check_credentials(login_id, password):
     """
     Check employee credentials with password verification.
     """
-    conn = get_db_connection()
     try:
         # Fetch employee by login_id only
-        cursor = conn.execute("SELECT * FROM employee WHERE login_id = ?", (login_id,))
-        row = cursor.fetchone()
+        response = supabase.table('employee').select("*").eq('login_id', login_id).execute()
         
-        if row:
-            employee = dict(row)
+        if response.data and len(response.data) > 0:
+            employee = response.data[0]
             # Verify password using bcrypt or plain text
             if verify_password(password, employee['password']):
                 logger.info(f"Successful login: {login_id}")
@@ -117,146 +109,115 @@ def check_credentials(login_id, password):
     except Exception as e:
         logger.error(f"Login Check Error: {e}")
         return None
-    finally:
-        conn.close()            
 
 def update_employee_status(login_id, status):
-    conn = get_db_connection()
     try:
-        with conn:
-            cursor = conn.execute("UPDATE employee SET status = ? WHERE login_id = ?", (status, login_id))
-            if cursor.rowcount == 0:
-                print(f"Warning: update_employee_status - No employee found with login_id: {login_id}")
-            else:
-                print(f"Updated status to {status} for {login_id}")
-                trigger_backup() # BACKUP TRIGGER
-        return True
+        response = supabase.table('employee').update({'status': status}).eq('login_id', login_id).execute()
+        
+        if response.data:
+            print(f"Updated status to {status} for {login_id}")
+            return True
+        else:
+            print(f"Warning: update_employee_status - No employee found with login_id: {login_id}")
+            return True # Original returned True on error/empty too? No, it handled it. 
+            # Original: if cursor.rowcount == 0 return True (technically it fell through).
+            # Let's return True as intent seems to be "operation attempted".
     except Exception as e:
         logger.error(f"Error updating employee status: {e}")
         return False
-    finally:
-        conn.close()
 
 def get_employee_status(login_id):
-    conn = get_db_connection()
     try:
-        cursor = conn.execute("SELECT status FROM employee WHERE login_id = ?", (login_id,))
-        row = cursor.fetchone()
-        if row:
-            return row['status']
+        response = supabase.table('employee').select("status").eq('login_id', login_id).execute()
+        if response.data:
+            return response.data[0]['status']
         return None
     except Exception as e:
         logger.error(f"Error getting employee status: {e}")
         return None
-    finally:
-        conn.close()
 
 def add_notification(host_login_id, visitor_name, reason, visitor_id=None):
-    conn = get_db_connection()
     try:
-        with conn:
-            conn.execute("INSERT INTO notifications (host_login_id, visitor_name, reason, visitor_id) VALUES (?, ?, ?, ?)", (host_login_id, visitor_name, reason, visitor_id))
-        trigger_backup() # BACKUP TRIGGER
-        return True
+        payload = {
+            "host_login_id": host_login_id,
+            "visitor_name": visitor_name,
+            "reason": reason,
+            "visitor_id": visitor_id
+        }
+        response = supabase.table('notifications').insert(payload).execute()
+        if response.data:
+            return True
+        return False
     except Exception as e:
         logger.error(f"Error adding notification: {e}")
         return False
-    finally:
-        conn.close()
 
 def get_unread_notifications(host_login_id):
-    conn = get_db_connection()
     try:
-        with conn:
-            cursor = conn.execute("SELECT * FROM notifications WHERE host_login_id = ? AND is_read = 0", (host_login_id,))
-            rows = cursor.fetchall()
-            notifications = [dict(row) for row in rows]
+        response = supabase.table('notifications').select("*").eq('host_login_id', host_login_id).eq('is_read', 0).execute()
+        notifications = response.data if response.data else []
+        
+        # Mark as read immediately
+        if notifications:
+            supabase.table('notifications').update({'is_read': 1}).eq('host_login_id', host_login_id).eq('is_read', 0).execute()
             
-            # Mark as read immediately
-            if notifications:
-                conn.execute("UPDATE notifications SET is_read = 1 WHERE host_login_id = ? AND is_read = 0", (host_login_id,))
-                trigger_backup() # BACKUP TRIGGER
-            
-            return notifications
+        return notifications
     except Exception as e:
         logger.error(f"Error getting notifications: {e}")
         return []
-    finally:
-        conn.close()
 
 def get_notification_history(host_login_id):
-    conn = get_db_connection()
     try:
-        with conn:
-            cursor = conn.execute("SELECT * FROM notifications WHERE host_login_id = ? ORDER BY timestamp DESC LIMIT 20", (host_login_id,))
-            rows = cursor.fetchall()
-            return [dict(row) for row in rows]
+        response = supabase.table('notifications').select("*").eq('host_login_id', host_login_id).order('timestamp', desc=True).limit(20).execute()
+        return response.data if response.data else []
     except Exception as e:
         print(f"Error getting notification history: {e}")
         return []
-    finally:
-        conn.close()
 
 def get_all_employees():
-    conn = get_db_connection()
     try:
-        cursor = conn.execute("SELECT name, login_id FROM employee")
-        rows = cursor.fetchall()
-        return [dict(row) for row in rows]
+        response = supabase.table('employee').select("name, login_id").execute()
+        return response.data if response.data else []
     except Exception as e:
         logger.error(f"Error getting all employees: {e}")
         return []
-    finally:
-        conn.close()
 
 def get_all_employees_full():
-    conn = get_db_connection()
     try:
-        cursor = conn.execute("SELECT name, login_id, phone, Auth_level, status FROM employee")
-        rows = cursor.fetchall()
-        return [dict(row) for row in rows]
+        response = supabase.table('employee').select("name, login_id, phone, Auth_level, status").execute()
+        return response.data if response.data else []
     except Exception as e:
         logger.error(f"Error getting all employees full: {e}")
         return []
-    finally:
-        conn.close()
 
 def reset_all_employee_statuses():
     """Resets the status of all employees to 0 (Offline)."""
-    conn = get_db_connection()
     try:
-        with conn:
-            conn.execute("UPDATE employee SET status = 0")
-            print("All employee statuses have been reset to 0.")
-            trigger_backup() # BACKUP TRIGGER
+        # Note: Supabase update without 'eq' usually requires safety setting off or explicit filter.
+        # However, to update ALL, we can use a filter that matches all, e.g. login_id like %.
+        # Safer: .neq('status', 0) to only update those who need it.
+        response = supabase.table('employee').update({'status': 0}).neq('status', 0).execute()
+        print("All employee statuses have been reset to 0.")
         return True
     except Exception as e:
         logger.error(f"Error resetting employee statuses: {e}")
         return False
-    finally:
-        conn.close()
 
 def delete_employee(login_id):
     """Deletes an employee and triggers a backup."""
-    conn = get_db_connection()
     try:
-        with conn:
-            # Check if user exists
-            cursor = conn.execute("SELECT name FROM employee WHERE login_id = ?", (login_id,))
-            user = cursor.fetchone()
-            
-            if user:
-                conn.execute("DELETE FROM employee WHERE login_id = ?", (login_id,))
-                print(f"Employee {login_id} deleted successfully.")
-                logger.info(f"Employee deleted: {login_id}")
-                trigger_backup(f"Deleted user: {login_id}")
-                return True
-            else:
-                logger.warning(f"Attempted delete on non-existent user: {login_id}")
-                return False
+        # Check if user exists first
+        check = supabase.table('employee').select("name").eq('login_id', login_id).execute()
+        if not check.data:
+            logger.warning(f"Attempted delete on non-existent user: {login_id}")
+            return False
+
+        response = supabase.table('employee').delete().eq('login_id', login_id).execute()
+        if response.data:
+            print(f"Employee {login_id} deleted successfully.")
+            logger.info(f"Employee deleted: {login_id}")
+            return True
+        return False
     except Exception as e:
         logger.error(f"Error deleting employee {login_id}: {e}")
         return False
-    finally:
-        conn.close()
-

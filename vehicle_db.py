@@ -1,109 +1,117 @@
-import sqlite3
-import os
 import logging
-from pagination import paginate_query, PaginationResult
-from db import get_db_connection, trigger_backup
+import datetime
+import math
+from db import get_supabase_client
+from pagination import PaginationResult
 
 logger = logging.getLogger(__name__)
 
-# NOTE: DB_NAME and table creation are now managed in db.py
+supabase = get_supabase_client()
 
 def create_table():
     """Calculated from db.py now, but keeping stub for compatibility if imported."""
-    # Logic moved to db.init_db()
     pass
 
 def insert_vehicle(data):
     """Insert a new vehicle record into the database."""
-    conn = get_db_connection()
     try:
-        with conn:
-            conn.execute("""
-                INSERT INTO vehicle (driver_name, veh_reg_no, vehicle_img, destination, time, driver_phone, origin, purchase_no, entry_type) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                data["driver_name"],
-                data["veh_reg_no"],
-                data.get("vehicle_img"),  # Optional field
-                data["destination"],
-                data.get("time"),  # If not provided, will use default CURRENT_TIMESTAMP
-                data.get("driver_phone"),
-                data.get("origin"),
-                data.get("purchase_no"),
-                data.get("entry_type", "Entry") # Default to Entry
-            ))
-            trigger_backup() # BACKUP TRIGGER
-        return True
-    except Exception as e:
-        print(f"Error inserting vehicle: {e}")
+        # Prepare data for Supabase (handling optional fields)
+        payload = {
+            "driver_name": data.get("driver_name"),
+            "veh_reg_no": data.get("veh_reg_no"),
+            "vehicle_img": data.get("vehicle_img"),
+            "destination": data.get("destination"),
+            "time": data.get("time") if data.get("time") else datetime.datetime.now().isoformat(),
+            "driver_phone": data.get("driver_phone"),
+            "origin": data.get("origin"),
+            "purchase_no": data.get("purchase_no"),
+            "entry_type": data.get("entry_type", "Entry")
+        }
+        
+        # Execute insert
+        response = supabase.table('vehicle').insert(payload).execute()
+        
+        # Check if insert was successful (response.data should be populated)
+        if response.data:
+            return True
         return False
-    finally:
-        conn.close()
+        
+    except Exception as e:
+        logger.error(f"Error inserting vehicle: {e}")
+        return False
 
 def get_vehicle_by_reg_no(veh_reg_no):
     """Get a vehicle record by registration number."""
-    conn = get_db_connection()
     try:
-        cursor = conn.execute("SELECT * FROM vehicle WHERE veh_reg_no = ?", (veh_reg_no,))
-        row = cursor.fetchone()
-        if row:
-            return dict(row)
+        response = supabase.table('vehicle').select("*").eq('veh_reg_no', veh_reg_no).execute()
+        
+        # Return first record as Dictionary (matching current behavior)
+        if response.data and len(response.data) > 0:
+            return response.data[0] 
         else:
             return None
     except Exception as e:
-        print(f"Error getting vehicle by reg no: {e}")
+        logger.error(f"Error getting vehicle by reg no: {e}")
         return None
-    finally:
-        conn.close()
 
 def get_vehicle_by_driver(driver_name):
     """Get all vehicles associated with a driver."""
-    conn = get_db_connection()
     try:
-        cursor = conn.execute("SELECT * FROM vehicle WHERE driver_name = ?", (driver_name,))
-        rows = cursor.fetchall()
-        return [dict(row) for row in rows]
+        response = supabase.table('vehicle').select("*").eq('driver_name', driver_name).execute()
+        return response.data if response.data else []
     except Exception as e:
-        print(f"Error getting vehicles by driver: {e}")
+        logger.error(f"Error getting vehicles by driver: {e}")
         return []
-    finally:
-        conn.close()
 
 def get_all_vehicles():
     """Get all vehicle records."""
-    conn = get_db_connection()
     try:
-        cursor = conn.execute("SELECT * FROM vehicle ORDER BY time DESC")
-        rows = cursor.fetchall()
-        return [dict(row) for row in rows]
+        # Order by time descending
+        response = supabase.table('vehicle').select("*").order('time', desc=True).execute()
+        return response.data if response.data else []
     except Exception as e:
-        print(f"Error getting all vehicles: {e}")
+        logger.error(f"Error getting all vehicles: {e}")
         return []
-    finally:
-        conn.close()
-
 
 def get_vehicles_paginated(page: int = 1, per_page: int = 50, search: str = None) -> PaginationResult:
     """
     Get vehicle records with pagination.
     """
-    conn = get_db_connection()
     try:
-        base_query = "SELECT * FROM vehicle"
-        count_query = "SELECT COUNT(*) FROM vehicle"
-        params = ()
+        # Start building the query
+        query = supabase.table('vehicle').select("*", count='exact')
         
-        # Add search filter if provided
         if search:
+            # Using 'ilike' for case-insensitive search on multiple columns
+            # Supabase 'or' filter syntax: "column.ilike.%search%,other.ilike.%search%"
             search_pattern = f"%{search}%"
-            base_query += " WHERE driver_name LIKE ? OR veh_reg_no LIKE ? OR destination LIKE ?"
-            count_query += " WHERE driver_name LIKE ? OR veh_reg_no LIKE ? OR destination LIKE ?"
-            params = (search_pattern, search_pattern, search_pattern)
+            # NOTE: Supabase filter syntax for OR across columns can be tricky.
+            # Using explicit filter string
+            or_filter = f"driver_name.ilike.*{search}*,veh_reg_no.ilike.*{search}*,destination.ilike.*{search}*"
+            query = query.or_(or_filter)
+            
+        # Pagination
+        start = (page - 1) * per_page
+        end = start + per_page - 1 # Supabase range is inclusive
         
-        base_query += " ORDER BY time DESC"
+        response = query.order('time', desc=True).range(start, end).execute()
         
-        result = paginate_query(conn, base_query, count_query, params, page, per_page)
-        return result
+        data = response.data
+        total = response.count if response.count is not None else 0
+        
+        total_pages = math.ceil(total / per_page) if total else 1
+        has_next = page < total_pages
+        has_prev = page > 1
+        
+        return PaginationResult(
+            data=data,
+            page=page,
+            per_page=per_page,
+            total=total,
+            total_pages=total_pages,
+            has_next=has_next,
+            has_prev=has_prev
+        )
         
     except Exception as e:
         logger.error(f"Error getting paginated vehicles: {e}")
@@ -116,70 +124,48 @@ def get_vehicles_paginated(page: int = 1, per_page: int = 50, search: str = None
             has_next=False,
             has_prev=False
         )
-    finally:
-        conn.close()
-
 
 def update_vehicle(veh_reg_no, data):
     """Update a vehicle record."""
-    conn = get_db_connection()
     try:
-        with conn:
-            cursor = conn.execute("""
-                UPDATE vehicle 
-                SET driver_name = ?, vehicle_img = ?, destination = ?, time = ?
-                WHERE veh_reg_no = ?
-            """, (
-                data.get("driver_name"),
-                data.get("vehicle_img"),
-                data.get("destination"),
-                data.get("time"),
-                veh_reg_no
-            ))
-            if cursor.rowcount == 0:
-                print(f"No vehicle found with registration number: {veh_reg_no}")
-                return False
-            else:
-                 trigger_backup() # BACKUP TRIGGER
-        return True
+        payload = {
+            "driver_name": data.get("driver_name"),
+            "vehicle_img": data.get("vehicle_img"),
+            "destination": data.get("destination"),
+            "time": data.get("time")
+        }
+        # Filter out None values just in case we don't want to unset them? 
+        # Usually updates are explicit. Let's keep it simple.
+        
+        response = supabase.table('vehicle').update(payload).eq('veh_reg_no', veh_reg_no).execute()
+        
+        if response.data:
+            return True
+        else:
+            logger.warning(f"No vehicle found with registration number: {veh_reg_no}")
+            return False
     except Exception as e:
-        print(f"Error updating vehicle: {e}")
+        logger.error(f"Error updating vehicle: {e}")
         return False
-    finally:
-        conn.close()
 
 def delete_vehicle(veh_reg_no):
     """Delete a vehicle record by registration number."""
-    conn = get_db_connection()
     try:
-        with conn:
-            cursor = conn.execute("DELETE FROM vehicle WHERE veh_reg_no = ?", (veh_reg_no,))
-            if cursor.rowcount == 0:
-                print(f"No vehicle found with registration number: {veh_reg_no}")
-                return False
-            else:
-                 trigger_backup() # BACKUP TRIGGER
-        return True
+        response = supabase.table('vehicle').delete().eq('veh_reg_no', veh_reg_no).execute()
+        if response.data:
+            return True
+        else:
+            logger.warning(f"No vehicle found with registration number: {veh_reg_no}")
+            return False
     except Exception as e:
-        print(f"Error deleting vehicle: {e}")
+        logger.error(f"Error deleting vehicle: {e}")
         return False
-    finally:
-        conn.close()
 
 def search_vehicles_by_destination(destination):
     """Search vehicles by destination."""
-    conn = get_db_connection()
     try:
-        cursor = conn.execute("SELECT * FROM vehicle WHERE destination LIKE ?", (f"%{destination}%",))
-        rows = cursor.fetchall()
-        return [dict(row) for row in rows]
+        response = supabase.table('vehicle').select("*").ilike('destination', f"%{destination}%").execute()
+        return response.data if response.data else []
     except Exception as e:
-        print(f"Error searching vehicles: {e}")
+        logger.error(f"Error searching vehicles: {e}")
         return []
-    finally:
-        conn.close()
-
-
-# Table creation is now handled by app initialization calling db.init_db()
-# create_table() # Removed auto-call to avoid side effects on import, and its logic is empty now.
-

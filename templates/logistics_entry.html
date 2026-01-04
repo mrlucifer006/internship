@@ -65,7 +65,7 @@
 </head>
 
 <body class="bg-background-light font-display antialiased min-h-screen flex flex-col text-slate-600">
-    <div class="flex h-screen bg-background-light overflow-hidden">
+    <div class="flex h-screen bg-background-light overflow-hidden w-full">
         <!-- Mobile Sidebar Overlay -->
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden"
             onclick="toggleSidebar()"></div>
@@ -159,7 +159,7 @@
                     <!-- Skeleton Overlay -->
                     <div id="form-skeleton"
                         class="absolute inset-0 z-20 bg-background-light p-6 md:p-10 transition-opacity duration-500">
-                        <div class="max-w-7xl mx-auto flex flex-col gap-8">
+                        <div class="w-full flex flex-col gap-8">
                             <div class="flex flex-col gap-2">
                                 <div class="h-10 w-48 bg-slate-200 rounded animate-pulse"></div>
                                 <div class="h-5 w-64 bg-slate-200 rounded animate-pulse"></div>
@@ -199,7 +199,7 @@
                         </div>
                     </div>
 
-                    <div class="max-w-7xl mx-auto flex flex-col gap-8">
+                    <div class="w-full flex flex-col gap-8">
                         {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
                         <div class="mb-2 flex flex-col gap-2">
