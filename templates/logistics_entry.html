@@ -397,7 +397,8 @@
                                 </div>
                                 <span
                                     class="text-xs font-semibold px-2 py-1 bg-blue-50 text-blue-600 rounded-full border border-blue-100">
-                                    {{ vehicle.time.split(' ')[1][:5] if vehicle.time and ' ' in vehicle.time else 'Now'
+                                    {{ vehicle.time.replace('T', ' ').split(' ')[1][:5] if vehicle.time and ' ' in
+                                    vehicle.time.replace('T', ' ') else 'Now'
                                     }}
                                 </span>
                             </div>
@@ -519,6 +520,7 @@
             }
         });
     </script>
+    {% include 'notification_popup.html' %}
 </body>
 
 </html>

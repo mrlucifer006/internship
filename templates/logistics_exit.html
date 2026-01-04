@@ -402,9 +402,10 @@
                                 </div>
                                 <span
                                     class="text-[10px] font-bold px-2 py-1 {{ 'bg-blue-50 text-blue-600 border-blue-100' if vehicle.entry_type == 'Entry' else 'bg-orange-50 text-orange-600 border-orange-100' }} rounded-full border uppercase tracking-wide">
-                                    {{ vehicle.entry_type|default('Entry') }} {{ vehicle.time.split(' ')[1][:5] if
+                                    {{ vehicle.entry_type|default('Entry') }} {{ vehicle.time.replace('T', ' ').split('
+                                    ')[1][:5] if
                                     vehicle.time
-                                    and ' ' in vehicle.time else 'Now' }}
+                                    and ' ' in vehicle.time.replace('T', ' ') else 'Now' }}
                                 </span>
                             </div>
                             <hr class="border-slate-100 my-1" />
@@ -554,6 +555,7 @@
             });
         </script>
 
+        {% include 'notification_popup.html' %}
 </body>
 
 </html>

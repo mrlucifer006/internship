@@ -329,11 +329,11 @@
                         <div
                             class="p-4 rounded-xl bg-white border border-slate-100 hover:border-indigo-100 hover:shadow-sm transition-all animate-fade-in group">
                             <div class="flex items-start gap-3">
-                                {% if entry.approval_status == 'Denied' %}
+                                {% if entry.status == -1 %}
                                 <div class="bg-red-50 text-red-500 rounded-lg p-1.5 shrink-0">
                                     <span class="material-symbols-outlined text-lg">block</span>
                                 </div>
-                                {% elif entry.approval_status == 'Pending' %}
+                                {% elif entry.status == 0 %}
                                 <div class="bg-amber-50 text-amber-500 rounded-lg p-1.5 shrink-0">
                                     <span class="material-symbols-outlined text-lg">hourglass_top</span>
                                 </div>
@@ -343,13 +343,14 @@
                                 </div>
                                 {% endif %}
                                 <div class="min-w-0 flex-1">
-                                    <p class="text-sm font-bold text-slate-700 truncate">{{ entry.V_name }}</p>
-                                    <p class="text-xs text-slate-500 truncate mt-0.5">To: {{ entry.name }}</p>
+                                    <p class="text-sm font-bold text-slate-700 truncate">{{ entry.name }}</p>
+                                    <p class="text-xs text-slate-500 truncate mt-0.5">To: {{ entry.person_to_visit }}
+                                    </p>
                                     <div class="flex flex-wrap gap-2 mt-2">
                                         <span
                                             class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wide border border-slate-200">{{
                                             entry.reason }}</span>
-                                        {% if entry.approval_status == 'Denied' %}
+                                        {% if entry.status == -1 %}
                                         <span
                                             class="px-2 py-0.5 rounded-md bg-red-50 text-red-600 text-[10px] font-medium border border-red-100">{{
                                             entry.denial_reason or 'Denied' }}</span>
@@ -428,101 +429,7 @@
         </div>
     </div>
 
-    <!-- New Notification Modal (Overlay) -->
-    <div id="notification-modal"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity hidden">
-        <div class="relative w-full max-w-[400px] bg-white rounded-[32px] shadow-2xl overflow-hidden animate-modal">
-            <div class="relative h-32 bg-indigo-600 overflow-hidden">
-                <div
-                    class="absolute top-0 right-0 w-48 h-48 bg-white opacity-10 rounded-full -translate-y-1/2 translate-x-1/4">
-                </div>
-                <div
-                    class="absolute bottom-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full translate-y-1/2 -translate-x-1/4">
-                </div>
-                <div class="absolute inset-0 opacity-20"
-                    style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;">
-                </div>
-            </div>
-            <div class="px-8 pb-8 relative">
-                <div class="relative -mt-16 mb-6 flex justify-center">
-                    <div
-                        class="w-24 h-24 rounded-2xl bg-white p-2 shadow-xl rotate-45 transform origin-center z-10 ring-4 ring-indigo-50">
-                        <div
-                            class="w-full h-full bg-slate-50 rounded-xl flex items-center justify-center -rotate-45 border border-slate-100 overflow-hidden">
-                            <span class="material-symbols-outlined text-4xl text-indigo-600">person_filled</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center space-y-5">
-                    <div>
-                        <div class="inline-block px-3 py-1 bg-indigo-50 rounded-full mb-3">
-                            <h3 class="text-[11px] font-bold tracking-widest text-indigo-600 uppercase">Visitor Request
-                            </h3>
-                        </div>
-                        <p id="modal-visitor-name" class="text-2xl text-slate-900 font-bold leading-tight mb-2">Visitor
-                            Name</p>
-                        <p class="text-slate-500 leading-relaxed">
-                            has come to meet you for <br />
-                            <span id="modal-reason" class="font-semibold text-slate-800">Reason</span>
-                        </p>
-                    </div>
-                </div>
-                <!-- Action Buttons -->
-                <div id="modal-actions" class="grid grid-cols-2 gap-4 pt-2">
-                    <button onclick="showDenialReason()"
-                        class="flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-2xl border-2 border-slate-100 hover:bg-red-50 hover:border-red-100 group transition-all duration-200">
-                        <span
-                            class="material-symbols-outlined text-2xl text-slate-400 group-hover:text-red-500 transition-colors">close</span>
-                        <span
-                            class="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-red-600">Deny</span>
-                    </button>
-                    <button onclick="handleAction('approve')"
-                        class="flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group">
-                        <span
-                            class="material-symbols-outlined text-2xl text-indigo-100 group-hover:text-white">check</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-50">Accept</span>
-                    </button>
-                </div>
-
-                <!-- Denial Reason Input (Hidden by default) -->
-                <div id="modal-reason-input" class="hidden flex-col gap-3 pt-2 animate-fade-in">
-                    <textarea id="denial-reason-text"
-                        class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none transition-all placeholder:text-slate-400"
-                        rows="2" placeholder="Reason for denial..."></textarea>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="cancelDenial()"
-                            class="py-3 rounded-xl border border-slate-200 text-slate-500 font-bold text-xs uppercase tracking-wide hover:bg-slate-50 transition-colors">
-                            Cancel
-                        </button>
-                        <button onclick="confirmDeny()"
-                            class="py-3 rounded-xl bg-red-600 text-white font-bold text-xs uppercase tracking-wide shadow-md shadow-red-200 hover:bg-red-700 transition-colors">
-                            Confirm Deny
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <style>
-        @keyframes modalPop {
-            0% {
-                opacity: 0;
-                transform: scale(0.95) translateY(10px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        .animate-modal {
-            animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-    </style>
+    {% include 'notification_popup.html' %}
 
     <script>
         // Vehicle Toggle Logic
@@ -546,7 +453,7 @@
             }, 10);
         }
 
-        // --- Unified Polling Logic ---
+        // --- Dashboard Auto-Refresh Logic ---
         let lastKnownUpdate = null;
 
         // Initial Fetch for updates timestamp
@@ -556,35 +463,10 @@
                 lastKnownUpdate = data.last_updated;
             });
 
-        let currentVisitorId = null;
-
-        function performPoll() {
-            // 1. Check Personal Notifications First
-            fetch('/api/pending_visitors')
-                .then(response => response.json())
-                .then(visitors => {
-                    if (visitors && visitors.length > 0) {
-                        // We have a notification! Show it and DO NOT reload
-                        const visitor = visitors[0];
-                        showNotification(visitor.name, visitor.reason, visitor.id);
-
-                        // We also likely have a new timestamp, so let's update our local tracker
-                        fetch('/check_updates')
-                            .then(r => r.json())
-                            .then(d => { lastKnownUpdate = d.last_updated; });
-
-                    } else {
-                        // 2. No notification, so safely check for Global Updates
-                        checkGlobalUpdates();
-                    }
-                })
-                .catch(err => console.error("Error polling:", err));
-        }
-
         function checkGlobalUpdates() {
-            // If modal is open, do absolutely nothing (pause updates)
+            // If modal (from include) is open, pause updates to avoid weird reload behind modal
             const modal = document.getElementById('notification-modal');
-            if (!modal.classList.contains('hidden')) {
+            if (modal && !modal.classList.contains('hidden')) {
                 return;
             }
 
@@ -592,7 +474,7 @@
                 .then(res => res.json())
                 .then(data => {
                     if (lastKnownUpdate && data.last_updated && data.last_updated > lastKnownUpdate) {
-                        console.log("New entry detected. Refreshing...");
+                        console.log("New entry detected. Refreshing Dashboard...");
                         window.location.reload();
                     } else if (!lastKnownUpdate && data.last_updated) {
                         lastKnownUpdate = data.last_updated;
@@ -601,80 +483,14 @@
                 .catch(err => console.error("Update check failed", err));
         }
 
-        function showNotification(visitorName, reason, visitorId) {
-            const modal = document.getElementById('notification-modal');
-            const nameEl = document.getElementById('modal-visitor-name');
-            const reasonEl = document.getElementById('modal-reason');
-            const audio = document.getElementById('notification-sound');
+        // Listen for notification action completion to trigger reload (immediate update)
+        window.addEventListener('notification-action-complete', () => {
+            console.log("Action complete, reloading dashboard...");
+            setTimeout(() => window.location.reload(), 500);
+        });
 
-            nameEl.textContent = visitorName;
-            reasonEl.textContent = reason;
-            currentVisitorId = visitorId;
-
-            // Reset UI state to show actions, hide reason input
-            cancelDenial();
-
-            modal.classList.remove('hidden');
-
-            // Play Sound
-            if (audio) {
-                audio.play().catch(e => console.log("Audio play failed (user interaction needed):", e));
-            }
-        }
-
-        // Toggle Denial Reason Input
-        function showDenialReason() {
-            document.getElementById('modal-actions').classList.add('hidden');
-            document.getElementById('modal-reason-input').classList.remove('hidden');
-            document.getElementById('modal-reason-input').classList.add('flex'); // Ensure flex is added
-            document.getElementById('denial-reason-text').focus();
-        }
-
-        function cancelDenial() {
-            document.getElementById('modal-actions').classList.remove('hidden');
-            document.getElementById('modal-reason-input').classList.add('hidden');
-            document.getElementById('modal-reason-input').classList.remove('flex');
-            document.getElementById('denial-reason-text').value = ''; // Clear text
-        }
-
-        function confirmDeny() {
-            const reason = document.getElementById('denial-reason-text').value;
-            if (!reason.trim()) {
-                alert("Please enter a reason for denial.");
-                return;
-            }
-            handleAction('deny', reason);
-        }
-
-        function handleAction(action, reason = "") {
-            if (!currentVisitorId) return;
-
-            fetch('/api/action_visitor', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ visitor_id: currentVisitorId, action: action, reason: reason })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        closeNotification();
-                        // Optionally refresh to see the status update
-                        setTimeout(() => window.location.reload(), 500);
-                    } else {
-                        alert("Error processing action: " + data.error);
-                    }
-                })
-                .catch(err => console.error(err));
-        }
-
-        function closeNotification() {
-            const modal = document.getElementById('notification-modal');
-            modal.classList.add('hidden');
-            currentVisitorId = null;
-        }
-
-        // Single Loop: Poll every 4 seconds
-        setInterval(performPoll, 4000);
+        // Poll for updates every 4 seconds
+        setInterval(checkGlobalUpdates, 4000);
 
         // Mobile Sidebar Toggle
         function toggleSidebar() {
@@ -697,7 +513,6 @@
         window.addEventListener('load', () => {
             const skeleton = document.getElementById('main-skeleton');
             if (skeleton) {
-                // Minimum display time to prevent flickering (e.g. 500ms)
                 setTimeout(() => {
                     skeleton.style.opacity = '0';
                     skeleton.style.pointerEvents = 'none';
@@ -708,9 +523,6 @@
             }
         });
     </script>
-    <!-- Notification Sound -->
-    <audio id="notification-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
-        preload="auto"></audio>
 </body>
 
 </html>

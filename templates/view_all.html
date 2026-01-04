@@ -247,10 +247,11 @@
                                     {% if entries %}
                                     {% for entry in entries|reverse %}
                                     <tr class="hover:bg-slate-50 transition-colors">
-                                        <td class="p-4 font-medium text-slate-700">{{ entry.V_name }}</td>
+                                        <td class="p-4 font-medium text-slate-700">{{ entry.name }}</td>
                                         <td class="p-4">
                                             <div class="flex flex-col">
-                                                <span class="font-medium text-slate-700">{{ entry.name }}</span>
+                                                <span class="font-medium text-slate-700">{{ entry.person_to_visit
+                                                    }}</span>
                                             </div>
                                         </td>
                                         <td class="p-4">
@@ -258,7 +259,7 @@
                                                 class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">{{
                                                 entry.reason }}</span>
                                         </td>
-                                        <td class="p-4 font-mono text-slate-500">{{ entry.Number }}</td>
+                                        <td class="p-4 font-mono text-slate-500">{{ entry.phone }}</td>
                                         <td class="p-4 font-mono text-slate-500">
                                             {% if entry.vehicle_number %}
                                             {{ entry.vehicle_number }}
@@ -272,10 +273,10 @@
                                             <span
                                                 class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Exited:
                                                 {{ entry.exit_time }}</span>
-                                            {% elif entry.approval_status == 'Denied' %}
+                                            {% elif entry.status == -1 %}
                                             <span
                                                 class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Denied</span>
-                                            {% elif entry.approval_status == 'Pending' %}
+                                            {% elif entry.status == 0 %}
                                             <span
                                                 class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Pending</span>
                                             {% else %}
@@ -284,7 +285,7 @@
                                             {% endif %}
                                         </td>
                                         <td class="p-4">
-                                            {% if entry.approval_status == 'Denied' and entry.denial_reason %}
+                                            {% if entry.status == -1 and entry.denial_reason %}
                                             <span class="text-xs text-red-600 font-medium leading-tight">
                                                 {{ entry.denial_reason }}
                                             </span>
@@ -343,6 +344,7 @@
             }
         });
     </script>
+    {% include 'notification_popup.html' %}
 </body>
 
 </html>
