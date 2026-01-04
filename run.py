@@ -38,6 +38,13 @@ if __name__ == '__main__':
     # Open browser automatically
     Timer(1, open_browser).start()
     
+    # Initialize Application Logic (DB tables, backups, etc.)
+    try:
+        app.initialize_application()
+    except AttributeError:
+        # Fallback if app doesn't have the method (during dev) or circular import issues
+        print("Warning: initialize_application not found on app object.")
+    
     # Run Flask app
     print("=" * 60)
     print("Visitor Management System")
@@ -47,6 +54,17 @@ if __name__ == '__main__':
     print("=" * 60)
     
     try:
-        app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+        # User requested "Gunicorn" (Production Server).
+        # On Windows, 'Waitress' is the recommended WSGI server equivalent to Gunicorn.
+        from waitress import serve
+        print("Using Waitress Production Server (Windows-compatible alternative to Gunicorn)")
+        serve(app, host='0.0.0.0', port=5000, threads=6)
+    except ImportError:
+        print("Waitress not installed. Falling back to Flask Development Server.")
+        print("To use Production Server: pip install waitress")
+        try:
+            app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+        except KeyboardInterrupt:
+            pass
     except KeyboardInterrupt:
         print("\nServer stopped.")

@@ -3,8 +3,22 @@ import threading
 import logging
 from db_backup import DatabaseBackup
 
-# Set unique DB name
-DB_NAME = "instance/visitor_management.db"
+import os
+import sys
+
+def get_base_path():
+    """Get the persistent base path (compatible with PyInstaller and script)."""
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
+
+# Ensure instance folder exists
+base_dir = get_base_path()
+instance_dir = os.path.join(base_dir, 'instance')
+os.makedirs(instance_dir, exist_ok=True)
+
+# Set absolute DB path
+DB_NAME = os.path.join(instance_dir, "visitor_management.db")
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +146,7 @@ def init_db(app=None):
                 
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
-        print(f"Database initialization failed: {e}")
+        print(f"CRITICAL ERROR: Database initialization failed: {e}")
     finally:
         conn.close()
+        print("Database initialization check complete.")

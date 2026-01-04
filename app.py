@@ -45,8 +45,7 @@ warnings = config_obj.validate()
 for warning in warnings:
     logger.warning(warning)
 
-# Initialize DB
-init_db()
+
 
 # Reset statuses on exit
 atexit.register(reset_all_employee_statuses)
@@ -753,15 +752,12 @@ from seo_routes import seo_bp
 app.register_blueprint(seo_bp)
 
 
-if __name__ == '__main__':
-
-    
-    # --- AUTO-RESTORE LOGIC ---
-    from db import DB_NAME, get_db_connection
+def initialize_application():
+    """Performs all startup tasks: DB check, restore, backup, and table initialization."""
+    from db import DB_NAME
     from db_backup import DatabaseBackup
-    import os
     import sqlite3
-
+    
     db_path = DB_NAME
     should_restore = False
     
@@ -769,7 +765,10 @@ if __name__ == '__main__':
 
     # Check if DB exists
     if not os.path.exists(db_path):
-        logger.warning("⚠ Database file missing. Logic will trigger restoration.")
+        logger.warning("! Database file missing. Logic will trigger restoration.")
+        should_restore = True
+    elif os.path.getsize(db_path) == 0:
+        logger.warning("! Database file is 0 bytes. Logic will trigger restoration.")
         should_restore = True
     else:
         # File exists, check content
@@ -780,7 +779,7 @@ if __name__ == '__main__':
             # 1. Check if 'employee' table exists
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='employee'")
             if not cursor.fetchone():
-                logger.warning("⚠ Database file exists but 'employee' table is missing. Logic will trigger restoration.")
+                logger.warning("! Database file exists but 'employee' table is missing. Logic will trigger restoration.")
                 should_restore = True
             else:
                 # 2. Check if 'employee' table has data
@@ -788,11 +787,11 @@ if __name__ == '__main__':
                 count = cursor.fetchone()[0]
                 logger.info(f"Employee table row count: {count}")
                 if count == 0:
-                     logger.warning("⚠ Database exists but 'employee' table is empty. Logic will trigger restoration.")
+                     logger.warning("! Database exists but 'employee' table is empty. Logic will trigger restoration.")
                      should_restore = True
             conn.close()
         except Exception as e:
-            logger.error(f"⚠ Database validation failed ({e}). Logic will trigger restoration.")
+            logger.error(f"! Database validation failed ({e}). Logic will trigger restoration.")
             should_restore = True
          
     if should_restore:
@@ -802,37 +801,53 @@ if __name__ == '__main__':
              backups = restore_manager.list_backups()
              if backups:
                  latest_backup = backups[0] 
-                 logger.info(f"♻ Found latest backup: {latest_backup.name}")
+                 logger.info(f"+ Found latest backup: {latest_backup.name}")
                  
                  # Perform Restore
                  restore_manager.restore_backup(latest_backup)
                  logger.info(f"[SUCCESS] Successfully restored from {latest_backup.name}")
-                 print(f"✓ AUTO-RESTORED DATA FROM: {latest_backup.name}")
+                 print(f"OK AUTO-RESTORED DATA FROM: {latest_backup.name}")
              else:
-                 logger.warning("⚠ No backups found in backups/ directory. Starting fresh.")
+                 logger.warning("! No backups found in backups/ directory. Starting fresh.")
         except Exception as e:
-            logger.error(f"❌ Auto-restoration failed: {e}")
-            print(f"❌ Auto-restoration failed: {e}")
+            logger.error(f"X Auto-restoration failed: {e}")
+            print(f"X Auto-restoration failed: {e}")
     else:
         logger.info("Database integrity check passed. No restoration needed.")
 
     # Ensure DBs exist (will create if still missing after restore attempt)
     init_db()
     
+    # VERIFY TABLE CREATION
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='employee'")
+        if cursor.fetchone():
+            logger.info("Database tables verified successfully.")
+        else:
+            logger.error("! Critical: 'employee' table verification failed after initialization.")
+        conn.close()
+    except Exception as e:
+        logger.error(f"! Database verification failed: {e}")
+    
     # --- AUTO-BACKUP ON STARTUP ---
-    # Only creating a backup if we didn't just restore? 
-    # Actually, let's keep it to ensure we have a 'session start' point.
-    # But if we restored, we effectively just copied a backup to main DB.
-    # Creating another backup immediately is redundant but safe.
     try:
         backup_manager = DatabaseBackup(db_path=DB_NAME)
         backup_path = backup_manager.create_backup()
         logger.info(f"[SUCCESS] Startup backup created: {backup_path}")
-        print(f"✓ Startup backup created: {backup_path.name}")
+        print(f"OK Startup backup created: {backup_path.name}")
     except Exception as e:
         logger.error(f"Startup backup failed: {e}")
-        print(f"⚠ Startup backup failed: {e}")
-    # ------------------------------
+        print(f"! Startup backup failed: {e}")
+    
+    logger.info("Database initialization complete")
+
+
+if __name__ == '__main__':
+    
+    # Initialize App Logic
+    initialize_application()
 
     # Replaced localized create_table calls with init_db() above
     # create_employee_table() # Removed
@@ -853,8 +868,15 @@ if __name__ == '__main__':
         logger.warning(f"Could not determine IP: {e}")
         print(f"\n🚀 Visitor Management System running on: http://localhost:{config_obj.PORT}\n")
     
-    app.run(
-        host=config_obj.HOST,
-        port=config_obj.PORT,
-        debug=config_obj.DEBUG
-    )
+    try:
+        app.run(
+            host=config_obj.HOST,
+            port=config_obj.PORT,
+            debug=config_obj.DEBUG
+        )
+    except Exception as e:
+        logger.exception("Application crashed")
+        print(f"CRITICAL ERROR: {e}")
+    finally:
+        print("\nApplication exiting. Terminal will close in 10 seconds...")
+        time.sleep(10)

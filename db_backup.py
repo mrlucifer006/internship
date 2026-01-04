@@ -73,9 +73,21 @@ class EncryptionManager:
 
 class DatabaseBackup:
     
-    def __init__(self, db_path='instance/visitor_management.db', backup_dir='backups', secret_key=None):
-        self.db_path = Path(db_path)
-        self.backup_dir = Path(backup_dir)
+    def __init__(self, db_path=None, backup_dir=None, secret_key=None):
+        if db_path is None:
+            # Import resolved path from db.py
+            from db import DB_NAME
+            self.db_path = Path(DB_NAME)
+        else:
+            self.db_path = Path(db_path)
+            
+        if backup_dir is None:
+            from db import get_base_path
+            # Store backups next to instance folder
+            self.backup_dir = Path(get_base_path()) / 'backups'
+        else:
+            self.backup_dir = Path(backup_dir)
+            
         self.backup_dir.mkdir(parents=True, exist_ok=True)
         
         self.encryption = EncryptionManager(secret_key) if secret_key else None

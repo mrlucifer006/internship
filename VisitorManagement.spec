@@ -18,9 +18,7 @@ for root, dirs, files in os.walk('static'):
 
 # Database files
 db_files = [
-    ('employee.db', '.'),
-    ('visitors.db', '.'),
-    ('vehicle.db', '.')
+    ('instance/visitor_management.db', 'instance')
 ]
 
 a = Analysis(
@@ -45,6 +43,13 @@ a = Analysis(
         'db',
         'Logistics_message',
         'Whatsapp_message',
+        'seo_routes',
+        'pagination',
+        'logging_config',
+        'config',
+        'db_backup',
+        'waitress',
+        'cryptography',
     ],
     hookspath=[],
     hooksconfig={},
@@ -74,7 +79,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,
+    icon='favicon.ico',
 )
 
 coll = COLLECT(
