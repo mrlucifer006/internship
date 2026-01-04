@@ -51,10 +51,20 @@ if __name__ == '__main__':
     # Wait loop could be better, but simple delay works for local Flask
     time.sleep(1) 
 
+    # Get local IP address
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_address = s.getsockname()[0]
+        s.close()
+    except Exception:
+        ip_address = "localhost"
+
     # Create the native window
     webview.create_window(
         'Visitor Management System', 
-        'http://localhost:5000',
+        f'http://{ip_address}:5000',
         width=1280,
         height=720,
         resizable=True,

@@ -3,6 +3,10 @@ from pagination import PaginationResult
 from datetime import datetime
 import logging
 import math
+from cache_manager import (
+    get_all_local_visitors, get_active_local_visitors, get_paginated_local_visitors,
+    update_local_visitor, remove_local_visitor, get_db_connection
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,17 +38,15 @@ def save_visitor(data):
         return {"success": False, "errors": errors}
 
     try:
-        # Simple duplicate check: entry matching phone & visitor name that hasn't exited 
-        # But allow re-entry if the previous status was 'Denied'
-        
-        # Check active visits
-        check_query = supabase.table('visitors').select("id").eq('phone', phone).eq('name', visitor_name).is_('exit_time', 'null').neq('approval_status', 'Denied').execute()
-        
-        if check_query.data:
+        # Simple duplicate check against local cache
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM visitors WHERE phone = ? AND name = ? AND exit_time IS NULL AND status != -1", (phone, visitor_name))
+        if cursor.fetchone():
             return {"success": False, "errors": ["Visitor already checked in."]}
 
-        # Default status is 'Approved' unless specified
-        approval_status = data.get("approval_status", "Approved")
+        # Default status is 'Pending'
+        status = 0
         
         payload = {
             "name": visitor_name,
@@ -54,7 +56,7 @@ def save_visitor(data):
             "has_vehicle": has_vehicle,
             "vehicle_number": vehicle_number,
             "entry_time": datetime.now().isoformat(),
-            "approval_status": approval_status, 
+            "status": status, 
             "updated_at": datetime.now().isoformat()
         }
 
@@ -62,6 +64,7 @@ def save_visitor(data):
         
         if response.data:
             visitor_id = response.data[0]['id']
+            update_local_visitor(response.data[0])
             return {"success": True, "message": "Visitor registered successfully.", "visitor_id": visitor_id}
         else:
              return {"success": False, "errors": ["Database insert failed."]}
@@ -70,69 +73,60 @@ def save_visitor(data):
         logger.error(f"Error saving visitor: {e}")
         return {"success": False, "errors": [str(e)]}
 
-def get_all_entries():
+def update_visitor_status(visitor_id, status, denial_reason=None):
+    """
+    Updates the approval status of a visitor.
+    - status: 1 for Approved, -1 for Denied
+    - denial_reason: Optional reason for denial
+    """
+    if status not in [1, -1]:
+        return {"success": False, "errors": ["Invalid status value."]}
+
     try:
-        response = supabase.table('visitors').select("*").execute()
-        visitors = response.data if response.data else []
+        payload = {
+            "status": status,
+            "updated_at": datetime.now().isoformat()
+        }
+        if status == -1:
+            payload["denial_reason"] = denial_reason
+
+        response = supabase.table('visitors').update(payload).eq('id', visitor_id).execute()
         
-        results = []
-        for row in visitors:
-            results.append({
-                'V_name': row['name'],
-                'Number': row['phone'],
-                'name': row['person_to_visit'],
-                'reason': row['reason'],
-                'vehicle': row['has_vehicle'],
-                'vehicle_number': row['vehicle_number'],
-                'entry_time': row['entry_time'],
-                'exit_time': row['exit_time'],
-                'approval_status': row.get('approval_status', 'Approved'),
-                'denial_reason': row.get('denial_reason')
-            })
-        return results
+        if response.data:
+            update_local_visitor(response.data[0])
+            return {"success": True, "message": "Visitor status updated."}
+        else:
+            return {"success": False, "errors": ["Failed to update visitor status."]}
+            
     except Exception as e:
-        logger.error(f"Error getting all entries: {e}")
-        return []
+        logger.error(f"Error updating visitor status: {e}")
+        return {"success": False, "errors": [str(e)]}
+
+def get_all_entries():
+    return get_all_local_visitors()
 
 def get_active_visitors():
-    try:
-        response = supabase.table('visitors').select("*").is_('exit_time', 'null').execute()
-        visitors = response.data if response.data else []
-        
-        results = []
-        for row in visitors:
-            results.append({
-                'V_name': row['name'],
-                'Number': row['phone'],
-                'name': row['person_to_visit'],
-                'reason': row['reason'],
-                'vehicle': row['has_vehicle'],
-                'vehicle_number': row['vehicle_number'],
-                'entry_time': row['entry_time'],
-                'approval_status': row.get('approval_status', 'Approved'),
-                'denial_reason': row.get('denial_reason'),
-                'id': row['id']
-            })
-        return results
-    except Exception as e:
-        logger.error(f"Error getting active visitors: {e}")
-        return []
+    return get_active_local_visitors()
 
 def check_out_visitor(visitor_name, phone): 
     try:
-        # Check status first
-        response = supabase.table('visitors').select("approval_status").eq('name', visitor_name).eq('phone', phone).is_('exit_time', 'null').execute()
+        # Check status first from local cache
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, status FROM visitors WHERE name = ? AND phone = ? AND exit_time IS NULL", (visitor_name, phone))
+        visitor = cursor.fetchone()
         
-        if not response.data:
-            logger.warning("No active visit found in DB")
+        if not visitor:
+            logger.warning("No active visit found in local cache")
             return {"success": False, "errors": ["No active visit found."]}
         
-        status = response.data[0]['approval_status']
+        visitor_id = visitor['id']
+        status = visitor['status']
         
-        if status != 'Approved':
-            # Notification/Alert: "Don't add to database"
-            # Delete the record entirely to remove trace
-            supabase.table('visitors').delete().eq('name', visitor_name).eq('phone', phone).is_('exit_time', 'null').execute()
+        if status != 1:
+            # Delete from Supabase and local cache
+            supabase.table('visitors').delete().eq('id', visitor_id).execute()
+            remove_local_visitor(visitor_id)
             msg = "Visitor entry removed (Denied/Pending)."
         else:
             # Normal exit logic
@@ -141,96 +135,71 @@ def check_out_visitor(visitor_name, phone):
                 "exit_time": timestamp,
                 "updated_at": timestamp
             }
-            supabase.table('visitors').update(payload).eq('name', visitor_name).eq('phone', phone).is_('exit_time', 'null').execute()
+            response = supabase.table('visitors').update(payload).eq('id', visitor_id).execute()
+            if response.data:
+                update_local_visitor(response.data[0])
             msg = "Visitor checked out successfully."
         return {"success": True, "message": msg}
     except Exception as e:
         logger.error(f"Error checking out visitor: {e}")
         return {"success": False, "errors": [str(e)]}
+    finally:
+        conn.close()
 
 def remove_all_records():
     try:
-        # Deleting all rows requires a filter or explicit 'neq'. 
         supabase.table('visitors').delete().neq('id', -1).execute() # Hackish way to delete all if safe mode is on
+        conn = get_db_connection()
+        conn.execute("DELETE FROM visitors")
+        conn.commit()
+        conn.close()
         return "Records removed successfully."
     except Exception as e:
         return "Failed to remove the records " + str(e)
 
 def get_latest_visitor_timestamp():
+    conn = get_db_connection()
     try:
-        # Check MAX of updated_at OR entry_time.
-        # Supabase doesn't support complex COALESCE in select easily without RPC.
-        # We'll fetch latest updated_at and latest entry_time and compare.
-        # OR just order by updated_at desc limit 1.
-        
-        res_updated = supabase.table('visitors').select("updated_at").order('updated_at', desc=True).limit(1).execute()
-        res_entry = supabase.table('visitors').select("entry_time").order('entry_time', desc=True).limit(1).execute()
-        
-        t1 = res_updated.data[0]['updated_at'] if res_updated.data and res_updated.data[0]['updated_at'] else ""
-        t2 = res_entry.data[0]['entry_time'] if res_entry.data and res_entry.data[0]['entry_time'] else ""
+        cursor = conn.cursor()
+        cursor.execute("SELECT MAX(updated_at) FROM visitors")
+        t1 = cursor.fetchone()[0]
+        cursor.execute("SELECT MAX(entry_time) FROM visitors")
+        t2 = cursor.fetchone()[0]
         
         return max(t1, t2) if (t1 or t2) else None
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error getting latest visitor timestamp from cache: {e}")
         return None
+    finally:
+        conn.close()
+
+def get_pending_visitors(host_name):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM visitors WHERE person_to_visit = ? AND status = 0", (host_name,))
+        rows = cursor.fetchall()
+        return [dict(row) for row in rows]
+    except Exception as e:
+        logger.error(f"Error getting pending visitors from cache: {e}")
+        return []
+    finally:
+        conn.close()
 
 def get_entries_paginated(page: int = 1, per_page: int = 50) -> PaginationResult:
-    """
-    Get visitor entries with pagination.
-    """
-    try:
-        # Start building the query
-        query = supabase.table('visitors').select("*", count='exact')
-        
-        # Order by ID descending (newest first)
-        query = query.order('id', desc=True)
-            
-        # Pagination
-        start = (page - 1) * per_page
-        end = start + per_page - 1 
-        
-        response = query.range(start, end).execute()
-        
-        visitors = response.data if response.data else []
-        total = response.count if response.count is not None else 0
-        
-        mapped_data = []
-        for row in visitors:
-            mapped_data.append({
-                'V_name': row['name'],
-                'Number': row['phone'],
-                'name': row['person_to_visit'],
-                'reason': row['reason'],
-                'vehicle': row['has_vehicle'],
-                'vehicle_number': row['vehicle_number'],
-                'entry_time': row['entry_time'],
-                'exit_time': row['exit_time'],
-                'approval_status': row.get('approval_status', 'Approved'),
-                'denial_reason': row.get('denial_reason'),
-                'id': row['id']
-            })
-            
-        total_pages = math.ceil(total / per_page) if total else 1
-        has_next = page < total_pages
-        has_prev = page > 1
-        
-        return PaginationResult(
-            data=mapped_data,
-            page=page,
-            per_page=per_page,
-            total=total,
-            total_pages=total_pages,
-            has_next=has_next,
-            has_prev=has_prev
-        )
-        
-    except Exception as e:
-        logger.error(f"Error getting paginated entries: {e}")
-        return PaginationResult(
-            data=[],
-            page=1,
-            per_page=per_page,
-            total=0,
-            total_pages=1,
-            has_next=False,
-            has_prev=False
-        )
+    result = get_paginated_local_visitors(page, per_page)
+    
+    total = result['total']
+    total_pages = math.ceil(total / per_page) if total else 1
+    has_next = page < total_pages
+    has_prev = page > 1
+    
+    return PaginationResult(
+        data=result['data'],
+        page=page,
+        per_page=per_page,
+        total=total,
+        total_pages=total_pages,
+        has_next=has_next,
+        has_prev=has_prev
+    )

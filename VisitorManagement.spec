@@ -17,7 +17,7 @@ for root, dirs, files in os.walk('static'):
         static_files.append((os.path.join(root, file), root))
 
 # Database files
-db_files = []
+db_files = [('schema.sql', '.')]
 
 a = Analysis(
     ['run.py'],
@@ -52,6 +52,7 @@ a = Analysis(
         'config',
         'waitress',
         'cryptography',
+        'cache_manager',
     ],
     hookspath=[],
     hooksconfig={},

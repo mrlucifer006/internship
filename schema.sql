@@ -1,5 +1,3 @@
-
--- Employee Table
 CREATE TABLE employee (
     id bigint NOT NULL PRIMARY KEY,
     name text,
@@ -11,18 +9,6 @@ CREATE TABLE employee (
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
--- Notifications Table
-CREATE TABLE notifications (
-    id bigint NOT NULL PRIMARY KEY,
-    host_login_id text,
-    visitor_name text,
-    reason text,
-    visitor_id bigint,
-    is_read boolean DEFAULT false,
-    timestamp timestamp with time zone DEFAULT now() NOT NULL
-);
-
--- Visitors Table
 CREATE TABLE visitors (
     id bigint NOT NULL PRIMARY KEY,
     name text,
@@ -33,13 +19,12 @@ CREATE TABLE visitors (
     vehicle_number text,
     entry_time timestamp with time zone,
     exit_time timestamp with time zone,
-    approval_status text,
+    status integer,
     denial_reason text,
     updated_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
--- Vehicle Table
 CREATE TABLE vehicle (
     id bigint NOT NULL PRIMARY KEY,
     driver_name text,

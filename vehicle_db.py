@@ -3,6 +3,10 @@ import datetime
 import math
 from db import get_supabase_client
 from pagination import PaginationResult
+from cache_manager import (
+    get_all_local_vehicles, get_paginated_local_vehicles,
+    update_local_vehicle, remove_local_vehicle, get_db_connection
+)
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +37,7 @@ def insert_vehicle(data):
         
         # Check if insert was successful (response.data should be populated)
         if response.data:
+            update_local_vehicle(response.data[0])
             return True
         return False
         
@@ -42,88 +47,56 @@ def insert_vehicle(data):
 
 def get_vehicle_by_reg_no(veh_reg_no):
     """Get a vehicle record by registration number."""
+    conn = get_db_connection()
     try:
-        response = supabase.table('vehicle').select("*").eq('veh_reg_no', veh_reg_no).execute()
-        
-        # Return first record as Dictionary (matching current behavior)
-        if response.data and len(response.data) > 0:
-            return response.data[0] 
-        else:
-            return None
-    except Exception as e:
-        logger.error(f"Error getting vehicle by reg no: {e}")
+        cursor = conn.execute('SELECT * FROM vehicle WHERE veh_reg_no = ?', (veh_reg_no,))
+        row = cursor.fetchone()
+        if row:
+            return dict(row)
         return None
+    except Exception as e:
+        logger.error(f"Error getting vehicle by reg no from cache: {e}")
+        return None
+    finally:
+        conn.close()
 
 def get_vehicle_by_driver(driver_name):
     """Get all vehicles associated with a driver."""
+    conn = get_db_connection()
     try:
-        response = supabase.table('vehicle').select("*").eq('driver_name', driver_name).execute()
-        return response.data if response.data else []
+        cursor = conn.execute('SELECT * FROM vehicle WHERE driver_name = ?', (driver_name,))
+        rows = cursor.fetchall()
+        return [dict(row) for row in rows]
     except Exception as e:
-        logger.error(f"Error getting vehicles by driver: {e}")
+        logger.error(f"Error getting vehicles by driver from cache: {e}")
         return []
+    finally:
+        conn.close()
 
 def get_all_vehicles():
     """Get all vehicle records."""
-    try:
-        # Order by time descending
-        response = supabase.table('vehicle').select("*").order('time', desc=True).execute()
-        return response.data if response.data else []
-    except Exception as e:
-        logger.error(f"Error getting all vehicles: {e}")
-        return []
+    return get_all_local_vehicles()
 
 def get_vehicles_paginated(page: int = 1, per_page: int = 50, search: str = None) -> PaginationResult:
     """
     Get vehicle records with pagination.
     """
-    try:
-        # Start building the query
-        query = supabase.table('vehicle').select("*", count='exact')
-        
-        if search:
-            # Using 'ilike' for case-insensitive search on multiple columns
-            # Supabase 'or' filter syntax: "column.ilike.%search%,other.ilike.%search%"
-            search_pattern = f"%{search}%"
-            # NOTE: Supabase filter syntax for OR across columns can be tricky.
-            # Using explicit filter string
-            or_filter = f"driver_name.ilike.*{search}*,veh_reg_no.ilike.*{search}*,destination.ilike.*{search}*"
-            query = query.or_(or_filter)
-            
-        # Pagination
-        start = (page - 1) * per_page
-        end = start + per_page - 1 # Supabase range is inclusive
-        
-        response = query.order('time', desc=True).range(start, end).execute()
-        
-        data = response.data
-        total = response.count if response.count is not None else 0
-        
-        total_pages = math.ceil(total / per_page) if total else 1
-        has_next = page < total_pages
-        has_prev = page > 1
-        
-        return PaginationResult(
-            data=data,
-            page=page,
-            per_page=per_page,
-            total=total,
-            total_pages=total_pages,
-            has_next=has_next,
-            has_prev=has_prev
-        )
-        
-    except Exception as e:
-        logger.error(f"Error getting paginated vehicles: {e}")
-        return PaginationResult(
-            data=[],
-            page=1,
-            per_page=per_page,
-            total=0,
-            total_pages=1,
-            has_next=False,
-            has_prev=False
-        )
+    result = get_paginated_local_vehicles(page, per_page, search)
+    
+    total = result['total']
+    total_pages = math.ceil(total / per_page) if total else 1
+    has_next = page < total_pages
+    has_prev = page > 1
+    
+    return PaginationResult(
+        data=result['data'],
+        page=page,
+        per_page=per_page,
+        total=total,
+        total_pages=total_pages,
+        has_next=has_next,
+        has_prev=has_prev
+    )
 
 def update_vehicle(veh_reg_no, data):
     """Update a vehicle record."""
@@ -134,12 +107,11 @@ def update_vehicle(veh_reg_no, data):
             "destination": data.get("destination"),
             "time": data.get("time")
         }
-        # Filter out None values just in case we don't want to unset them? 
-        # Usually updates are explicit. Let's keep it simple.
         
         response = supabase.table('vehicle').update(payload).eq('veh_reg_no', veh_reg_no).execute()
         
         if response.data:
+            update_local_vehicle(response.data[0])
             return True
         else:
             logger.warning(f"No vehicle found with registration number: {veh_reg_no}")
@@ -151,8 +123,15 @@ def update_vehicle(veh_reg_no, data):
 def delete_vehicle(veh_reg_no):
     """Delete a vehicle record by registration number."""
     try:
+        # Get id before deleting
+        vehicle = get_vehicle_by_reg_no(veh_reg_no)
+        if not vehicle:
+            logger.warning(f"No vehicle found with registration number: {veh_reg_no}")
+            return False
+
         response = supabase.table('vehicle').delete().eq('veh_reg_no', veh_reg_no).execute()
         if response.data:
+            remove_local_vehicle(vehicle['id'])
             return True
         else:
             logger.warning(f"No vehicle found with registration number: {veh_reg_no}")
@@ -163,9 +142,13 @@ def delete_vehicle(veh_reg_no):
 
 def search_vehicles_by_destination(destination):
     """Search vehicles by destination."""
+    conn = get_db_connection()
     try:
-        response = supabase.table('vehicle').select("*").ilike('destination', f"%{destination}%").execute()
-        return response.data if response.data else []
+        cursor = conn.execute('SELECT * FROM vehicle WHERE destination LIKE ?', (f'%{destination}%',))
+        rows = cursor.fetchall()
+        return [dict(row) for row in rows]
     except Exception as e:
-        logger.error(f"Error searching vehicles: {e}")
+        logger.error(f"Error searching vehicles from cache: {e}")
         return []
+    finally:
+        conn.close()

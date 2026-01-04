@@ -2,6 +2,7 @@ import re
 import bcrypt
 import logging
 from db import get_supabase_client
+from cache_manager import get_local_employee, update_local_employee, remove_local_employee, get_db_connection
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,8 @@ def insert_employee(data):
         
         if response.data:
             logger.info(f"Employee created: {data['login_id']}")
+            # Update local cache
+            update_local_employee(response.data[0])
             return True
         return False
     except Exception as e:
@@ -65,37 +68,43 @@ def insert_employee(data):
         return False
 
 def get_employee_by_name(data):
+    conn = get_db_connection()
     try:
-        response = supabase.table('employee').select("*").eq('name', data["name"]).execute()
-        if response.data and len(response.data) > 0:
-            return response.data[0]
-        else:
-            return "Employee not found" # Keeping original return string behavior
+        cursor = conn.execute('SELECT * FROM employee WHERE name = ?', (data["name"],))
+        row = cursor.fetchone()
+        if row:
+            return dict(row)
+        return "Employee not found"
     except Exception as e:
-        logger.error(f"Error getting employee by name: {e}")
+        logger.error(f"Error getting employee by name from cache: {e}")
         return None
+    finally:
+        conn.close()
 
 def get_employee_phone(name):
+    conn = get_db_connection()
     try:
-        response = supabase.table('employee').select("phone").eq('name', name).execute()
-        if response.data and len(response.data) > 0:
-            return response.data[0]['phone']
-        else:
-            return None
+        cursor = conn.execute('SELECT phone FROM employee WHERE name = ?', (name,))
+        row = cursor.fetchone()
+        if row:
+            return row['phone']
+        return None
     except Exception as e:
-        logger.error(f"Error getting employee phone: {e}")
+        logger.error(f"Error getting employee phone from cache: {e}")
         return False
+    finally:
+        conn.close()
 
 def check_credentials(login_id, password):
     """
     Check employee credentials with password verification.
+    Uses local cache for performance.
     """
     try:
-        # Fetch employee by login_id only
-        response = supabase.table('employee').select("*").eq('login_id', login_id).execute()
+        # Fetch employee from LOCAL CACHE
+        employee = get_local_employee(login_id)
         
-        if response.data and len(response.data) > 0:
-            employee = response.data[0]
+        if employee:
             # Verify password using bcrypt or plain text
             if verify_password(password, employee['password']):
                 logger.info(f"Successful login: {login_id}")
@@ -116,88 +125,61 @@ def update_employee_status(login_id, status):
         
         if response.data:
             print(f"Updated status to {status} for {login_id}")
+            update_local_employee(response.data[0])
             return True
         else:
             print(f"Warning: update_employee_status - No employee found with login_id: {login_id}")
-            return True # Original returned True on error/empty too? No, it handled it. 
-            # Original: if cursor.rowcount == 0 return True (technically it fell through).
-            # Let's return True as intent seems to be "operation attempted".
+            return True
     except Exception as e:
         logger.error(f"Error updating employee status: {e}")
         return False
 
 def get_employee_status(login_id):
+    conn = get_db_connection()
     try:
-        response = supabase.table('employee').select("status").eq('login_id', login_id).execute()
-        if response.data:
-            return response.data[0]['status']
+        cursor = conn.execute('SELECT status FROM employee WHERE login_id = ?', (login_id,))
+        row = cursor.fetchone()
+        if row:
+            return row['status']
         return None
     except Exception as e:
-        logger.error(f"Error getting employee status: {e}")
+        logger.error(f"Error getting employee status from cache: {e}")
         return None
-
-def add_notification(host_login_id, visitor_name, reason, visitor_id=None):
-    try:
-        payload = {
-            "host_login_id": host_login_id,
-            "visitor_name": visitor_name,
-            "reason": reason,
-            "visitor_id": visitor_id
-        }
-        response = supabase.table('notifications').insert(payload).execute()
-        if response.data:
-            return True
-        return False
-    except Exception as e:
-        logger.error(f"Error adding notification: {e}")
-        return False
-
-def get_unread_notifications(host_login_id):
-    try:
-        response = supabase.table('notifications').select("*").eq('host_login_id', host_login_id).eq('is_read', 0).execute()
-        notifications = response.data if response.data else []
-        
-        # Mark as read immediately
-        if notifications:
-            supabase.table('notifications').update({'is_read': 1}).eq('host_login_id', host_login_id).eq('is_read', 0).execute()
-            
-        return notifications
-    except Exception as e:
-        logger.error(f"Error getting notifications: {e}")
-        return []
-
-def get_notification_history(host_login_id):
-    try:
-        response = supabase.table('notifications').select("*").eq('host_login_id', host_login_id).order('timestamp', desc=True).limit(20).execute()
-        return response.data if response.data else []
-    except Exception as e:
-        print(f"Error getting notification history: {e}")
-        return []
+    finally:
+        conn.close()
 
 def get_all_employees():
+    conn = get_db_connection()
     try:
-        response = supabase.table('employee').select("name, login_id").execute()
-        return response.data if response.data else []
+        cursor = conn.execute('SELECT name, login_id FROM employee')
+        rows = cursor.fetchall()
+        return [dict(row) for row in rows]
     except Exception as e:
-        logger.error(f"Error getting all employees: {e}")
+        logger.error(f"Error getting all employees from cache: {e}")
         return []
+    finally:
+        conn.close()
 
 def get_all_employees_full():
+    conn = get_db_connection()
     try:
-        response = supabase.table('employee').select("name, login_id, phone, Auth_level, status").execute()
-        return response.data if response.data else []
+        cursor = conn.execute('SELECT name, login_id, phone, Auth_level, status FROM employee')
+        rows = cursor.fetchall()
+        return [dict(row) for row in rows]
     except Exception as e:
-        logger.error(f"Error getting all employees full: {e}")
+        logger.error(f"Error getting all employees full from cache: {e}")
         return []
+    finally:
+        conn.close()
 
 def reset_all_employee_statuses():
     """Resets the status of all employees to 0 (Offline)."""
     try:
-        # Note: Supabase update without 'eq' usually requires safety setting off or explicit filter.
-        # However, to update ALL, we can use a filter that matches all, e.g. login_id like %.
-        # Safer: .neq('status', 0) to only update those who need it.
         response = supabase.table('employee').update({'status': 0}).neq('status', 0).execute()
         print("All employee statuses have been reset to 0.")
+        # Sync the changes to the local cache
+        from cache_manager import sync_data_from_supabase
+        sync_data_from_supabase(force=True)
         return True
     except Exception as e:
         logger.error(f"Error resetting employee statuses: {e}")
@@ -206,18 +188,15 @@ def reset_all_employee_statuses():
 def delete_employee(login_id):
     """Deletes an employee and triggers a backup."""
     try:
-        # Check if user exists first
-        check = supabase.table('employee').select("name").eq('login_id', login_id).execute()
-        if not check.data:
-            logger.warning(f"Attempted delete on non-existent user: {login_id}")
-            return False
-
         response = supabase.table('employee').delete().eq('login_id', login_id).execute()
         if response.data:
             print(f"Employee {login_id} deleted successfully.")
             logger.info(f"Employee deleted: {login_id}")
+            # Update local cache
+            remove_local_employee(login_id)
             return True
         return False
     except Exception as e:
         logger.error(f"Error deleting employee {login_id}: {e}")
         return False
+

@@ -560,13 +560,13 @@
 
         function performPoll() {
             // 1. Check Personal Notifications First
-            fetch('/check_notifications')
+            fetch('/api/pending_visitors')
                 .then(response => response.json())
-                .then(notifications => {
-                    if (notifications && notifications.length > 0) {
+                .then(visitors => {
+                    if (visitors && visitors.length > 0) {
                         // We have a notification! Show it and DO NOT reload
-                        const note = notifications[0];
-                        showNotification(note.visitor_name, note.reason, note.visitor_id);
+                        const visitor = visitors[0];
+                        showNotification(visitor.name, visitor.reason, visitor.id);
 
                         // We also likely have a new timestamp, so let's update our local tracker
                         fetch('/check_updates')

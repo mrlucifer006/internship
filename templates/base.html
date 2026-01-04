@@ -14,6 +14,13 @@
         <div class="container mx-auto flex justify-between items-center">
             <a href="/" class="text-white text-lg font-bold">MyApp</a>
             <div>
+                {% if session.user %}
+                <form action="{{ url_for('sync_cache') }}" method="POST" class="inline">
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">
+                        Sync Cache
+                    </button>
+                </form>
+                {% endif %}
                 <!-- Add navigation links here if needed -->
             </div>
         </div>

@@ -13,13 +13,14 @@ from logging_config import setup_logging
 # Import database modules
 from db import init_db
 import vehicle_db
+from cache_manager import init_cache, sync_data_from_supabase
 
 # Import services
-from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp, get_entries_paginated
+from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp, get_entries_paginated, update_visitor_status, get_pending_visitors
 from employee_db import (
     get_employee_phone, check_credentials, insert_employee, 
-    update_employee_status, add_notification, get_employee_by_name, 
-    get_unread_notifications, get_all_employees, reset_all_employee_statuses, 
+    update_employee_status, get_employee_by_name, 
+    get_all_employees, reset_all_employee_statuses, 
     get_employee_status
 )
 
@@ -189,16 +190,13 @@ def get_data():
             vehicle_number = None
             if vehicle:
                 vehicle_number = flask.request.form.get('vehicle_number')
-    # --- CHECK HOST STATUS ---
+            # --- CHECK HOST STATUS ---
             from employee_db import get_employee_by_name, add_notification
             host_info = get_employee_by_name({'name': name}) # name is Host Name
             
-            approval_status = "Approved" # Default
             is_host_online = False
-            
             if host_info and host_info != "Employee not found":
                 if host_info.get('status'): # If Host is Online (1)
-                    approval_status = "Pending"
                     is_host_online = True
 
             data = {
@@ -207,20 +205,16 @@ def get_data():
                 "V_name": V_name,
                 "reason": reason,
                 "vehicle": vehicle,
-                "vehicle_number": vehicle_number,
-                "approval_status": approval_status
+                "vehicle_number": vehicle_number
             }
             
             result = save_visitor(data)
             
             if result["success"]:
-                # Send Notification if Host is Online and status is Pending
+                # Send Notification if Host is Online
                 if is_host_online and result.get("visitor_id"):
                      add_notification(host_info['login_id'], V_name, reason, visitor_id=result["visitor_id"])
-                     if approval_status == "Pending":
-                         flask.flash("Visitor entry pending. Waiting for Host approval.", 'warning')
-                     else:
-                         flask.flash("Visitor entry logged successfully!", 'success')
+                     flask.flash("Visitor entry pending. Waiting for Host approval.", 'warning')
                 else:
                     # Host is Offline: Send WhatsApp and Notify Guard
                     if host_info and host_info != "Employee not found":
@@ -239,11 +233,9 @@ def get_data():
                         threading.Thread(target=send_wa).start()
                         
                         flask.flash(f"Host '{host_info['name']}' is Offline. Notification sent via WhatsApp.", 'success')
-                        flask.render_template('check_out.html', visitors=get_all_entries())
                         time.sleep(2)
                     else:
                         flask.flash("Visitor entry logged successfully! (Host not found)", 'success')
-                        flask.render_template('check_out.html', visitors=get_all_entries())
                         time.sleep(2)
                 return flask.redirect(flask.url_for('home'))
             else:
@@ -277,7 +269,6 @@ def entry_data():
     # If host is found and is Online (status=1), send internal notification
     if host and host.get('status') == 1:
         logger.info(f"Host {name} is Online. Sending Popup Notification.")
-        add_notification(host['login_id'], V_name, reason)
         
     else:
         # Host is Offline or not found (fallback), send WhatsApp
@@ -565,17 +556,7 @@ def process_add_user():
         return flask.redirect(flask.url_for('new_user'))
 
     
-@app.route('/check_notifications')
-def check_notifications():
-    if not is_logged_in():
-        return flask.jsonify([])
-        
-    login_id = flask.session.get('login_id')
-    if not login_id:
-        return flask.jsonify([])
-        
-    notifications = get_unread_notifications(login_id)
-    return flask.jsonify(notifications)
+
 
 @app.route('/check_updates')
 def check_updates():
@@ -638,19 +619,16 @@ def delete_user(login_id):
     employees = get_all_employees_full()
     return flask.jsonify(employees)
 
-@app.route('/notifications')
-def notifications_page():
+
+
+@app.route('/api/pending_visitors')
+def pending_visitors():
     if not is_logged_in():
-        return flask.redirect(flask.url_for('login'))
-        
-    login_id = flask.session.get('login_id')
-    from employee_db import get_notification_history
-    notifications = get_notification_history(login_id)
+        return flask.jsonify({'error': 'Unauthorized'}), 401
     
-    # render the template with the latest notification if exists
-    latest_notification = notifications[0] if notifications else None
-    
-    return flask.render_template('notification.html', notification=latest_notification, all_notifications=notifications)
+    host_name = flask.session.get('user')
+    visitors = get_pending_visitors(host_name)
+    return flask.jsonify(visitors)
 
 @app.route('/api/visitors')
 def get_visitors_api():
@@ -672,30 +650,32 @@ def action_visitor():
     if not visitor_id or not action:
         return flask.jsonify({'success': False, 'error': 'Missing data'})
         
-    status = "Approved" if action == 'approve' else "Denied"
+    status = 1 if action == 'approve' else -1
+    reason = data.get('reason') if status == -1 else None
     
-    from db import get_db_connection
-    conn = get_db_connection()
-    try:
-        with conn:
-            # If Denied, we might want to set exit_time immediately so they aren't 'active'?
-            # Or just set status. User said "not update entry" which implies "don't let them in".
-            # For logging purposes, 'Denied' status is good.
-            from datetime import datetime
-            now = datetime.now().isoformat()
-            
-            # Update status and updated_at. Do NOT set exit_time yet, so Guard sees the feedback.
-            if action == 'deny':
-                reason = data.get('reason', '')
-                conn.execute("UPDATE visitors SET approval_status = ?, updated_at = ?, denial_reason = ? WHERE id = ?", (status, now, reason, visitor_id))
-            else:
-                 conn.execute("UPDATE visitors SET approval_status = ?, updated_at = ? WHERE id = ?", (status, now, visitor_id))
-            
+    result = update_visitor_status(visitor_id, status, reason)
+    
+    if result['success']:
         return flask.jsonify({'success': True, 'status': status})
+    else:
+        return flask.jsonify({'success': False, 'error': result['errors']})
+
+@app.route('/sync_cache', methods=['POST'])
+def sync_cache():
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+    
+    try:
+        if sync_data_from_supabase(force=True):
+            flask.flash("Employee cache synced successfully!", 'success')
+        else:
+            flask.flash("Failed to sync employee cache.", 'error')
     except Exception as e:
-        return flask.jsonify({'success': False, 'error': str(e)})
-    finally:
-        conn.close()
+        logger.error(f"Error during manual cache sync: {e}")
+        flask.flash("An error occurred during cache sync.", 'error')
+        
+    return flask.redirect(flask.url_for('home'))
+
 
 # Health check endpoint
 @app.route('/health')
@@ -705,8 +685,8 @@ def health_check():
         # Test database connectivity
         from db import get_db_connection
         conn = get_db_connection()
-        conn.execute('SELECT 1').fetchone()
-        conn.close()
+        # Perform a simple read to verify connection
+        conn.table('visitors').select('id').limit(1).execute()
         
         return flask.jsonify({
             'status': 'healthy',
@@ -758,6 +738,13 @@ def initialize_application():
     
     # Initialize connection check
     init_db()
+    
+    # Initialize local cache
+    init_cache()
+    try:
+        sync_data_from_supabase()
+    except Exception as e:
+        logger.error(f"Failed to sync data on startup: {e}")
 
 
 
@@ -765,6 +752,8 @@ if __name__ == '__main__':
     
     # Initialize App Logic
     init_db()
+    init_cache()
+    sync_data_from_supabase()
 
     # Replaced localized create_table calls with init_db() above
     # create_employee_table() # Removed
