@@ -457,62 +457,67 @@
                             placeholder="Search entries..." autocomplete="off">
                     </div>
                 </form>
-                <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-slate-50/30" id="recent-entries-list">
+                <div id="recent-entries-list" class="space-y-3 hidden xl:block">
                     {% if recent_vehicles %}
                     {% for vehicle in recent_vehicles %}
                     <div
-                        class="p-4 rounded-lg border border-slate-200 bg-white flex flex-col gap-2 hover:shadow-md transition-shadow">
-                        <div class="flex justify-between items-start">
-                            <div class="flex flex-col">
-                                <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wide">{{
-                                    vehicle.veh_reg_no
-                                    }}
-                                </h4>
-                                <span class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Vehicle
-                                    No.</span>
+                        class="p-4 rounded-xl bg-white border border-slate-100 hover:border-indigo-100 hover:shadow-sm transition-all animate-fade-in group">
+                        <div class="flex items-start gap-3">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <p class="text-sm font-bold text-slate-700 truncate">{{ vehicle.veh_reg_no }}</p>
+                                    <span
+                                        class="px-2 py-0.5 rounded-md {{ 'bg-indigo-50 text-indigo-600 border-indigo-100' if vehicle.entry_type == 'Entry' else 'bg-orange-50 text-orange-600 border-orange-100' }} text-[10px] font-bold uppercase tracking-wide border">
+                                        {{ vehicle.entry_type|default('Entry') }}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-500 truncate">{{ vehicle.driver_name }}</p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span
+                                        class="text-[10px] text-slate-400 font-mono bg-slate-50 px-1.5 py-0.5 rounded">{{
+                                        vehicle.display_time }}</span>
+                                    {% if vehicle.vehicle_img %}
+                                    <span class="material-symbols-outlined text-[14px] text-green-500"
+                                        title="Photo Attached">image</span>
+                                    {% endif %}
+                                </div>
                             </div>
-                            <span class="text-[10px] font-bold px-2 py-1 {{ 'bg-blue-50 text-blue-600 border-blue-100' if
-                                vehicle.entry_type == 'Entry' else 'bg-orange-50 text-orange-600 border-orange-100' }}
-                                rounded-full border uppercase tracking-wide">
-                                {{ vehicle.entry_type|default('Entry') }} {{ vehicle.display_time }}
-                            </span>
-                        </div>
-                        <hr class="border-slate-100 my-1" />
-                        <div class="text-xs text-slate-600 flex flex-col gap-2">
-                            <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-[16px] text-slate-400">person</span>
-                                <span class="font-bold text-slate-700">{{ vehicle.driver_name }}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-[16px] text-slate-400">route</span>
-                                <span class="truncate" title="{{ vehicle.origin }} to {{ vehicle.destination }}">
-                                    {{ vehicle.origin }} <span class="text-slate-400">→</span> {{
-                                    vehicle.destination }}
-                                </span>
-                            </div>
-                            {% if vehicle.vehicle_img %}
-                            <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-[16px] text-slate-400">image</span>
-                                <span class="text-[10px] text-green-600 font-bold uppercase tracking-wide">Photo
-                                    Attached</span>
-                            </div>
-                            {% endif %}
                         </div>
                     </div>
-                    {% endfor %}
-                    {% else %}
-                    <div
-                        class="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-lg bg-white">
-                        <div class="bg-slate-50 p-3 rounded-full mb-3">
-                            <span class="material-symbols-outlined text-3xl text-slate-300">inbox</span>
-                        </div>
-                        <p class="text-slate-600 font-medium text-sm">No recent entries</p>
-                        <p class="text-slate-400 text-xs mt-1">New logistics entries will appear here</p>
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[16px] text-slate-400">person</span>
+                        <span class="font-bold text-slate-700">{{ vehicle.driver_name }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[16px] text-slate-400">route</span>
+                        <span class="truncate" title="{{ vehicle.origin }} to {{ vehicle.destination }}">
+                            {{ vehicle.origin }} <span class="text-slate-400">→</span> {{
+                            vehicle.destination }}
+                        </span>
+                    </div>
+                    {% if vehicle.vehicle_img %}
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[16px] text-slate-400">image</span>
+                        <span class="text-[10px] text-green-600 font-bold uppercase tracking-wide">Photo
+                            Attached</span>
                     </div>
                     {% endif %}
                 </div>
-            </aside>
         </div>
+        {% endfor %}
+        {% else %}
+        <div
+            class="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-lg bg-white">
+            <div class="bg-slate-50 p-3 rounded-full mb-3">
+                <span class="material-symbols-outlined text-3xl text-slate-300">inbox</span>
+            </div>
+            <p class="text-slate-600 font-medium text-sm">No recent entries</p>
+            <p class="text-slate-400 text-xs mt-1">New logistics entries will appear here</p>
+        </div>
+        {% endif %}
+    </div>
+    </aside>
+    </div>
     </div>
     <script>
         function handleFileSelect(input) {
