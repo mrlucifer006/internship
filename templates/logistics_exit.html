@@ -90,11 +90,9 @@
             class="fixed md:static inset-y-0 left-0 w-64 bg-sidebar-dark flex flex-col flex-shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
             <div class="h-16 flex items-center px-6 border-b border-gray-800/50">
                 <div class="flex items-center gap-3 text-white">
-                    <div
-                        class="bg-blue-600/90 rounded p-1.5 flex items-center justify-center shadow-lg shadow-blue-900/20">
-                        <span class="material-symbols-outlined text-xl">local_shipping</span>
-                    </div>
-                    <span class="font-bold text-lg tracking-tight">Logistics</span>
+                    <img src="{{ url_for('static', filename='favicon.ico') }}" alt="SSBS Logo"
+                        class="size-8 rounded-lg">
+                    <span class="font-bold text-lg tracking-tight">SSBS Portal</span>
                 </div>
             </div>
             <nav class="flex-1 overflow-y-auto px-3 py-6 space-y-1">
