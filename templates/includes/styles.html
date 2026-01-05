@@ -1,0 +1,55 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#1e73be",
+                    "brand-blue": "#1e73be",
+                    "brand-green": "#5c8a42",
+                    "brand-orange": "#f08422",
+                    "background-light": "#f8fafc",
+                    "background-dark": "#0f172a",
+                    "card-light": "#ffffff",
+                    "card-dark": "#1e293b",
+                    "sidebar-dark": "#1e293b",
+                },
+                fontFamily: {
+                    "display": ["Inter", "sans-serif"],
+                    "sans": ["Inter", "sans-serif"],
+                },
+                borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+            },
+        },
+    }
+</script>
+<style type="text/tailwindcss">
+    @layer utilities {
+        .text-primary { color: theme('colors.primary'); }
+        .bg-primary { background-color: theme('colors.primary'); }
+    }
+    
+    /* Common animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+    
+    @keyframes modalPop {
+      0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-modal {
+      animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+</style>

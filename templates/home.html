@@ -7,27 +7,7 @@
     {% include 'seo_meta.html' %}
 
     {# Fonts and Styles #}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#1e73be",
-                        "brand-blue": "#1e73be",
-                        "brand-green": "#5c8a42",
-                        "brand-orange": "#f08422",
-                        "background-light": "#f5f7f8",
-                    },
-                    fontFamily: { "display": ["Inter", "sans-serif"] },
-                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
-                },
-            },
-        }
-    </script>
+    {% include 'includes/styles.html' %}
     <style type="text/tailwindcss">
         :root {
             --brand-blue: #1e73be;
@@ -354,77 +334,49 @@
                     </div>
 
                     <!-- Search Bar -->
-                    <form method="get" action="{{ url_for('home') }}" class="mt-2">
+                    <form id="sidebar-search-form" method="get" action="{{ url_for('home') }}" class="mt-2">
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                                 <span class="material-symbols-outlined text-lg">search</span>
                             </span>
-                            <input type="text" name="search" value="{{ request.args.get('search', '') }}"
+                            <input type="text" name="search" id="sidebar-search-input"
+                                value="{{ request.args.get('search', '') }}"
                                 class="form-input w-full rounded-lg border-slate-300 bg-white focus:border-indigo-500 focus:ring-indigo-500 h-10 pl-10 text-sm placeholder:text-slate-400"
                                 placeholder="Search entries..." autocomplete="off">
                         </div>
                     </form>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const searchInput = document.getElementById('sidebar-search-input');
+                            const entriesList = document.getElementById('recent-entries-list');
+                            let timeout = null;
+
+                            if (searchInput && entriesList) {
+                                searchInput.addEventListener('input', function () {
+                                    clearTimeout(timeout);
+                                    timeout = setTimeout(() => {
+                                        const searchTerm = this.value;
+                                        // Add opacity to indicate loading
+                                        entriesList.style.opacity = '0.5';
+
+                                        fetch(`{{ url_for('home') }}?ajax=1&search=${encodeURIComponent(searchTerm)}`)
+                                            .then(response => response.text())
+                                            .then(html => {
+                                                entriesList.innerHTML = html;
+                                                entriesList.style.opacity = '1';
+                                            })
+                                            .catch(error => {
+                                                console.error('Error:', error);
+                                                entriesList.style.opacity = '1';
+                                            });
+                                    }, 300); // 300ms debounce
+                                });
+                            }
+                        });
+                    </script>
                     <div id="recent-entries-list" class="space-y-3 hidden xl:block">
-                        {% for entry in entries %}
-                        <div
-                            class="p-4 rounded-xl bg-white border border-slate-100 hover:border-indigo-100 hover:shadow-sm transition-all animate-fade-in group">
-                            <div class="flex items-start gap-3">
-                                {% if entry.status == -1 %}
-                                <div class="bg-red-50 text-red-500 rounded-lg p-1.5 shrink-0">
-                                    <span class="material-symbols-outlined text-lg">block</span>
-                                </div>
-                                {% elif entry.status == 0 %}
-                                {% if session.get('auth_level', 0) > 1 and session.get('user') == entry.person_to_visit
-                                %}
-                                <div class="flex flex-col gap-1 shrink-0">
-                                    <button
-                                        onclick="handleAction('{{ entry.id }}', 'approve'); event.stopPropagation();"
-                                        class="bg-emerald-100 hover:bg-emerald-200 text-emerald-600 rounded-lg p-1.5 transition-colors"
-                                        title="Approve">
-                                        <span class="material-symbols-outlined text-lg">check</span>
-                                    </button>
-                                    <button onclick="promptDenial('{{ entry.id }}'); event.stopPropagation();"
-                                        class="bg-red-100 hover:bg-red-200 text-red-600 rounded-lg p-1.5 transition-colors"
-                                        title="Deny">
-                                        <span class="material-symbols-outlined text-lg">close</span>
-                                    </button>
-                                </div>
-                                {% else %}
-                                <div class="bg-amber-50 text-amber-500 rounded-lg p-1.5 shrink-0"
-                                    title="Pending Approval">
-                                    <span class="material-symbols-outlined text-lg">hourglass_top</span>
-                                </div>
-                                {% endif %}
-                                {% else %}
-                                <div class="bg-emerald-50 text-emerald-500 rounded-lg p-1.5 shrink-0">
-                                    <span class="material-symbols-outlined text-lg">check_circle</span>
-                                </div>
-                                {% endif %}
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-sm font-bold text-slate-700 truncate">{{ entry.name }}</p>
-                                    <p class="text-xs text-slate-500 truncate mt-0.5">To: {{ entry.person_to_visit }}
-                                    </p>
-                                    <div class="flex flex-wrap gap-2 mt-2">
-                                        <span
-                                            class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wide border border-slate-200">{{
-                                            entry.reason }}</span>
-                                        {% if entry.status == -1 %}
-                                        <span
-                                            class="px-2 py-0.5 rounded-md bg-red-50 text-red-600 text-[10px] font-medium border border-red-100">{{
-                                            entry.denial_reason or 'Denied' }}</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% else %}
-                        <div
-                            class="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                            <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">inbox</span>
-                            <p class="text-slate-500 font-medium text-sm">No recent entries</p>
-                            <p class="text-slate-400 text-xs mt-1">New visitor entries will appear here</p>
-                        </div>
-                        {% endfor %}
+                        {% include 'partials/sidebar_entries.html' %}
                     </div>
 
                     <!-- Pagination Controls -->

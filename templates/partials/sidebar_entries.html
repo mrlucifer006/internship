@@ -1,0 +1,30 @@
+{% if pagination.items %}
+{% for entry in pagination.items %}
+<div class="p-4 hover:bg-slate-700/50 transition-colors border-b border-slate-800/50 last:border-0 animate-fade-in"
+    style="animation-delay: {{ loop.index0 * 50 }}ms;">
+    <div class="flex justify-between items-start mb-1">
+        <span class="font-medium text-white truncate pr-2">{{ entry.name }}</span>
+        <span
+            class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">IN</span>
+    </div>
+    <div class="text-xs text-slate-400 flex items-center gap-1 mb-1">
+        <span class="material-symbols-outlined text-[10px]">person</span>
+        Host: {{ entry.person_to_visit }}
+    </div>
+    <div class="flex justify-between items-center text-xs">
+        <span class="text-slate-500 font-mono">{{ entry.entry_time.split(' ')[1] if ' ' in entry.entry_time else
+            entry.entry_time }}</span>
+        <a href="{{ url_for('entry_details', id=entry.id) }}"
+            class="text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5 transition-colors">
+            View
+            <span class="material-symbols-outlined text-[10px]">arrow_forward</span>
+        </a>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="p-8 text-center text-slate-500 flex flex-col items-center gap-2">
+    <span class="material-symbols-outlined text-2xl opacity-50">search_off</span>
+    <p class="text-xs">No entries found</p>
+</div>
+{% endif %}

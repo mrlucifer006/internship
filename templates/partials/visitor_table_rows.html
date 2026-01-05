@@ -1,0 +1,47 @@
+{% if entries %}
+{% for entry in entries %}
+<tr class="hover:bg-slate-50 transition-colors animate-fade-in" style="animation-delay: {{ loop.index0 * 50 }}ms;">
+    <td class="p-4 font-medium text-slate-700">{{ entry.name }}</td>
+    <td class="p-4">
+        <div class="flex flex-col">
+            <span class="font-medium text-slate-700">{{ entry.person_to_visit }}</span>
+        </div>
+    </td>
+    <td class="p-4">
+        <span
+            class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">{{
+            entry.reason }}</span>
+    </td>
+    <td class="p-4 font-mono text-slate-600">{{ entry.phone_number }}</td>
+    <td class="p-4 font-mono text-slate-600">{{ entry.vehicle_number or 'N/A' }}</td>
+    <td class="p-4 text-slate-600">{{ entry.entry_time }}</td>
+    <td class="p-4 text-slate-600">
+        {% if entry.exit_time %}
+        {{ entry.exit_time }}
+        {% else %}
+        <span
+            class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
+        {% endif %}
+    </td>
+    <td class="p-4">
+        {% if entry.denial_reason %}
+        <span
+            class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+            {{ entry.denial_reason }}
+        </span>
+        {% else %}
+        <span class="text-slate-400">-</span>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+{% else %}
+<tr>
+    <td colspan="8" class="p-8 text-center text-slate-500">
+        <div class="flex flex-col items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-4xl text-slate-300">search_off</span>
+            <p>No visitors found matching your criteria</p>
+        </div>
+    </td>
+</tr>
+{% endif %}

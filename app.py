@@ -161,6 +161,10 @@ def home():
     # Use paginated fetching
     search = flask.request.args.get('search', '')
     pagination = get_entries_paginated(page=page, per_page=per_page, search=search)
+
+    if flask.request.args.get('ajax'):
+        return flask.render_template('partials/sidebar_entries.html', pagination=pagination)
+
     entries = pagination.data # For backward compatibility if templates use 'entries' directly
     
     employees = get_all_employees()
@@ -303,7 +307,12 @@ def view_all():
         
     search = flask.request.args.get('search', None)
     status = flask.request.args.get('status', None)
-    return flask.render_template('view_all.html', entries=get_all_entries(search, status), search=search, visitor_status=status)
+    entries = get_all_entries(search, status)
+
+    if flask.request.args.get('ajax'):
+        return flask.render_template('partials/visitor_table_rows.html', entries=entries)
+
+    return flask.render_template('view_all.html', entries=entries, search=search, visitor_status=status)
 
 @app.route('/logistics')
 def logistics():

@@ -4,31 +4,7 @@
 <head>
     {% set page_title = "All Visitors" %}
     {% include 'seo_meta.html' %}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap"
-        rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#1e73be",
-                        "brand-blue": "#1e73be",
-                        "brand-green": "#5c8a42",
-                        "brand-orange": "#f08422",
-                        "background-light": "#f5f7f8",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
-                },
-            },
-        }
-    </script>
+    {% include 'includes/styles.html' %}
     <style type="text/tailwindcss">
         :root {
           --brand-blue: #1e73be;
@@ -256,74 +232,8 @@
                                         <th class="p-4 min-w-[150px]">Denial Reason</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-100 text-sm text-slate-600">
-                                    {% if entries %}
-                                    {% for entry in entries %}
-                                    <tr class="hover:bg-slate-50 transition-colors">
-                                        <td class="p-4 font-medium text-slate-700">{{ entry.name }}</td>
-                                        <td class="p-4">
-                                            <div class="flex flex-col">
-                                                <span class="font-medium text-slate-700">{{ entry.person_to_visit
-                                                    }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="p-4">
-                                            <span
-                                                class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">{{
-                                                entry.reason }}</span>
-                                        </td>
-                                        <td class="p-4 font-mono text-slate-500">{{ entry.phone }}</td>
-                                        <td class="p-4 font-mono text-slate-500">
-                                            {% if entry.vehicle_number %}
-                                            {{ entry.vehicle_number }}
-                                            {% else %}
-                                            <span class="text-slate-300">-</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="p-4 text-slate-500">{{ entry.entry_time }}</td>
-                                        <td class="p-4">
-                                            {% if entry.exit_time %}
-                                            <span
-                                                class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Exited:
-                                                {{ entry.exit_time }}</span>
-                                            {% elif entry.status == -1 %}
-                                            <span
-                                                class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Denied</span>
-                                            {% elif entry.status == 0 %}
-                                            <span
-                                                class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Pending</span>
-                                            {% else %}
-                                            <span
-                                                class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="p-4">
-                                            {% if entry.status == -1 and entry.denial_reason %}
-                                            <span class="text-xs text-red-600 font-medium leading-tight">
-                                                {{ entry.denial_reason }}
-                                            </span>
-                                            {% else %}
-                                            <span class="text-slate-300">-</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                    {% else %}
-                                    <tr>
-                                        <td class="p-12 text-center" colspan="7">
-                                            <div class="flex flex-col items-center justify-center text-slate-400 py-6">
-                                                <div class="bg-slate-50 p-4 rounded-full mb-3">
-                                                    <span
-                                                        class="material-symbols-outlined text-4xl text-slate-300">folder_off</span>
-                                                </div>
-                                                <p class="text-lg font-bold text-slate-600">No entries found</p>
-                                                <p class="text-sm text-slate-500 mt-1 max-w-xs">There are currently no
-                                                    visitor
-                                                    details recorded. New entries will appear here.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endif %}
+                                <tbody id="visitor-table-body" class="divide-y divide-slate-100 text-sm text-slate-600">
+                                    {% include 'partials/visitor_table_rows.html' %}
                                 </tbody>
                             </table>
                         </div>
@@ -331,6 +241,96 @@
                 </div>
             </main>
         </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form[action="{{ url_for("view_all") }}"]');
+            const tableBody = document.getElementById('visitor-table-body');
+
+            if (form && tableBody) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+
+                    // Add loading state
+                    tableBody.style.opacity = '0.5';
+
+                    const formData = new FormData(form);
+                    const params = new URLSearchParams(formData);
+                    params.append('ajax', '1');
+
+                    fetch(`{{ url_for("view_all") }}?${params.toString()}`)
+                        .then(response => response.text())
+                        .then(html => {
+                            tableBody.innerHTML = html;
+                            tableBody.style.opacity = '1';
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            tableBody.style.opacity = '1';
+                        });
+                });
+            }
+        });
+    </script>
+    <td class="p-4 font-mono text-slate-500">{{ entry.phone }}</td>
+    <td class="p-4 font-mono text-slate-500">
+        {% if entry.vehicle_number %}
+        {{ entry.vehicle_number }}
+        {% else %}
+        <span class="text-slate-300">-</span>
+        {% endif %}
+    </td>
+    <td class="p-4 text-slate-500">{{ entry.entry_time }}</td>
+    <td class="p-4">
+        {% if entry.exit_time %}
+        <span
+            class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Exited:
+            {{ entry.exit_time }}</span>
+        {% elif entry.status == -1 %}
+        <span
+            class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Denied</span>
+        {% elif entry.status == 0 %}
+        <span
+            class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Pending</span>
+        {% else %}
+        <span
+            class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
+        {% endif %}
+    </td>
+    <td class="p-4">
+        {% if entry.status == -1 and entry.denial_reason %}
+        <span class="text-xs text-red-600 font-medium leading-tight">
+            {{ entry.denial_reason }}
+        </span>
+        {% else %}
+        <span class="text-slate-300">-</span>
+        {% endif %}
+    </td>
+    </tr>
+    {% endfor %}
+    {% else %}
+    <tr>
+        <td class="p-12 text-center" colspan="7">
+            <div class="flex flex-col items-center justify-center text-slate-400 py-6">
+                <div class="bg-slate-50 p-4 rounded-full mb-3">
+                    <span class="material-symbols-outlined text-4xl text-slate-300">folder_off</span>
+                </div>
+                <p class="text-lg font-bold text-slate-600">No entries found</p>
+                <p class="text-sm text-slate-500 mt-1 max-w-xs">There are currently no
+                    visitor
+                    details recorded. New entries will appear here.</p>
+            </div>
+        </td>
+    </tr>
+    {% endif %}
+    </tbody>
+    </table>
+    </div>
+    </div>
+    </div>
+    </main>
+    </div>
     </div>
 
     <script>

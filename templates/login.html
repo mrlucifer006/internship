@@ -7,21 +7,7 @@
     tracking, and employee management features." %}
     {% include 'seo_meta.html' %}
 
-    {# Fonts and Styles #}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { "primary": "#1e73be", "brand-green": "#5c8a42" },
-                    fontFamily: { "display": ["Inter", "sans-serif"] },
-                },
-            },
-        }
-    </script>
+    {% include 'includes/styles.html' %}
 </head>
 
 <body class="bg-gray-50 font-display antialiased min-h-screen flex flex-col justify-center items-center">

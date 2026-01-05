@@ -4,27 +4,7 @@
 <head>
     {% set page_title = "Employee Status" %}
     {% include 'seo_meta.html' %}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#1e73be",
-                        "brand-blue": "#1e73be",
-                        "brand-green": "#5c8a42",
-                        "brand-orange": "#f08422",
-                        "background-light": "#f5f7f8",
-                    },
-                    fontFamily: { "display": ["Inter", "sans-serif"] },
-                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
-                },
-            },
-        }
-    </script>
+    {% include 'includes/styles.html' %}
     <style type="text/tailwindcss">
         :root {
           --brand-blue: #1e73be;

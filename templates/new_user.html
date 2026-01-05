@@ -4,33 +4,7 @@
 <head>
     {% set page_title = "Add New User" %}
     {% include 'seo_meta.html' %}
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap"
-        rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#1e73be",
-                        "brand-blue": "#1e73be",
-                        "brand-green": "#5c8a42",
-                        "brand-orange": "#f08422",
-                        "background-light": "#f5f7f8",
-                        "text-main": "#1e293b",
-                        "text-secondary": "#64748b",
-                    },
-                    fontFamily: {
-                        "display": ["Manrope", "sans-serif"]
-                    },
-                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
-                },
-            },
-        }
-    </script>
+    {% include 'includes/styles.html' %}
     <style type="text/tailwindcss">
         :root {
           --brand-blue: #1e73be;
@@ -287,17 +261,22 @@
                                         </div>
                                     </div>
                                     <div
-                                        class="flex justify-between mt-2 text-[10px] md:text-xs font-medium text-text-secondary px-0 md:px-1 select-none">
-                                        <span class="flex-1 text-left"><span class="hidden sm:inline">Level
-                                                1<br /></span>Foreman</span>
-                                        <span class="flex-1 text-center"><span class="hidden sm:inline">Level
-                                                2<br /></span>Supervisor</span>
-                                        <span class="flex-1 text-center"><span class="hidden sm:inline">Level
-                                                3<br /></span>Employee</span>
-                                        <span class="flex-1 text-center"><span class="hidden sm:inline">Level
-                                                4<br /></span>Admin</span>
-                                        <span class="flex-1 text-right"><span class="hidden sm:inline">Level
-                                                5<br /></span>Developer</span>
+                                        class="relative w-full h-8 mt-2 text-[10px] md:text-xs font-medium text-text-secondary select-none">
+                                        <span class="absolute left-0 top-0 -translate-x-0 text-left">
+                                            <span class="hidden sm:inline">Level 1<br /></span>Foreman
+                                        </span>
+                                        <span class="absolute left-[25%] top-0 -translate-x-1/2 text-center">
+                                            <span class="hidden sm:inline">Level 2<br /></span>Supervisor
+                                        </span>
+                                        <span class="absolute left-[50%] top-0 -translate-x-1/2 text-center">
+                                            <span class="hidden sm:inline">Level 3<br /></span>Employee
+                                        </span>
+                                        <span class="absolute left-[75%] top-0 -translate-x-1/2 text-center">
+                                            <span class="hidden sm:inline">Level 4<br /></span>Admin
+                                        </span>
+                                        <span class="absolute right-0 top-0 translate-x-0 text-right">
+                                            <span class="hidden sm:inline">Level 5<br /></span>Developer
+                                        </span>
                                     </div>
                                 </div>
                             </div>

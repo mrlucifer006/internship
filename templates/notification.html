@@ -4,50 +4,7 @@
 <head>
   {% set page_title = "Unique Visitor Notification" %}
   {% include 'seo_meta.html' %}
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-    rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            primary: "#2563eb",
-            success: "#22c55e",
-            "brand-blue": "#1e73be",
-            "background-light": "#f8fafc", "background-dark": "#0f172a",
-            "card-light": "#ffffff",
-            "card-dark": "#1e293b",
-            "border-light": "#e2e8f0",
-            "border-dark": "#334155",
-          },
-          fontFamily: {
-            display: ["Inter", "sans-serif"],
-          },
-        },
-      },
-    };
-  </script>
-  <style>
-    @keyframes modalPop {
-      0% {
-        opacity: 0;
-        transform: scale(0.95) translateY(10px);
-      }
-
-      100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
-    }
-
-    .animate-modal {
-      animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-  </style>
+  {% include 'includes/styles.html' %}
 </head>
 
 <body
