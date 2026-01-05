@@ -160,10 +160,25 @@ def get_all_employees():
     finally:
         conn.close()
 
-def get_all_employees_full():
+def get_all_employees_full(search=None, role=None, status=None):
     conn = get_db_connection()
     try:
-        cursor = conn.execute('SELECT name, login_id, phone, Auth_level, status FROM employee')
+        query = 'SELECT name, login_id, phone, Auth_level, status FROM employee WHERE 1=1'
+        params = []
+        
+        if search:
+            query += ' AND (name LIKE ? OR login_id LIKE ? OR phone LIKE ?)'
+            params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
+        
+        if role:
+            query += ' AND Auth_level = ?'
+            params.append(int(role))
+        
+        if status is not None and status != '':
+            query += ' AND status = ?'
+            params.append(int(status))
+            
+        cursor = conn.execute(query, params)
         rows = cursor.fetchall()
         return [dict(row) for row in rows]
     except Exception as e:

@@ -159,7 +159,8 @@ def home():
     per_page = 10 # Default to 10 for sidebar list
     
     # Use paginated fetching
-    pagination = get_entries_paginated(page=page, per_page=per_page)
+    search = flask.request.args.get('search', '')
+    pagination = get_entries_paginated(page=page, per_page=per_page, search=search)
     entries = pagination.data # For backward compatibility if templates use 'entries' directly
     
     employees = get_all_employees()
@@ -186,6 +187,11 @@ def get_data():
             Number = flask.request.form.get('Number')
             V_name = flask.request.form.get('V_name')
             reason = flask.request.form.get('reason')
+            
+            # Extract ID Details
+            id_type = flask.request.form.get('id_type')
+            id_number = flask.request.form.get('id_number')
+            
             vehicle = flask.request.form.get('vehicle')
             vehicle_number = None
             if vehicle:
@@ -205,7 +211,9 @@ def get_data():
                 "V_name": V_name,
                 "reason": reason,
                 "vehicle": vehicle,
-                "vehicle_number": vehicle_number
+                "vehicle_number": vehicle_number,
+                "id_type": id_type,
+                "id_number": id_number
             }
             
             result = save_visitor(data)
@@ -293,7 +301,9 @@ def view_all():
         flask.flash("You do not have authority to access this page.", 'error')
         return flask.redirect(flask.url_for('home'))
         
-    return flask.render_template('view_all.html', entries=get_all_entries())
+    search = flask.request.args.get('search', None)
+    status = flask.request.args.get('status', None)
+    return flask.render_template('view_all.html', entries=get_all_entries(search, status), search=search, visitor_status=status)
 
 @app.route('/logistics')
 def logistics():
@@ -302,21 +312,77 @@ def logistics():
     
     # Fetch recent vehicle entries
     recent_vehicles = vehicle_db.get_all_vehicles()
-    # Optionally limit to the last 10 or so for the sidebar
     recent_vehicles = recent_vehicles[:10] if recent_vehicles else []
-
-    return flask.render_template('logistics_entry.html', recent_vehicles=recent_vehicles)
+    
+    # Process dates for display (Same logic as logistics_exit)
+    processed_vehicles = []
+    if recent_vehicles:
+        for v in recent_vehicles:
+            v_safe = v.copy()
+            raw_time = v.get('time')
+            display_time = "Now"
+            if raw_time:
+                try:
+                    parts = raw_time.replace('T', ' ').split(' ')
+                    if len(parts) > 1:
+                        time_part = parts[1]
+                        display_time = time_part[:5]
+                except:
+                    display_time = str(raw_time)
+            
+            v_safe['display_time'] = display_time
+            processed_vehicles.append(v_safe)
+    
+    return flask.render_template('logistics_entry.html', recent_vehicles=processed_vehicles)
 
 @app.route('/logistics_exit')
 def logistics_exit():
     if not is_logged_in():
         return flask.redirect(flask.url_for('login'))
     
-    # Fetch recent vehicle entries (same as entry mostly)
-    recent_vehicles = vehicle_db.get_all_vehicles()
-    recent_vehicles = recent_vehicles[:10] if recent_vehicles else []
+    try:
+        # Fetch recent vehicle entries
+        recent_vehicles = vehicle_db.get_all_vehicles()
+        recent_vehicles = recent_vehicles[:10] if recent_vehicles else []
 
-    return flask.render_template('logistics_exit.html', recent_vehicles=recent_vehicles)
+        # PRE-PROCESS DATA for template safety
+        # This prevents Jinja2 runtime errors if 'time' or other fields are missing/malformed
+        processed_vehicles = []
+        for v in recent_vehicles:
+            try:
+                # Safe copy
+                v_safe = v.copy()
+                
+                # Format time nicely in Python
+                raw_time = v_safe.get('time')
+                display_time = "Now"
+                if raw_time:
+                    try:
+                        # Handle potential "T" separator or simple space
+                        # clean ISO format: 2023-10-10T14:30:00 -> 14:30
+                         # Split by T or space
+                        parts = raw_time.replace('T', ' ').split(' ')
+                        if len(parts) > 1:
+                            # Take the time part HH:MM:SS
+                            time_part = parts[1]
+                            # Take just HH:MM
+                            display_time = time_part[:5]
+                    except:
+                        display_time = str(raw_time) # Fallback
+                
+                v_safe['display_time'] = display_time
+                processed_vehicles.append(v_safe)
+            except Exception as e:
+                logger.error(f"Error processing vehicle record for display: {e}")
+                continue # Skip bad record
+
+        return flask.render_template('logistics_exit.html', recent_vehicles=processed_vehicles)
+        
+    except Exception as e:
+        logger.exception("CRITICAL ERROR in logistics_exit route")
+        flask.flash("An internal error occurred while loading the page.", 'error')
+        # Return a safe fallback or just the template with empty list to allow user to continue
+        return flask.render_template('logistics_exit.html', recent_vehicles=[])
 
 @app.route('/process_logistics_entry', methods=['POST'])
 def process_logistics_entry():
@@ -341,6 +407,29 @@ def process_logistics_entry():
                 safe_name = f"veh_{timestamp}{ext}"
                 file.save(os.path.join(upload_folder, safe_name))
                 photo_filename = safe_name
+                
+                # --- Upload to Supabase ---
+                try:
+                    with open(os.path.join(upload_folder, safe_name), 'rb') as f:
+                        from db import get_supabase_client
+                        supabase = get_supabase_client()
+                        storage_path = f"vehicles/{safe_name}"
+                        supabase.storage.from_("vehicles").upload(
+                            file=f,
+                            path=storage_path,
+                            file_options={"content-type": file.content_type}
+                        )
+                        # Get Public URL
+                        public_url = supabase.storage.from_("vehicles").get_public_url(storage_path)
+                        # Remove query params if any
+                        if "?" in public_url:
+                             public_url = public_url.split("?")[0]
+                        
+                        logger.info(f"Uploaded to Supabase: {public_url}")
+                        photo_filename = public_url # Use URL for DB
+                except Exception as upload_err:
+                    logger.error(f"Supabase Upload Failed: {upload_err}")
+                    # Fallback to local filename (photo_filename remains safe_name)
 
         # 2. Extract Data
         data = {
@@ -349,8 +438,13 @@ def process_logistics_entry():
             "veh_reg_no": flask.request.form.get('vehicle_number').upper(),
             "origin": flask.request.form.get('loc_from'),
             "destination": flask.request.form.get('loc_to'),
+            "purchase_no": flask.request.form.get('purchase_number') or "N/A",
             "vehicle_img": photo_filename,
-            "entry_type": "Entry"
+            "entry_type": "Entry",
+            "tare_weight": flask.request.form.get('tare_weight'),
+            "driver_id_type": flask.request.form.get('id_type'),
+            "driver_id_number": flask.request.form.get('id_number'),
+            "vehicle_length": flask.request.form.get('vehicle_length')
         }
 
         # 3. Insert into DB
@@ -407,6 +501,29 @@ def process_logistics_exit():
                 file.save(os.path.join(upload_folder, safe_name))
                 photo_filename = safe_name
 
+                # --- Upload to Supabase ---
+                try:
+                    with open(os.path.join(upload_folder, safe_name), 'rb') as f:
+                        from db import get_supabase_client
+                        supabase = get_supabase_client()
+                        storage_path = f"vehicles/{safe_name}"
+                        supabase.storage.from_("vehicles").upload(
+                            file=f,
+                            path=storage_path,
+                            file_options={"content-type": file.content_type}
+                        )
+                        # Get Public URL
+                        public_url = supabase.storage.from_("vehicles").get_public_url(storage_path)
+                        # Remove query params if any
+                        if "?" in public_url:
+                             public_url = public_url.split("?")[0]
+                        
+                        logger.info(f"Uploaded to Supabase: {public_url}")
+                        photo_filename = public_url # Use URL for DB
+                except Exception as upload_err:
+                    logger.error(f"Supabase Upload Failed: {upload_err}")
+                    # Fallback to local filename (photo_filename remains safe_name)
+
         # 2. Extract Data
         data = {
             "driver_name": flask.request.form.get('driver_name'),
@@ -415,8 +532,13 @@ def process_logistics_exit():
             "origin": flask.request.form.get('loc_from'),
             "destination": flask.request.form.get('loc_to'),
             "purchase_no": flask.request.form.get('purchase_number'),
+            "is_returnable": 1 if flask.request.form.get('is_returnable') == '1' else 0,
+            "material_type": flask.request.form.get('material_type'),
+            "return_reason": flask.request.form.get('return_reason'),
             "vehicle_img": photo_filename,
-            "entry_type": "Exit"
+            "entry_type": "Exit",
+            "driver_id_type": flask.request.form.get('id_type'),
+            "driver_id_number": flask.request.form.get('id_number')
         }
 
         # 3. Insert into DB (inserts new record for history)
@@ -462,23 +584,27 @@ def view_all_logistics():
     page = flask.request.args.get('page', 1, type=int)
     per_page = flask.request.args.get('per_page', 50, type=int)
     search = flask.request.args.get('search', None, type=str)
+    entry_type = flask.request.args.get('entry_type', None, type=str)
     
     # Fetch paginated vehicle entries
-    result = vehicle_db.get_vehicles_paginated(page=page, per_page=per_page, search=search)
+    result = vehicle_db.get_vehicles_paginated(page=page, per_page=per_page, search=search, entry_type=entry_type)
     
     return flask.render_template(
         'view_all_logistics.html', 
         vehicles=result.data,
         pagination=result,
-        search=search or ''
+        search=search or '',
+        entry_type=entry_type or ''
     )
 
 @app.route('/check_out_page')
 def check_out_page():
     if not is_logged_in():
         return flask.redirect(flask.url_for('login'))
-    active_visitors = get_active_visitors()
-    return flask.render_template('check_out.html', visitors=active_visitors)
+    
+    search = flask.request.args.get('search', None)
+    active_visitors = get_active_visitors(search)
+    return flask.render_template('check_out.html', visitors=active_visitors, search=search)
 
 @app.route('/process_check_out', methods=['POST'])
 def process_check_out():
@@ -576,7 +702,10 @@ def view_status():
         return flask.redirect(flask.url_for('home'))
         
     from employee_db import get_all_employees_full
-    employees = get_all_employees_full()
+    search = flask.request.args.get('search', '')
+    role = flask.request.args.get('role', None)
+    status = flask.request.args.get('status', None)
+    employees = get_all_employees_full(search=search, role=role, status=status)
     return flask.render_template('view_status.html', employees=employees)
 
 @app.route('/api/employees')
@@ -584,8 +713,11 @@ def api_employees():
     if not is_logged_in():
         return flask.jsonify({'error': 'Unauthorized'}), 401
     
+    search = flask.request.args.get('search', None)
+    role = flask.request.args.get('role', None)
+    status = flask.request.args.get('status', None)
     from employee_db import get_all_employees_full
-    employees = get_all_employees_full()
+    employees = get_all_employees_full(search=search, role=role, status=status)
     return flask.jsonify(employees)
 
 @app.route('/delete_user/<login_id>', methods=['POST'])

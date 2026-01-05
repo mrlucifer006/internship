@@ -1,197 +1,97 @@
-<!-- Notification System (Modal & Polling) -->
-<div id="notification-modal"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity hidden">
-    <div class="relative w-full max-w-[400px] bg-white rounded-[32px] shadow-2xl overflow-hidden animate-modal">
-        <div class="relative h-32 bg-indigo-600 overflow-hidden">
-            <div
-                class="absolute top-0 right-0 w-48 h-48 bg-white opacity-10 rounded-full -translate-y-1/2 translate-x-1/4">
-            </div>
-            <div
-                class="absolute bottom-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full translate-y-1/2 -translate-x-1/4">
-            </div>
-            <div class="absolute inset-0 opacity-20"
-                style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;">
-            </div>
-        </div>
-        <div class="px-8 pb-8 relative">
-            <div class="relative -mt-16 mb-6 flex justify-center">
-                <div
-                    class="w-24 h-24 rounded-2xl bg-white p-2 shadow-xl rotate-45 transform origin-center z-10 ring-4 ring-indigo-50">
-                    <div
-                        class="w-full h-full bg-slate-50 rounded-xl flex items-center justify-center -rotate-45 border border-slate-100 overflow-hidden">
-                        <span class="material-symbols-outlined text-4xl text-indigo-600">person_filled</span>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center space-y-5">
-                <div>
-                    <div class="inline-block px-3 py-1 bg-indigo-50 rounded-full mb-3">
-                        <h3 class="text-[11px] font-bold tracking-widest text-indigo-600 uppercase">Visitor Request
-                        </h3>
-                    </div>
-                    <p id="modal-visitor-name" class="text-2xl text-slate-900 font-bold leading-tight mb-2">Visitor
-                        Name</p>
-                    <p class="text-slate-500 leading-relaxed">
-                        has come to meet you for <br />
-                        <span id="modal-reason" class="font-semibold text-slate-800">Reason</span>
-                    </p>
-                </div>
-            </div>
-            <!-- Action Buttons -->
-            <div id="modal-actions" class="grid grid-cols-2 gap-4 pt-2">
-                <button onclick="showDenialReason()"
-                    class="flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-2xl border-2 border-slate-100 hover:bg-red-50 hover:border-red-100 group transition-all duration-200">
-                    <span
-                        class="material-symbols-outlined text-2xl text-slate-400 group-hover:text-red-500 transition-colors">close</span>
-                    <span
-                        class="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-red-600">Deny</span>
-                </button>
-                <button onclick="handleAction('approve')"
-                    class="flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group">
-                    <span class="material-symbols-outlined text-2xl text-indigo-100 group-hover:text-white">check</span>
-                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-50">Accept</span>
-                </button>
-            </div>
-
-            <!-- Denial Reason Input (Hidden by default) -->
-            <div id="modal-reason-input" class="hidden flex-col gap-3 pt-2 animate-fade-in">
-                <textarea id="denial-reason-text"
-                    class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none transition-all placeholder:text-slate-400"
-                    rows="2" placeholder="Reason for denial..."></textarea>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="cancelDenial()"
-                        class="py-3 rounded-xl border border-slate-200 text-slate-500 font-bold text-xs uppercase tracking-wide hover:bg-slate-50 transition-colors">
-                        Cancel
-                    </button>
-                    <button onclick="confirmDeny()"
-                        class="py-3 rounded-xl bg-red-600 text-white font-bold text-xs uppercase tracking-wide shadow-md shadow-red-200 hover:bg-red-700 transition-colors">
-                        Confirm Deny
-                    </button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<style>
-    @keyframes modalPop {
-        0% {
-            opacity: 0;
-            transform: scale(0.95) translateY(10px);
-        }
-
-        100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    .animate-modal {
-        animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-</style>
-
+<!-- Notification System (Native Dialogs & Polling) -->
 <!-- Notification Sound -->
 <audio id="notification-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
     preload="auto"></audio>
 
 <script>
-    let currentVisitorId = null;
-
     // --- Global Polling Logic for Notifications ---
+    let isNotificationActive = false; // Prevent multiple dialogs if poll fires again
+    const ignoredVisitorIds = new Set(); // Store IDs of visitors we've "Snoozed" (Cancelled prompt)
+
     function pollNotifications() {
-        // If modal is already open, do not poll/overwrite
-        const modal = document.getElementById('notification-modal');
-        if (modal && !modal.classList.contains('hidden')) {
-            return;
-        }
+        if (isNotificationActive) return;
 
         fetch('/api/pending_visitors')
             .then(response => response.json())
             .then(visitors => {
                 if (visitors && visitors.length > 0) {
-                    // Show Notification
                     const visitor = visitors[0];
-                    showNotification(visitor.name, visitor.reason, visitor.id);
+                    // Only show if NOT in ignore list
+                    if (!ignoredVisitorIds.has(visitor.id)) {
+                        handleNotification(visitor.name, visitor.reason, visitor.id);
+                    }
                 }
             })
             .catch(err => {
-                // Silent fail for polling errors to avoid console spam
-                // console.error("Notification poll error:", err)
+                // Silent fail
             });
     }
 
-    function showNotification(visitorName, reason, visitorId) {
-        const modal = document.getElementById('notification-modal');
-        const nameEl = document.getElementById('modal-visitor-name');
-        const reasonEl = document.getElementById('modal-reason');
+    function handleNotification(name, reason, id) {
+        isNotificationActive = true;
+
+        // Play Sound (Frontend - works if tab active)
         const audio = document.getElementById('notification-sound');
-
-        nameEl.textContent = visitorName;
-        reasonEl.textContent = reason;
-        currentVisitorId = visitorId;
-
-        // Reset UI state
-        cancelDenial();
-        modal.classList.remove('hidden');
-
-        // Play Sound
         if (audio) {
             audio.play().catch(e => console.log("Audio autoplay prevented:", e));
         }
+
+        // Small timeout to allow sound to start before blocking thread
+        setTimeout(() => {
+            const message = `Visitor Request:\n\nName: ${name}\nReason: ${reason}\n\nClick OK to ACCEPT.\nClick Cancel to DENY.`;
+
+            if (confirm(message)) {
+                // User clicked OK -> Accept
+                handleAction(id, 'approve');
+            } else {
+                // User clicked Cancel -> Deny Logic
+                promptDenial(id);
+            }
+        }, 100);
     }
 
-    // Toggle Denial Reason Input
-    function showDenialReason() {
-        document.getElementById('modal-actions').classList.add('hidden');
-        document.getElementById('modal-reason-input').classList.remove('hidden');
-        document.getElementById('modal-reason-input').classList.add('flex');
-        document.getElementById('denial-reason-text').focus();
-    }
+    function promptDenial(id) {
+        const denialReason = prompt("You have chosen to DENY this visitor.\n\nPlease enter a reason:\n(Click Cancel to Ignore/Snooze this request)");
 
-    function cancelDenial() {
-        document.getElementById('modal-actions').classList.remove('hidden');
-        document.getElementById('modal-reason-input').classList.add('hidden');
-        document.getElementById('modal-reason-input').classList.remove('flex');
-        document.getElementById('denial-reason-text').value = '';
-    }
-
-    function confirmDeny() {
-        const reason = document.getElementById('denial-reason-text').value;
-        if (!reason.trim()) {
-            alert("Please enter a reason for denial.");
-            return;
+        if (denialReason !== null) {
+            // User entered text (or empty) and clicked OK
+            if (!denialReason.trim()) {
+                alert("Denial cancelled: A reason is required.");
+                // Add to ignore list to prevent immediate re-pop
+                ignoredVisitorIds.add(id);
+                isNotificationActive = false;
+            } else {
+                handleAction(id, 'deny', denialReason);
+            }
+        } else {
+            // User clicked Cancel on the PROMPT -> They just want to close the dialog
+            // Add to ignore list so we don't annoy them instantly
+            console.log("Notification snoozed for visitor ID:", id);
+            ignoredVisitorIds.add(id);
+            isNotificationActive = false;
         }
-        handleAction('deny', reason);
     }
 
-    function handleAction(action, reason = "") {
-        if (!currentVisitorId) return;
-
+    function handleAction(visitorId, action, reason = "") {
         fetch('/api/action_visitor', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ visitor_id: currentVisitorId, action: action, reason: reason })
+            body: JSON.stringify({ visitor_id: visitorId, action: action, reason: reason })
         })
             .then(res => res.json())
             .then(data => {
+                isNotificationActive = false;
                 if (data.success) {
-                    closeNotification();
-                    // Optional: If dashboard, maybe refresh. If not, just close.
-                    // We can emit an event if other parts of the app care.
+                    // Trigger global update immediately
                     window.dispatchEvent(new CustomEvent('notification-action-complete'));
                 } else {
                     alert("Error processing action: " + data.error);
                 }
             })
-            .catch(err => console.error(err));
-    }
-
-    function closeNotification() {
-        const modal = document.getElementById('notification-modal');
-        modal.classList.add('hidden');
-        currentVisitorId = null;
+            .catch(err => {
+                console.error(err);
+                isNotificationActive = false;
+            });
     }
 
     // Poll every 4 seconds

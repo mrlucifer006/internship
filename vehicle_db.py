@@ -29,7 +29,14 @@ def insert_vehicle(data):
             "driver_phone": data.get("driver_phone"),
             "origin": data.get("origin"),
             "purchase_no": data.get("purchase_no"),
-            "entry_type": data.get("entry_type", "Entry")
+            "is_returnable": data.get("is_returnable", 0),
+            "material_type": data.get("material_type"),
+            "return_reason": data.get("return_reason"),
+            "entry_type": data.get("entry_type", "Entry"),
+            "tare_weight": data.get("tare_weight"),
+            "driver_id_type": data.get("driver_id_type"),
+            "driver_id_number": data.get("driver_id_number"),
+            "vehicle_length": data.get("vehicle_length")
         }
         
         # Execute insert
@@ -39,7 +46,9 @@ def insert_vehicle(data):
         if response.data:
             update_local_vehicle(response.data[0])
             return True
-        return False
+        else:
+             logger.warning("Supabase insert returned no data.")
+             return False
         
     except Exception as e:
         logger.error(f"Error inserting vehicle: {e}")
@@ -77,11 +86,11 @@ def get_all_vehicles():
     """Get all vehicle records."""
     return get_all_local_vehicles()
 
-def get_vehicles_paginated(page: int = 1, per_page: int = 50, search: str = None) -> PaginationResult:
+def get_vehicles_paginated(page: int = 1, per_page: int = 50, search: str = None, entry_type: str = None) -> PaginationResult:
     """
     Get vehicle records with pagination.
     """
-    result = get_paginated_local_vehicles(page, per_page, search)
+    result = get_paginated_local_vehicles(page, per_page, search, entry_type)
     
     total = result['total']
     total_pages = math.ceil(total / per_page) if total else 1

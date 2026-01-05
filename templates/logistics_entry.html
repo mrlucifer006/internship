@@ -253,6 +253,34 @@
                                             </div>
                                         </label>
                                     </div>
+                                    <div class="grid md:grid-cols-2 gap-5 mt-4">
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">ID Type <span
+                                                    class="text-red-500">*</span></span>
+                                            <select
+                                                class="form-select w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 transition-shadow"
+                                                name="id_type" id="id-type" required onchange="updateIdValidation()">
+                                                <option value="" disabled selected>Select ID Type</option>
+                                                <option value="Aadhar">Aadhar Card</option>
+                                                <option value="PAN">PAN Card</option>
+                                                <option value="Driving License">Driving License</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">ID Number
+                                                <span class="text-red-500">*</span></span>
+                                            <div class="relative">
+                                                <span
+                                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                                    <span class="material-symbols-outlined text-lg">badge</span>
+                                                </span>
+                                                <input
+                                                    class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 pl-10 placeholder:text-slate-400 uppercase font-mono"
+                                                    name="id_number" id="id-number" required type="text"
+                                                    placeholder="Select ID Type first" disabled />
+                                            </div>
+                                        </label>
+                                    </div>
                                 </section>
                                 <hr class="border-slate-100" />
                                 <section class="space-y-4">
@@ -262,6 +290,38 @@
                                         Vehicle &amp; Trip Details
                                     </h3>
                                     <div class="grid md:grid-cols-2 gap-5">
+
+
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">Vehicle
+                                                Length</span>
+                                            <select
+                                                class="form-select w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11"
+                                                id="vehicle-length" name="vehicle_length">
+                                                <option value="" disabled selected>Select Length</option>
+                                                <option value="Below 20ft">Below 20ft</option>
+                                                <option value="20ft">20ft</option>
+                                                <option value="22ft">22ft</option>
+                                                <option value="24ft">24ft</option>
+                                                <option value="32ft SXL">32ft SXL</option>
+                                                <option value="32ft MXL">32ft MXL</option>
+                                                <option value="40ft">40ft</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">Tare Weight
+                                                (kg)</span>
+                                            <div class="relative">
+                                                <input
+                                                    class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 placeholder:text-slate-400"
+                                                    id="tare-weight" name="tare_weight"
+                                                    placeholder="Empty Vehicle Weight" type="number" step="0.01" min="0"
+                                                    required />
+                                                <span
+                                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">kg</span>
+                                            </div>
+                                        </label>
                                         <label class="block">
                                             <span class="text-slate-700 font-medium text-sm mb-1.5 block">Vehicle
                                                 Number</span>
@@ -383,43 +443,58 @@
                             </button>
                         </div>
                     </div>
-                    <div id="recent-entries-list" class="flex flex-col gap-4 hidden xl:flex">
+
+                    <!-- Search Bar -->
+                    <div class="pt-4">
+                        <form method="get" action="{{ url_for('view_all_logistics') }}">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                    <span class="material-symbols-outlined text-lg">search</span>
+                                </span>
+                                <input type="text" name="search"
+                                    class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 h-9 pl-9 text-xs placeholder:text-slate-400 transition-colors"
+                                    placeholder="Search logistics..." autocomplete="off">
+                            </div>
+                        </form>
+                    </div>
+                    <div id="recent-entries-list"
+                        class="flex-1 overflow-y-auto p-4 flex-col gap-4 bg-slate-50/30 hidden xl:flex">
                         {% if recent_vehicles %}
                         {% for vehicle in recent_vehicles %}
                         <div
-                            class="p-4 rounded-lg border border-slate-200 bg-slate-50 flex flex-col gap-2 hover:shadow-md transition-shadow">
+                            class="p-4 rounded-lg border border-slate-200 bg-white flex flex-col gap-2 hover:shadow-md transition-shadow">
                             <div class="flex justify-between items-start">
                                 <div class="flex flex-col">
-                                    <h4 class="font-bold text-slate-800 text-base uppercase">{{ vehicle.veh_reg_no }}
+                                    <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wide">{{
+                                        vehicle.veh_reg_no
+                                        }}
                                     </h4>
-                                    <span class="text-xs text-slate-500 font-medium uppercase tracking-wide">Vehicle
+                                    <span
+                                        class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Vehicle
                                         No.</span>
                                 </div>
-                                <span
-                                    class="text-xs font-semibold px-2 py-1 bg-blue-50 text-blue-600 rounded-full border border-blue-100">
-                                    {{ vehicle.time.replace('T', ' ').split(' ')[1][:5] if vehicle.time and ' ' in
-                                    vehicle.time.replace('T', ' ') else 'Now'
-                                    }}
+                                <span class="text-[10px] font-bold px-2 py-1 {{ 'bg-blue-50 text-blue-600 border-blue-100' if
+                                vehicle.entry_type == 'Entry' else 'bg-orange-50 text-orange-600 border-orange-100' }}
+                                rounded-full border uppercase tracking-wide">
+                                    {{ vehicle.entry_type|default('Entry') }} {{ vehicle.display_time }}
                                 </span>
                             </div>
-                            <hr class="border-slate-200 my-1" />
-                            <div class="text-sm text-slate-600 flex flex-col gap-1.5">
+                            <hr class="border-slate-100 my-1" />
+                            <div class="text-xs text-slate-600 flex flex-col gap-2">
                                 <div class="flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-[18px] text-slate-400">person</span>
-                                    <span>Driver: <span class="font-medium text-slate-800">{{ vehicle.driver_name
-                                            }}</span></span>
+                                    <span class="material-symbols-outlined text-[16px] text-slate-400">person</span>
+                                    <span class="font-bold text-slate-700">{{ vehicle.driver_name }}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-[18px] text-slate-400">route</span>
-                                    <span class="truncate text-xs"
-                                        title="{{ vehicle.origin }} to {{ vehicle.destination }}">
+                                    <span class="material-symbols-outlined text-[16px] text-slate-400">route</span>
+                                    <span class="truncate" title="{{ vehicle.origin }} to {{ vehicle.destination }}">
                                         {{ vehicle.origin }} <span class="text-slate-400">→</span> {{
                                         vehicle.destination }}
                                     </span>
                                 </div>
                                 {% if vehicle.vehicle_img %}
                                 <div class="flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-[18px] text-slate-400">image</span>
+                                    <span class="material-symbols-outlined text-[16px] text-slate-400">image</span>
                                     <span class="text-xs text-green-600 font-medium">Photo Attached</span>
                                 </div>
                                 {% endif %}
@@ -459,6 +534,7 @@
     </div>
 
     <script>
+
         function handleFileSelect(input) {
             const successMsg = document.getElementById('file-upload-success');
             const filenameDisplay = document.getElementById('filename-display');
@@ -470,9 +546,55 @@
             }
         }
 
+        // ID Verification Logic
+        function updateIdValidation() {
+            const type = document.getElementById('id-type').value;
+            const input = document.getElementById('id-number');
+
+            input.disabled = false;
+            input.value = ''; // Reset value
+
+            if (type === 'Aadhar') {
+                input.placeholder = '12 Digit Aadhar Number';
+                input.maxLength = 12;
+                input.minLength = 12;
+                input.pattern = "[0-9]{12}";
+                input.title = "12 digit Aadhar number";
+                input.oninput = function () {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                };
+            } else if (type === 'PAN') {
+                input.placeholder = 'ABCDE1234F';
+                input.maxLength = 10;
+                input.minLength = 10;
+                input.pattern = "[A-Z]{5}[0-9]{4}[A-Z]{1}";
+                input.title = "10 character PAN (5 Letters, 4 Numbers, 1 Letter)";
+                input.oninput = function () {
+                    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                };
+            } else if (type === 'Driving License') {
+                input.placeholder = '15 Character License No.';
+                input.maxLength = 15;
+                input.minLength = 15;
+                input.pattern = "[A-Z0-9]{15}";
+                input.title = "15 character alphanumeric license number";
+                input.oninput = function () {
+                    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                };
+            }
+        }
+
         function resetForm() {
             document.getElementById('logistics-form').reset();
             document.getElementById('file-upload-success').classList.add('hidden');
+
+            // Reset ID Validation
+            const idInput = document.getElementById('id-number');
+            idInput.disabled = true;
+            idInput.value = '';
+            idInput.placeholder = 'Select ID Type first';
+            idInput.removeAttribute('pattern');
+            idInput.removeAttribute('title');
         }
 
         // Toggle logic for visual appearance only

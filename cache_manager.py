@@ -40,6 +40,8 @@ def init_cache():
                 exit_time TEXT,
                 status INTEGER,
                 denial_reason TEXT,
+                id_type TEXT,
+                id_number TEXT,
                 updated_at TEXT,
                 created_at TEXT
             )
@@ -48,7 +50,7 @@ def init_cache():
             CREATE TABLE IF NOT EXISTS vehicle (
                 id INTEGER PRIMARY KEY,
                 driver_name TEXT,
-                veh_reg_no TEXT UNIQUE,
+                veh_reg_no TEXT,
                 vehicle_img TEXT,
                 destination TEXT,
                 "time" TEXT,
@@ -56,9 +58,110 @@ def init_cache():
                 origin TEXT,
                 purchase_no TEXT,
                 entry_type TEXT,
+                is_returnable INTEGER DEFAULT 0,
+                material_type TEXT,
+                return_reason TEXT,
                 created_at TEXT
             )
         ''')
+        
+        # Migration: Add new columns if they don't exist (for existing DBs)
+        try:
+            conn.execute('ALTER TABLE visitors ADD COLUMN id_type TEXT')
+        except sqlite3.OperationalError:
+            pass # Column likely exists
+            
+        try:
+            conn.execute('ALTER TABLE visitors ADD COLUMN id_number TEXT')
+        except sqlite3.OperationalError:
+            pass # Column likely exists
+
+        # Migration: Add new vehicle columns
+        try:
+            conn.execute('ALTER TABLE vehicle ADD COLUMN is_returnable INTEGER DEFAULT 0')
+        except sqlite3.OperationalError:
+            pass
+            
+        try:
+            conn.execute('ALTER TABLE vehicle ADD COLUMN material_type TEXT')
+        except sqlite3.OperationalError:
+            pass
+
+        try:
+            conn.execute('ALTER TABLE vehicle ADD COLUMN return_reason TEXT')
+        except sqlite3.OperationalError:
+            pass
+
+        # [NEW] Add driver_id and length columns
+        try:
+            conn.execute('ALTER TABLE vehicle ADD COLUMN driver_id_type TEXT')
+        except sqlite3.OperationalError:
+            pass
+        try:
+            conn.execute('ALTER TABLE vehicle ADD COLUMN driver_id_number TEXT')
+        except sqlite3.OperationalError:
+            pass
+        try:
+            conn.execute('ALTER TABLE vehicle ADD COLUMN vehicle_length TEXT')
+        except sqlite3.OperationalError:
+            pass
+
+        # Migration: Remove UNIQUE constraint on veh_reg_no (by recreating table)
+        # This is complex in SQLite, so we check if constraint exists by trying to insert a duplicate
+        # If it fails, we need to migrate. For now, we'll use a simpler check:
+        # We'll just rely on the fact that if we change the schema above, new DBs are fine.
+        # For existing DBs, we should probably recreate the table to be safe, but that wipes data.
+        # A better approach for this session is to rename and copy.
+        
+        # Check if we need to migrate (this is a heuristic, but effective for dev)
+        cursor = conn.execute("PRAGMA index_list('vehicle')")
+        indices = cursor.fetchall()
+        has_unique_reg = any(i[2] == 1 for i in indices if 'autoindex' in i[1] or 'unique' in i[1])
+
+        # If we suspect a unique constraint (or just force it for this update)
+        # Let's force a migration to ensure the constraint is gone.
+        # We will check if we have already migrated by checking a flag table or just TRYING.
+        # Since we don't have a migration table, we will attempt to drop the index if it's named 'sqlite_autoindex_vehicle_1'
+        # But UNIQUE constraints on columns create implicit indices.
+        
+        # OFFICAL WAY: Create new table, copy data, drop old, rename new.
+        # We only do this if we haven't done it yet.
+        # Let's check schema details.
+        
+        table_info = conn.execute("PRAGMA table_info('vehicle')").fetchall()
+        # In PRAGMA table_info, pk is col 5. valid is not there.
+        # It's hard to detect the constraint easily without parsing SQL from sqlite_master.
+        
+        schema = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='vehicle'").fetchone()
+        if schema and 'UNIQUE' in schema[0]:
+            logger.info("Migrating vehicle table to remove UNIQUE constraint...")
+            conn.execute("ALTER TABLE vehicle RENAME TO vehicle_old")
+            conn.execute('''
+                CREATE TABLE vehicle (
+                    id INTEGER PRIMARY KEY,
+                    driver_name TEXT,
+                    veh_reg_no TEXT,
+                    vehicle_img TEXT,
+                    destination TEXT,
+                    "time" TEXT,
+                    driver_phone TEXT,
+                    origin TEXT,
+                    purchase_no TEXT,
+                    entry_type TEXT,
+                    is_returnable INTEGER DEFAULT 0,
+                    material_type TEXT,
+                    return_reason TEXT,
+                    created_at TEXT
+                )
+            ''')
+            conn.execute('''
+                INSERT INTO vehicle (id, driver_name, veh_reg_no, vehicle_img, destination, "time", driver_phone, origin, purchase_no, entry_type, is_returnable, material_type, return_reason, created_at)
+                SELECT id, driver_name, veh_reg_no, vehicle_img, destination, "time", driver_phone, origin, purchase_no, entry_type, is_returnable, material_type, return_reason, created_at
+                FROM vehicle_old
+            ''')
+            conn.execute("DROP TABLE vehicle_old")
+            logger.info("Vehicle table migration complete.")
+
         conn.commit()
     except Exception as e:
         logger.error(f"Error initializing local cache: {e}")
@@ -84,8 +187,8 @@ def sync_data_from_supabase(force=False):
 
         # Sync employees
         employees = supabase.table('employee').select("*").execute().data
+        conn.execute('DELETE FROM employee') # Clear local table first (Handles deletions)
         if employees:
-            conn.execute('DELETE FROM employee')
             for emp in employees:
                 conn.execute('''
                     INSERT INTO employee (id, name, login_id, phone, password, Auth_level, status, created_at)
@@ -103,12 +206,12 @@ def sync_data_from_supabase(force=False):
 
         # Sync visitors
         visitors = supabase.table('visitors').select('*').execute().data
+        conn.execute('DELETE FROM visitors') # Clear local table first (Handles deletions)
         if visitors:
-            conn.execute('DELETE FROM visitors')
             for v in visitors:
                 conn.execute('''
-                    INSERT INTO visitors (id, name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time, exit_time, status, denial_reason, updated_at, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO visitors (id, name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time, exit_time, status, denial_reason, id_type, id_number, updated_at, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     v.get('id'),
                     v.get('name'),
@@ -121,18 +224,20 @@ def sync_data_from_supabase(force=False):
                     v.get('exit_time'),
                     v.get('status'),
                     v.get('denial_reason'),
+                    v.get('id_type'),
+                    v.get('id_number'),
                     v.get('updated_at'),
                     v.get('created_at')
                 ))
 
         # Sync vehicles
         vehicles = supabase.table('vehicle').select('*').execute().data
+        conn.execute('DELETE FROM vehicle') # Clear local table first (Handles deletions)
         if vehicles:
-            conn.execute('DELETE FROM vehicle')
             for v in vehicles:
                 conn.execute('''
-                    INSERT INTO vehicle (id, driver_name, veh_reg_no, vehicle_img, destination, "time", driver_phone, origin, purchase_no, entry_type, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO vehicle (id, driver_name, veh_reg_no, vehicle_img, destination, "time", driver_phone, origin, purchase_no, entry_type, is_returnable, material_type, return_reason, created_at, driver_id_type, driver_id_number, vehicle_length)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     v.get('id'),
                     v.get('driver_name'),
@@ -144,7 +249,13 @@ def sync_data_from_supabase(force=False):
                     v.get('origin'),
                     v.get('purchase_no'),
                     v.get('entry_type'),
-                    v.get('created_at')
+                    v.get('is_returnable', 0),
+                    v.get('material_type'),
+                    v.get('return_reason'),
+                    v.get('created_at'),
+                    v.get('driver_id_type'),
+                    v.get('driver_id_number'),
+                    v.get('vehicle_length')
                 ))
         
         conn.commit()
@@ -249,7 +360,7 @@ def update_local_visitor(data):
         if exists:
                 conn.execute('''
                     UPDATE visitors
-                    SET name=?, phone=?, person_to_visit=?, reason=?, has_vehicle=?, vehicle_number=?, entry_time=?, exit_time=?, status=?, denial_reason=?, updated_at=?, created_at=?
+                    SET name=?, phone=?, person_to_visit=?, reason=?, has_vehicle=?, vehicle_number=?, entry_time=?, exit_time=?, status=?, denial_reason=?, id_type=?, id_number=?, updated_at=?, created_at=?
                     WHERE id=?
                 ''', (
                     data.get('name'),
@@ -262,14 +373,16 @@ def update_local_visitor(data):
                     data.get('exit_time'),
                     data.get('status'),
                     data.get('denial_reason'),
+                    data.get('id_type'),
+                    data.get('id_number'),
                     data.get('updated_at'),
                     data.get('created_at'),
                     data.get('id')
                 ))
         else:
             conn.execute('''
-                INSERT INTO visitors (id, name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time, exit_time, status, denial_reason, updated_at, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO visitors (id, name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time, exit_time, status, denial_reason, id_type, id_number, updated_at, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 data.get('id'),
                 data.get('name'),
@@ -282,6 +395,8 @@ def update_local_visitor(data):
                 data.get('exit_time'),
                 data.get('status'),
                 data.get('denial_reason'),
+                data.get('id_type'),
+                data.get('id_number'),
                 data.get('updated_at'),
                 data.get('created_at')
             ))
@@ -327,7 +442,7 @@ def update_local_vehicle(data):
         if exists:
             conn.execute('''
                 UPDATE vehicle
-                SET driver_name=?, veh_reg_no=?, vehicle_img=?, destination=?, "time"=?, driver_phone=?, origin=?, purchase_no=?, entry_type=?, created_at=?
+                SET driver_name=?, veh_reg_no=?, vehicle_img=?, destination=?, "time"=?, driver_phone=?, origin=?, purchase_no=?, entry_type=?, is_returnable=?, material_type=?, return_reason=?, created_at=?, driver_id_type=?, driver_id_number=?, vehicle_length=?
                 WHERE id=?
             ''', (
                 data.get('driver_name'),
@@ -339,13 +454,19 @@ def update_local_vehicle(data):
                 data.get('origin'),
                 data.get('purchase_no'),
                 data.get('entry_type'),
+                data.get('is_returnable', 0),
+                data.get('material_type'),
+                data.get('return_reason'),
                 data.get('created_at'),
+                data.get('driver_id_type'),
+                data.get('driver_id_number'),
+                data.get('vehicle_length'),
                 data.get('id')
             ))
         else:
             conn.execute('''
-                INSERT INTO vehicle (id, driver_name, veh_reg_no, vehicle_img, destination, "time", driver_phone, origin, purchase_no, entry_type, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO vehicle (id, driver_name, veh_reg_no, vehicle_img, destination, "time", driver_phone, origin, purchase_no, entry_type, is_returnable, material_type, return_reason, created_at, driver_id_type, driver_id_number, vehicle_length)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 data.get('id'),
                 data.get('driver_name'),
@@ -357,7 +478,13 @@ def update_local_vehicle(data):
                 data.get('origin'),
                 data.get('purchase_no'),
                 data.get('entry_type'),
-                data.get('created_at')
+                data.get('is_returnable', 0),
+                data.get('material_type'),
+                data.get('return_reason'),
+                data.get('created_at'),
+                data.get('driver_id_type'),
+                data.get('driver_id_number'),
+                data.get('vehicle_length')
             ))
         conn.commit()
     except Exception as e:
@@ -376,11 +503,24 @@ def remove_local_vehicle(vehicle_id):
     finally:
         conn.close()
 
-def get_all_local_visitors():
-    """Retrieve all visitors from the local cache."""
+def get_all_local_visitors(search=None, status=None):
+    """Retrieve all visitors from the local cache. Optional search and status filter."""
     conn = get_db_connection()
     try:
-        cursor = conn.execute('SELECT * FROM visitors')
+        query = 'SELECT * FROM visitors WHERE 1=1'
+        params = []
+        
+        if search:
+            query += ' AND (name LIKE ? OR phone LIKE ?)'
+            params.extend([f'%{search}%', f'%{search}%'])
+        
+        if status is not None and status != '':
+            query += ' AND status = ?'
+            params.append(int(status))
+            
+        query += ' ORDER BY id DESC'
+        
+        cursor = conn.execute(query, params)
         rows = cursor.fetchall()
         return [dict(row) for row in rows]
     except Exception as e:
@@ -389,11 +529,24 @@ def get_all_local_visitors():
     finally:
         conn.close()
 
-def get_active_local_visitors():
-    """Retrieve all active visitors from the local cache."""
+def get_active_local_visitors(search=None):
+    """
+    Retrieve all active visitors (not exited) from local cache.
+    Optional search by name or phone.
+    """
     conn = get_db_connection()
     try:
-        cursor = conn.execute("SELECT * FROM visitors WHERE exit_time IS NULL")
+        query = "SELECT * FROM visitors WHERE exit_time IS NULL AND status = 1"
+        params = []
+        
+        if search:
+            search_pattern = f"%{search}%"
+            query += " AND (name LIKE ? OR phone LIKE ? OR person_to_visit LIKE ? OR reason LIKE ? OR vehicle_number LIKE ? OR id_number LIKE ?)" 
+            params.extend([search_pattern] * 6)
+            
+        query += " ORDER BY id DESC"
+            
+        cursor = conn.execute(query, params)
         rows = cursor.fetchall()
         return [dict(row) for row in rows]
     except Exception as e:
@@ -402,15 +555,34 @@ def get_active_local_visitors():
     finally:
         conn.close()
 
-def get_paginated_local_visitors(page=1, per_page=10):
-    """Retrieve paginated visitors from the local cache."""
+def get_paginated_local_visitors(page=1, per_page=10, search=None):
+    """Retrieve paginated visitors from the local cache. Includes search."""
     conn = get_db_connection()
     try:
         offset = (page - 1) * per_page
-        cursor = conn.execute('SELECT * FROM visitors ORDER BY id DESC LIMIT ? OFFSET ?', (per_page, offset))
+        
+        # Base Queries
+        query = "SELECT * FROM visitors WHERE status != -1"
+        count_query = "SELECT COUNT(id) FROM visitors WHERE status != -1"
+        params = []
+        
+        # Search Filter
+        if search:
+            search_pattern = f"%{search}%"
+            query += " AND (name LIKE ? OR phone LIKE ? OR person_to_visit LIKE ? OR reason LIKE ? OR vehicle_number LIKE ? OR id_number LIKE ?)"
+            count_query += " AND (name LIKE ? OR phone LIKE ? OR person_to_visit LIKE ? OR reason LIKE ? OR vehicle_number LIKE ? OR id_number LIKE ?)"
+            params.extend([search_pattern] * 6)
+            
+        # Pagination
+        query += " ORDER BY id DESC LIMIT ? OFFSET ?"
+        params.extend([per_page, offset])
+
+        cursor = conn.execute(query, params)
         rows = cursor.fetchall()
         
-        total_cursor = conn.execute('SELECT COUNT(id) FROM visitors')
+        # Count (use search params for count query, not pagination params)
+        count_params = [f"%{search}%"] * 6 if search else []
+        total_cursor = conn.execute(count_query, count_params)
         total = total_cursor.fetchone()[0]
         
         return {
@@ -429,7 +601,7 @@ def get_all_local_vehicles():
     """Retrieve all vehicles from the local cache."""
     conn = get_db_connection()
     try:
-        cursor = conn.execute('SELECT * FROM vehicle')
+        cursor = conn.execute('SELECT * FROM vehicle ORDER BY id DESC')
         rows = cursor.fetchall()
         return [dict(row) for row in rows]
     except Exception as e:
@@ -438,18 +610,31 @@ def get_all_local_vehicles():
     finally:
         conn.close()
 
-def get_paginated_local_vehicles(page=1, per_page=10, search=None):
+def get_paginated_local_vehicles(page=1, per_page=10, search=None, entry_type=None):
     """Retrieve paginated vehicles from the local cache."""
     conn = get_db_connection()
     try:
         offset = (page - 1) * per_page
         
-        query = 'SELECT * FROM vehicle'
+        query = 'SELECT * FROM vehicle WHERE 1=1'
+        count_query = 'SELECT COUNT(id) FROM vehicle WHERE 1=1'
         params = []
+        count_params = []
         
         if search:
-            query += ' WHERE veh_reg_no LIKE ?'
-            params.append(f'%{search}%')
+            search_filter = ' AND (veh_reg_no LIKE ? OR driver_name LIKE ? OR driver_phone LIKE ? OR destination LIKE ? OR origin LIKE ? OR purchase_no LIKE ? OR driver_id_number LIKE ?)'
+            query += search_filter
+            count_query += search_filter
+            search_params = [f'%{search}%'] * 7
+            params.extend(search_params)
+            count_params.extend(search_params)
+        
+        if entry_type:
+            entry_filter = ' AND entry_type = ?'
+            query += entry_filter
+            count_query += entry_filter
+            params.append(entry_type)
+            count_params.append(entry_type)
             
         query += ' ORDER BY id DESC LIMIT ? OFFSET ?'
         params.extend([per_page, offset])
@@ -457,7 +642,8 @@ def get_paginated_local_vehicles(page=1, per_page=10, search=None):
         cursor = conn.execute(query, tuple(params))
         rows = cursor.fetchall()
         
-        total_cursor = conn.execute('SELECT COUNT(id) FROM vehicle')
+        # Count with filters
+        total_cursor = conn.execute(count_query, count_params)
         total = total_cursor.fetchone()[0]
         
         return {

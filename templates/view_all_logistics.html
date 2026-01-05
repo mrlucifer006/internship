@@ -137,14 +137,28 @@
             <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f5f7fa]">
                 <header class="hidden md:flex h-20 items-center justify-between px-8 flex-shrink-0">
                     <h1 class="text-2xl font-bold text-[#1e73be]">All Logistics Details</h1>
-                    <div class="flex items-center gap-4">
-                        <form action="{{ url_for('view_all_logistics') }}" method="GET" class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                <span class="material-symbols-outlined text-[20px]">search</span>
-                            </span>
-                            <input name="search" value="{{ search }}"
-                                class="pl-10 pr-4 py-2 w-64 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
-                                placeholder="Search logistics..." type="text" />
+                    <div class="flex items-center gap-3">
+                        <form action="{{ url_for('view_all_logistics') }}" method="GET" class="flex items-center gap-3">
+                            <!-- Entry Type Filter -->
+                            <select name="entry_type"
+                                class="h-10 rounded-lg border border-slate-200 text-sm text-slate-600 bg-white px-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-sm">
+                                <option value="" {% if not entry_type %}selected{% endif %}>All Types</option>
+                                <option value="Entry" {% if entry_type=='Entry' %}selected{% endif %}>Entry</option>
+                                <option value="Exit" {% if entry_type=='Exit' %}selected{% endif %}>Exit</option>
+                            </select>
+                            <!-- Search Bar -->
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                    <span class="material-symbols-outlined text-[20px]">search</span>
+                                </span>
+                                <input name="search" value="{{ search }}"
+                                    class="pl-10 pr-4 py-2 w-64 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
+                                    placeholder="Search logistics..." type="text" />
+                            </div>
+                            <button type="submit"
+                                class="h-10 px-4 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                                Apply
+                            </button>
                         </form>
                     </div>
                 </header>

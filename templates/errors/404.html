@@ -1,14 +1,19 @@
 <!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>404 Not Found - Gate Portal</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>404 Not Found - Gate Portal</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -21,7 +26,7 @@
                     fontFamily: {
                         "display": ["Inter", "sans-serif"]
                     },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
                     animation: {
                         'float-slow': 'float 8s ease-in-out infinite',
                         'float-medium': 'float 6s ease-in-out infinite reverse',
@@ -37,62 +42,100 @@
             },
         }
     </script>
-<style>
+    <style>
         .perspective-container {
             perspective: 1000px;
         }
+
         .preserve-3d {
             transform-style: preserve-3d;
         }
+
         .glass-panel {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.5);
         }
+
         .dark .glass-panel {
             background: rgba(17, 22, 33, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
-<body class="font-display bg-background-light dark:bg-background-dark text-[#111318] dark:text-white transition-colors duration-200 overflow-hidden" onmousemove="handleMouseMove(event)">
-<div class="relative flex h-screen min-h-screen w-full items-center justify-center overflow-hidden perspective-container">
-<div class="absolute inset-0 w-full h-full pointer-events-none z-0 preserve-3d flex items-center justify-center" id="scene">
-<div class="absolute w-[800px] h-[800px] rounded-full border-[2px] border-primary/5 dark:border-primary/10 transition-transform duration-100 ease-out parallax-layer" data-depth="0.02"></div>
-<div class="absolute top-[15%] left-[15%] w-24 h-24 bg-gradient-to-br from-primary/20 to-transparent rounded-xl shadow-lg animate-float-slow parallax-layer transition-transform duration-100 ease-out" data-depth="0.05" style="transform: rotate(15deg);">
-<div class="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-sm rounded-xl border border-white/20"></div>
-</div>
-<div class="absolute bottom-[20%] right-[15%] w-32 h-32 bg-gradient-to-tl from-primary/10 to-transparent rounded-2xl shadow-xl animate-float-medium parallax-layer transition-transform duration-100 ease-out" data-depth="0.08" style="transform: rotate(-10deg);">
-<div class="absolute inset-0 bg-white/5 dark:bg-black/5 backdrop-blur-sm rounded-2xl border border-white/10"></div>
-</div>
-<div class="absolute top-[20%] right-[25%] w-16 h-16 rounded-full bg-primary/10 shadow-inner animate-float-fast parallax-layer transition-transform duration-100 ease-out" data-depth="0.04"></div>
-<div class="absolute bottom-[25%] left-[20%] w-12 h-24 rounded-full bg-gradient-to-t from-gray-200/50 to-transparent dark:from-gray-700/30 animate-float-slow parallax-layer transition-transform duration-100 ease-out" data-depth="0.06" style="transform: rotate(45deg);"></div>
-<div class="absolute inset-0 bg-[linear-gradient(rgba(25,93,230,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(25,93,230,0.03)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] -z-10 parallax-layer" data-depth="0.01"></div>
-</div>
-<main class="relative z-10 flex flex-col items-center justify-center p-4 w-full parallax-layer" data-depth="0.01">
-<div class="layout-content-container flex flex-col max-w-[640px] w-full items-center text-center">
-<div class="glass-panel p-12 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-transform duration-200 ease-out transform-style-3d hover:scale-[1.01]" id="card">
-<div class="mb-8 flex h-32 w-32 mx-auto items-center justify-center rounded-full bg-gradient-to-b from-primary/10 to-transparent ring-1 ring-primary/20 shadow-lg relative group">
-<div class="absolute inset-0 rounded-full bg-primary/5 blur-xl group-hover:bg-primary/10 transition-all duration-500"></div>
-<span class="material-symbols-outlined text-[64px] text-primary relative z-10 drop-shadow-sm">search_off</span>
-</div>
-<div class="flex flex-col items-center gap-2 mb-6">
-<h1 class="text-primary text-9xl font-black leading-none tracking-tighter opacity-90 drop-shadow-sm select-none" style="text-shadow: 0 4px 12px rgba(25, 93, 230, 0.2);">
+
+<body
+    class="font-display bg-background-light dark:bg-background-dark text-[#111318] dark:text-white transition-colors duration-200 overflow-hidden"
+    onmousemove="handleMouseMove(event)">
+    <div
+        class="relative flex h-screen min-h-screen w-full items-center justify-center overflow-hidden perspective-container">
+        <div class="absolute inset-0 w-full h-full pointer-events-none z-0 preserve-3d flex items-center justify-center"
+            id="scene">
+            <div class="absolute w-[800px] h-[800px] rounded-full border-[2px] border-primary/5 dark:border-primary/10 transition-transform duration-100 ease-out parallax-layer"
+                data-depth="0.02"></div>
+            <div class="absolute top-[15%] left-[15%] w-24 h-24 bg-gradient-to-br from-primary/20 to-transparent rounded-xl shadow-lg animate-float-slow parallax-layer transition-transform duration-100 ease-out"
+                data-depth="0.05" style="transform: rotate(15deg);">
+                <div
+                    class="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-sm rounded-xl border border-white/20">
+                </div>
+            </div>
+            <div class="absolute bottom-[20%] right-[15%] w-32 h-32 bg-gradient-to-tl from-primary/10 to-transparent rounded-2xl shadow-xl animate-float-medium parallax-layer transition-transform duration-100 ease-out"
+                data-depth="0.08" style="transform: rotate(-10deg);">
+                <div
+                    class="absolute inset-0 bg-white/5 dark:bg-black/5 backdrop-blur-sm rounded-2xl border border-white/10">
+                </div>
+            </div>
+            <div class="absolute top-[20%] right-[25%] w-16 h-16 rounded-full bg-primary/10 shadow-inner animate-float-fast parallax-layer transition-transform duration-100 ease-out"
+                data-depth="0.04"></div>
+            <div class="absolute bottom-[25%] left-[20%] w-12 h-24 rounded-full bg-gradient-to-t from-gray-200/50 to-transparent dark:from-gray-700/30 animate-float-slow parallax-layer transition-transform duration-100 ease-out"
+                data-depth="0.06" style="transform: rotate(45deg);"></div>
+            <div class="absolute inset-0 bg-[linear-gradient(rgba(25,93,230,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(25,93,230,0.03)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] -z-10 parallax-layer"
+                data-depth="0.01"></div>
+        </div>
+        <main class="relative z-10 flex flex-col items-center justify-center p-4 w-full parallax-layer"
+            data-depth="0.01">
+            <div class="layout-content-container flex flex-col max-w-[640px] w-full items-center text-center">
+                <div class="glass-panel p-12 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-transform duration-200 ease-out transform-style-3d hover:scale-[1.01]"
+                    id="card">
+                    <div
+                        class="mb-8 flex h-32 w-32 mx-auto items-center justify-center rounded-full bg-gradient-to-b from-primary/10 to-transparent ring-1 ring-primary/20 shadow-lg relative group">
+                        <div
+                            class="absolute inset-0 rounded-full bg-primary/5 blur-xl group-hover:bg-primary/10 transition-all duration-500">
+                        </div>
+                        <span
+                            class="material-symbols-outlined text-[64px] text-primary relative z-10 drop-shadow-sm">search_off</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 mb-6">
+                        <h1 class="text-primary text-9xl font-black leading-none tracking-tighter opacity-90 drop-shadow-sm select-none"
+                            style="text-shadow: 0 4px 12px rgba(25, 93, 230, 0.2);">
                             404
                         </h1>
-<h2 class="text-3xl font-bold leading-tight tracking-[-0.015em] text-[#111318] dark:text-white mt-4">
+                        <h2
+                            class="text-3xl font-bold leading-tight tracking-[-0.015em] text-[#111318] dark:text-white mt-4">
                             Not Found
                         </h2>
-</div>
-<p class="text-[#636f88] dark:text-[#9ca3af] text-lg font-normal leading-relaxed max-w-[480px] mx-auto">
-                        Sorry, the page you are looking for could not be found. It might have been removed, renamed, or did not exist in the first place.
+                    </div>
+                    <p
+                        class="text-[#636f88] dark:text-[#9ca3af] text-lg font-normal leading-relaxed max-w-[480px] mx-auto">
+                        Sorry, the page you are looking for could not be found. It might have been removed, renamed, or
+                        did not exist in the first place.
                     </p>
-</div>
-</div>
-</main>
-</div>
-<script>
+                    <div class="mt-10 flex flex-wrap justify-center gap-4">
+                        <button onclick="history.back()"
+                            class="px-8 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            Go Back
+                        </button>
+                        <a href="/"
+                            class="px-8 py-3 rounded-xl bg-primary text-white font-bold text-sm uppercase tracking-wider shadow-lg shadow-primary/25 hover:bg-primary/90 hover:-translate-y-0.5 transition-all">
+                            Go to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
         function handleMouseMove(event) {
             const layers = document.querySelectorAll('.parallax-layer');
             const card = document.getElementById('card');
@@ -122,4 +165,6 @@
             }
         }
     </script>
-</body></html>
+</body>
+
+</html>

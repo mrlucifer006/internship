@@ -36,5 +36,9 @@ CREATE TABLE vehicle (
     origin text,
     purchase_no text,
     entry_type text,
+    tare_weight float,
+    driver_id_type text,
+    driver_id_number text,
+    vehicle_length text,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );

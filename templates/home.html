@@ -59,11 +59,9 @@
             role="navigation" aria-label="Main navigation">
             <div class="h-16 flex items-center px-6 border-b border-slate-800">
                 <div class="flex items-center gap-3">
-                    <div
-                        class="size-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-900/20">
-                        <span class="material-symbols-outlined text-xl">security</span>
-                    </div>
-                    <h1 class="font-bold text-white tracking-wide">GateKeeper</h1>
+                    <img src="{{ url_for('static', filename='favicon.ico') }}" alt="SSBS Logo"
+                        class="size-8 rounded-lg">
+                    <h1 class="font-bold text-white tracking-wide">SSBS Portal</h1>
                 </div>
             </div>
 
@@ -243,6 +241,36 @@
                                             </div>
                                         </label>
                                     </div>
+
+                                    <div class="grid md:grid-cols-2 gap-5 mb-4">
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">ID Type <span
+                                                    class="text-red-500">*</span></span>
+                                            <select
+                                                class="form-select w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 transition-shadow"
+                                                name="id_type" id="id-type" required onchange="updateIdValidation()">
+                                                <option value="" disabled selected>Select ID Type</option>
+                                                <option value="Aadhar">Aadhar Card</option>
+                                                <option value="PAN">PAN Card</option>
+                                                <option value="Driving License">Driving License</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">ID Number
+                                                <span class="text-red-500">*</span></span>
+                                            <div class="relative">
+                                                <span
+                                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                                    <span class="material-symbols-outlined text-lg">badge</span>
+                                                </span>
+                                                <input
+                                                    class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 pl-10 placeholder:text-slate-400 uppercase font-mono"
+                                                    name="id_number" id="id-number" required type="text"
+                                                    placeholder="Select ID Type first" disabled />
+                                            </div>
+                                        </label>
+                                    </div>
+
                                     <label class="block">
                                         <span class="text-slate-700 font-medium text-sm mb-1.5 block">Reason for
                                             Visit</span>
@@ -324,8 +352,20 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Search Bar -->
+                    <form method="get" action="{{ url_for('home') }}" class="mt-2">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                <span class="material-symbols-outlined text-lg">search</span>
+                            </span>
+                            <input type="text" name="search" value="{{ request.args.get('search', '') }}"
+                                class="form-input w-full rounded-lg border-slate-300 bg-white focus:border-indigo-500 focus:ring-indigo-500 h-10 pl-10 text-sm placeholder:text-slate-400"
+                                placeholder="Search entries..." autocomplete="off">
+                        </div>
+                    </form>
                     <div id="recent-entries-list" class="space-y-3 hidden xl:block">
-                        {% for entry in entries|reverse %}
+                        {% for entry in entries %}
                         <div
                             class="p-4 rounded-xl bg-white border border-slate-100 hover:border-indigo-100 hover:shadow-sm transition-all animate-fade-in group">
                             <div class="flex items-start gap-3">
@@ -334,9 +374,27 @@
                                     <span class="material-symbols-outlined text-lg">block</span>
                                 </div>
                                 {% elif entry.status == 0 %}
-                                <div class="bg-amber-50 text-amber-500 rounded-lg p-1.5 shrink-0">
+                                {% if session.get('auth_level', 0) > 1 and session.get('user') == entry.person_to_visit
+                                %}
+                                <div class="flex flex-col gap-1 shrink-0">
+                                    <button
+                                        onclick="handleAction('{{ entry.id }}', 'approve'); event.stopPropagation();"
+                                        class="bg-emerald-100 hover:bg-emerald-200 text-emerald-600 rounded-lg p-1.5 transition-colors"
+                                        title="Approve">
+                                        <span class="material-symbols-outlined text-lg">check</span>
+                                    </button>
+                                    <button onclick="promptDenial('{{ entry.id }}'); event.stopPropagation();"
+                                        class="bg-red-100 hover:bg-red-200 text-red-600 rounded-lg p-1.5 transition-colors"
+                                        title="Deny">
+                                        <span class="material-symbols-outlined text-lg">close</span>
+                                    </button>
+                                </div>
+                                {% else %}
+                                <div class="bg-amber-50 text-amber-500 rounded-lg p-1.5 shrink-0"
+                                    title="Pending Approval">
                                     <span class="material-symbols-outlined text-lg">hourglass_top</span>
                                 </div>
+                                {% endif %}
                                 {% else %}
                                 <div class="bg-emerald-50 text-emerald-500 rounded-lg p-1.5 shrink-0">
                                     <span class="material-symbols-outlined text-lg">check_circle</span>
@@ -453,6 +511,22 @@
             }, 10);
         }
 
+        // --- Form Dirty Check (Prevent Refresh while typing) ---
+        let isFormDirty = false;
+        const formInputs = document.querySelectorAll('form input, form select, form textarea');
+
+        formInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                isFormDirty = true;
+            });
+            input.addEventListener('change', () => {
+                isFormDirty = true;
+            });
+        });
+
+        // Reset dirty flag on specific actions if needed (e.g. clear button)
+        // But generally, if they type, we pause until they leave or submit (page reload)
+
         // --- Dashboard Auto-Refresh Logic ---
         let lastKnownUpdate = null;
 
@@ -464,9 +538,10 @@
             });
 
         function checkGlobalUpdates() {
-            // If modal (from include) is open, pause updates to avoid weird reload behind modal
-            const modal = document.getElementById('notification-modal');
-            if (modal && !modal.classList.contains('hidden')) {
+            // 1. If Native Dialog is open, execution pauses automatically.
+            // 2. If Form is Dirty (User typing), pause updates explicitly.
+            if (isFormDirty) {
+                // console.log("Form is dirty, pausing auto-refresh...");
                 return;
             }
 
@@ -486,6 +561,8 @@
         // Listen for notification action completion to trigger reload (immediate update)
         window.addEventListener('notification-action-complete', () => {
             console.log("Action complete, reloading dashboard...");
+            // Force reload even if dirty? Probably yes, because they just took an action.
+            isFormDirty = false;
             setTimeout(() => window.location.reload(), 500);
         });
 
@@ -507,6 +584,48 @@
             list.classList.toggle('hidden');
             list.classList.toggle('block');
             icon.classList.toggle('rotate-180');
+        }
+
+        // ID Verification Logic
+        function updateIdValidation() {
+            const type = document.getElementById('id-type').value;
+            const input = document.getElementById('id-number');
+
+            input.disabled = false;
+            input.value = ''; // Reset value
+            isFormDirty = true; // Mark dirty when they interact with dropdown
+
+            if (type === 'Aadhar') {
+                input.placeholder = '12 Digit Aadhar Number';
+                input.maxLength = 12;
+                input.minLength = 12;
+                input.pattern = "[0-9]{12}";
+                input.title = "12 digit Aadhar number";
+                input.oninput = function () {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    isFormDirty = true;
+                };
+            } else if (type === 'PAN') {
+                input.placeholder = 'ABCDE1234F';
+                input.maxLength = 10;
+                input.minLength = 10;
+                input.pattern = "[A-Z]{5}[0-9]{4}[A-Z]{1}";
+                input.title = "10 character PAN (5 Letters, 4 Numbers, 1 Letter)";
+                input.oninput = function () {
+                    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    isFormDirty = true;
+                };
+            } else if (type === 'Driving License') {
+                input.placeholder = '15 Character License No.';
+                input.maxLength = 15;
+                input.minLength = 15;
+                input.pattern = "[A-Z0-9]{15}";
+                input.title = "15 character alphanumeric license number";
+                input.oninput = function () {
+                    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    isFormDirty = true;
+                };
+            }
         }
 
         // Skeleton Loading Simulation

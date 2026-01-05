@@ -98,11 +98,9 @@
             class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
             <div class="h-16 flex items-center px-6 border-b border-slate-800">
                 <div class="flex items-center gap-3">
-                    <div
-                        class="size-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-900/20">
-                        <span class="material-symbols-outlined text-xl">security</span>
-                    </div>
-                    <h1 class="font-bold text-white tracking-wide">GateKeeper</h1>
+                    <img src="{{ url_for('static', filename='favicon.ico') }}" alt="SSBS Logo"
+                        class="size-8 rounded-lg">
+                    <h1 class="font-bold text-white tracking-wide">SSBS Portal</h1>
                 </div>
             </div>
 
@@ -215,16 +213,31 @@
                                 Details
                             </h1>
                         </div>
-                        <div class="flex gap-3">
-                            <div class="relative group">
-                                <span
-                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-[var(--brand-blue)] transition-colors">
-                                    <span class="material-symbols-outlined text-[20px]">search</span>
-                                </span>
-                                <input
-                                    class="pl-10 pr-4 h-10 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-[var(--brand-blue)] w-full md:w-64 transition-all"
-                                    placeholder="Search visitors..." type="text" />
-                            </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <form method="GET" action="{{ url_for('view_all') }}" class="flex items-center gap-3">
+                                <!-- Status Filter -->
+                                <select name="status"
+                                    class="h-10 rounded-lg border border-slate-300 text-sm text-slate-600 bg-white px-3 pr-8 focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-[var(--brand-blue)] transition-all cursor-pointer">
+                                    <option value="" {% if not visitor_status %}selected{% endif %}>All Status</option>
+                                    <option value="0" {% if visitor_status=='0' %}selected{% endif %}>Pending</option>
+                                    <option value="1" {% if visitor_status=='1' %}selected{% endif %}>Approved</option>
+                                    <option value="-1" {% if visitor_status=='-1' %}selected{% endif %}>Denied</option>
+                                </select>
+                                <!-- Search Bar -->
+                                <div class="relative group">
+                                    <span
+                                        class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-[var(--brand-blue)] transition-colors">
+                                        <span class="material-symbols-outlined text-[20px]">search</span>
+                                    </span>
+                                    <input name="search" value="{{ search or '' }}"
+                                        class="pl-10 pr-4 h-10 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-[var(--brand-blue)] w-full md:w-64 transition-all"
+                                        placeholder="Search visitors..." type="text" />
+                                </div>
+                                <button type="submit"
+                                    class="h-10 px-4 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                                    Apply
+                                </button>
+                            </form>
                         </div>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
@@ -245,7 +258,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-slate-100 text-sm text-slate-600">
                                     {% if entries %}
-                                    {% for entry in entries|reverse %}
+                                    {% for entry in entries %}
                                     <tr class="hover:bg-slate-50 transition-colors">
                                         <td class="p-4 font-medium text-slate-700">{{ entry.name }}</td>
                                         <td class="p-4">

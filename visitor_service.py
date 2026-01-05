@@ -29,6 +29,11 @@ def save_visitor(data):
     if not phone: errors.append("Phone number is required.")
     if not visitor_name: errors.append("Visitor name is required.")
     if not reason: errors.append("Reason is required.")
+    
+    id_type = data.get("id_type")
+    id_number = data.get("id_number")
+    if not id_type: errors.append("ID Type is required.")
+    if not id_number: errors.append("ID Number is required.")
 
     has_vehicle = 1 if vehicle else 0
     if has_vehicle and not vehicle_number:
@@ -55,6 +60,8 @@ def save_visitor(data):
             "reason": reason,
             "has_vehicle": has_vehicle,
             "vehicle_number": vehicle_number,
+            "id_type": data.get("id_type"),
+            "id_number": data.get("id_number"),
             "entry_time": datetime.now().isoformat(),
             "status": status, 
             "updated_at": datetime.now().isoformat()
@@ -102,11 +109,11 @@ def update_visitor_status(visitor_id, status, denial_reason=None):
         logger.error(f"Error updating visitor status: {e}")
         return {"success": False, "errors": [str(e)]}
 
-def get_all_entries():
-    return get_all_local_visitors()
+def get_all_entries(search=None, status=None):
+    return get_all_local_visitors(search, status)
 
-def get_active_visitors():
-    return get_active_local_visitors()
+def get_active_visitors(search=None):
+    return get_active_local_visitors(search)
 
 def check_out_visitor(visitor_name, phone): 
     try:
@@ -186,8 +193,8 @@ def get_pending_visitors(host_name):
     finally:
         conn.close()
 
-def get_entries_paginated(page: int = 1, per_page: int = 50) -> PaginationResult:
-    result = get_paginated_local_visitors(page, per_page)
+def get_entries_paginated(page: int = 1, per_page: int = 50, search: str = None) -> PaginationResult:
+    result = get_paginated_local_visitors(page, per_page, search)
     
     total = result['total']
     total_pages = math.ceil(total / per_page) if total else 1
