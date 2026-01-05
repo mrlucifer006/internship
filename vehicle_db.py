@@ -10,7 +10,6 @@ from cache_manager import (
 
 logger = logging.getLogger(__name__)
 
-supabase = get_supabase_client()
 
 def create_table():
     """Calculated from db.py now, but keeping stub for compatibility if imported."""
@@ -18,6 +17,7 @@ def create_table():
 
 def insert_vehicle(data):
     """Insert a new vehicle record into the database."""
+    supabase = get_supabase_client()
     try:
         # Prepare data for Supabase (handling optional fields)
         payload = {
@@ -109,6 +109,7 @@ def get_vehicles_paginated(page: int = 1, per_page: int = 50, search: str = None
 
 def update_vehicle(veh_reg_no, data):
     """Update a vehicle record."""
+    supabase = get_supabase_client()
     try:
         payload = {
             "driver_name": data.get("driver_name"),
@@ -131,6 +132,7 @@ def update_vehicle(veh_reg_no, data):
 
 def delete_vehicle(veh_reg_no):
     """Delete a vehicle record by registration number."""
+    supabase = get_supabase_client()
     try:
         # Get id before deleting
         vehicle = get_vehicle_by_reg_no(veh_reg_no)
@@ -159,5 +161,21 @@ def search_vehicles_by_destination(destination):
     except Exception as e:
         logger.error(f"Error searching vehicles from cache: {e}")
         return []
+        return []
     finally:
         conn.close()
+
+def mark_vehicle_returned(vehicle_id):
+    """Mark a returnable vehicle as returned."""
+    supabase = get_supabase_client()
+    try:
+        now_ts = datetime.datetime.now().isoformat()
+        response = supabase.table('vehicle').update({'return_time': now_ts}).eq('id', vehicle_id).execute()
+        
+        if response.data:
+            update_local_vehicle(response.data[0])
+            return True
+        return False
+    except Exception as e:
+        logger.error(f"Error marking vehicle {vehicle_id} returned: {e}")
+        return False

@@ -10,7 +10,10 @@ from cache_manager import (
 
 logger = logging.getLogger(__name__)
 
+# Initialize Supabase client
 supabase = get_supabase_client()
+
+
 
 def save_visitor(data):
     """
@@ -67,6 +70,7 @@ def save_visitor(data):
             "updated_at": datetime.now().isoformat()
         }
 
+        
         response = supabase.table('visitors').insert(payload).execute()
         
         if response.data:
@@ -97,6 +101,7 @@ def update_visitor_status(visitor_id, status, denial_reason=None):
         if status == -1:
             payload["denial_reason"] = denial_reason
 
+        
         response = supabase.table('visitors').update(payload).eq('id', visitor_id).execute()
         
         if response.data:
@@ -109,13 +114,79 @@ def update_visitor_status(visitor_id, status, denial_reason=None):
         logger.error(f"Error updating visitor status: {e}")
         return {"success": False, "errors": [str(e)]}
 
+def parse_iso_datetime(date_string):
+    """Helper to parse ISO datetime strings with variable precision."""
+    if not date_string:
+        return None
+    try:
+        # Try default parser first
+        return datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+    except ValueError:
+        try:
+            # Handle variable microseconds precision for Python < 3.11
+            if '.' in date_string:
+                main_part, rest = date_string.split('.', 1)
+                # Split timezone
+                if '+' in rest:
+                    us_part, tz_part = rest.split('+', 1)
+                    sign = '+'
+                elif '-' in rest:
+                     us_part, tz_part = rest.split('-', 1)
+                     sign = '-'
+                else:
+                    us_part = rest
+                    tz_part = None
+                    sign = None
+                
+                # Normalize microseconds to 6 digits
+                if len(us_part) > 6:
+                    us_part = us_part[:6]
+                else:
+                    us_part = us_part.ljust(6, '0')
+                
+                new_ts = f"{main_part}.{us_part}"
+                if sign and tz_part:
+                    new_ts += f"{sign}{tz_part}"
+                elif 'Z' in date_string:
+                    new_ts += "+00:00"
+                
+                return datetime.fromisoformat(new_ts)
+        except Exception:
+            pass
+    return None
+
 def get_all_entries(search=None, status=None):
-    return get_all_local_visitors(search, status)
+    entries_rows = get_all_local_visitors(search, status)
+    entries = [dict(row) for row in entries_rows] # Convert to dicts for mutability
+    
+    for entry in entries:
+        # Format Entry Time
+        if entry.get('entry_time'):
+            dt = parse_iso_datetime(entry['entry_time'])
+            if dt:
+                entry['display_entry_time'] = dt.strftime("%d %b %Y, %I:%M %p")
+            else:
+                 entry['display_entry_time'] = entry['entry_time']
+        else:
+             entry['display_entry_time'] = "-"
+
+        # Format Exit Time
+        if entry.get('exit_time'):
+            dt = parse_iso_datetime(entry['exit_time'])
+            if dt:
+                entry['display_exit_time'] = dt.strftime("%d %b %Y, %I:%M %p")
+            else:
+                entry['display_exit_time'] = entry['exit_time']
+        else:
+            entry['display_exit_time'] = None # Handle in template
+            
+    return entries
 
 def get_active_visitors(search=None):
     return get_active_local_visitors(search)
 
 def check_out_visitor(visitor_name, phone): 
+    
     try:
         # Check status first from local cache
         conn = get_db_connection()
@@ -154,6 +225,7 @@ def check_out_visitor(visitor_name, phone):
         conn.close()
 
 def remove_all_records():
+    
     try:
         supabase.table('visitors').delete().neq('id', -1).execute() # Hackish way to delete all if safe mode is on
         conn = get_db_connection()
@@ -201,8 +273,22 @@ def get_entries_paginated(page: int = 1, per_page: int = 50, search: str = None)
     has_next = page < total_pages
     has_prev = page > 1
     
+    # Convert rows to dicts for mutability and Format dates
+    data = [dict(row) for row in result['data']]
+    
+    for entry in data:
+        if entry.get('entry_time'):
+            try:
+                # Handle ISO format with potential Z or offset
+                ts = datetime.fromisoformat(entry['entry_time'].replace('Z', '+00:00'))
+                entry['display_time'] = ts.strftime("%d %b, %I:%M %p")
+            except ValueError:
+                entry['display_time'] = entry['entry_time'] # Fallback
+        else:
+            entry['display_time'] = ""
+
     return PaginationResult(
-        data=result['data'],
+        data=data,
         page=page,
         per_page=per_page,
         total=total,

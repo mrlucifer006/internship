@@ -1,27 +1,8 @@
 import os
 import logging
-from supabase import create_client, Client
+from db_supabase import get_supabase_client
 
 logger = logging.getLogger(__name__)
-
-# Initialize Supabase Client
-# NOTE: Replace these with your actual Supabase URL and Key
-url: str = os.environ.get("SUPABASE_URL", "https://ssllkfvjipffuswektaq.supabase.co")
-key: str = os.environ.get("SUPABASE_KEY", "sb_publishable_2hF1hYUU7dxfbvVdBMRWXg_82m86KZJ")
-
-_supabase: Client = None
-
-def get_supabase_client() -> Client:
-    """Get the Supabase client instance."""
-    global _supabase
-    if _supabase is None:
-        try:
-            _supabase = create_client(url, key)
-            logger.info("Supabase client initialized.")
-        except Exception as e:
-            logger.error(f"Failed to initialize Supabase client: {e}")
-            raise e
-    return _supabase
 
 def get_db_connection():
     """

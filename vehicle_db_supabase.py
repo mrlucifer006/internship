@@ -8,6 +8,7 @@ supabase = get_supabase_client()
 
 def insert_vehicle(data):
     """Insert a new vehicle record into the database."""
+    supabase = get_supabase_client()
     try:
         # Prepare data for Supabase (handling optional fields)
         payload = {
@@ -36,6 +37,7 @@ def insert_vehicle(data):
 
 def get_vehicle_by_reg_no(veh_reg_no):
     """Get a vehicle record by registration number."""
+    supabase = get_supabase_client()
     try:
         response = supabase.table('vehicle').select("*").eq('veh_reg_no', veh_reg_no).execute()
         
@@ -50,6 +52,7 @@ def get_vehicle_by_reg_no(veh_reg_no):
 
 def get_vehicle_by_driver(driver_name):
     """Get all vehicles associated with a driver."""
+    supabase = get_supabase_client()
     try:
         response = supabase.table('vehicle').select("*").eq('driver_name', driver_name).execute()
         return response.data if response.data else []
@@ -59,6 +62,7 @@ def get_vehicle_by_driver(driver_name):
 
 def get_all_vehicles():
     """Get all vehicle records."""
+    supabase = get_supabase_client()
     try:
         # Order by time descending
         response = supabase.table('vehicle').select("*").order('time', desc=True).execute()
@@ -73,6 +77,7 @@ def get_vehicles_paginated(page: int = 1, per_page: int = 50, search: str = None
     Emulates the PaginationResult object structure if needed, or returns tuple/dict structure.
     Note: Real implementation needs a PaginationResult class similar to the original.
     """
+    supabase = get_supabase_client()
     try:
         query = supabase.table('vehicle').select("*", count='exact')
         
@@ -126,6 +131,7 @@ def get_vehicles_paginated(page: int = 1, per_page: int = 50, search: str = None
 
 def update_vehicle(veh_reg_no, data):
     """Update a vehicle record."""
+    supabase = get_supabase_client()
     try:
         payload = {
             "driver_name": data.get("driver_name"),
@@ -149,6 +155,7 @@ def update_vehicle(veh_reg_no, data):
 
 def delete_vehicle(veh_reg_no):
     """Delete a vehicle record by registration number."""
+    supabase = get_supabase_client()
     try:
         response = supabase.table('vehicle').delete().eq('veh_reg_no', veh_reg_no).execute()
         if response.data:
@@ -162,6 +169,7 @@ def delete_vehicle(veh_reg_no):
 
 def search_vehicles_by_destination(destination):
     """Search vehicles by destination."""
+    supabase = get_supabase_client()
     try:
         response = supabase.table('vehicle').select("*").ilike('destination', f"%{destination}%").execute()
         return response.data if response.data else []

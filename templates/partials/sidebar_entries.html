@@ -1,30 +1,62 @@
-{% if pagination.items %}
-{% for entry in pagination.items %}
-<div class="p-4 hover:bg-slate-700/50 transition-colors border-b border-slate-800/50 last:border-0 animate-fade-in"
+{% if pagination.data %}
+{% for entry in pagination.data %}
+<div class="p-3.5 rounded-xl border border-slate-100 bg-white shadow-sm flex flex-col gap-2 hover:shadow-md transition-all animate-fade-in group"
     style="animation-delay: {{ loop.index0 * 50 }}ms;">
-    <div class="flex justify-between items-start mb-1">
-        <span class="font-medium text-white truncate pr-2">{{ entry.name }}</span>
+    <div class="flex justify-between items-start mb-0.5">
+        <span class="font-bold text-slate-700 text-sm truncate pr-2">{{ entry.name }}</span>
+        {% if entry.status == 0 %}
         <span
-            class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">IN</span>
+            class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100 font-bold uppercase tracking-wide">
+            <span class="material-symbols-outlined text-[12px]">schedule</span>
+            WAIT
+        </span>
+        {% elif entry.status == 1 %}
+        <span
+            class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold uppercase tracking-wide">
+            <span class="material-symbols-outlined text-[12px]">check_circle</span>
+            IN
+        </span>
+        {% else %}
+        <span
+            class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-100 font-bold uppercase tracking-wide">
+            <span class="material-symbols-outlined text-[12px]">cancel</span>
+            DENIED
+        </span>
+        {% endif %}
     </div>
-    <div class="text-xs text-slate-400 flex items-center gap-1 mb-1">
-        <span class="material-symbols-outlined text-[10px]">person</span>
-        Host: {{ entry.person_to_visit }}
+
+    <div class="test-xs text-slate-500 flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[14px] text-indigo-400">person</span>
+        <span class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Host:</span>
+        <span class="text-xs font-semibold text-slate-600">{{ entry.person_to_visit }}</span>
     </div>
-    <div class="flex justify-between items-center text-xs">
-        <span class="text-slate-500 font-mono">{{ entry.entry_time.split(' ')[1] if ' ' in entry.entry_time else
-            entry.entry_time }}</span>
-        <a href="{{ url_for('entry_details', id=entry.id) }}"
-            class="text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5 transition-colors">
-            View
-            <span class="material-symbols-outlined text-[10px]">arrow_forward</span>
-        </a>
+
+    <div class="flex justify-between items-center pt-2 mt-1 border-t border-slate-50">
+        <div class="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
+            <span class="material-symbols-outlined text-[14px] text-slate-300">schedule</span>
+            {{ entry.display_time }}
+        </div>
+
+        {% if entry.status == 0 and entry.person_to_visit == session.get('user') %}
+        <div class="flex gap-2">
+            <button onclick="handleAction({{ entry.id }}, 'approve')"
+                class="size-6 flex items-center justify-center bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-full transition-colors"
+                title="Approve">
+                <span class="material-symbols-outlined text-[16px]">check</span>
+            </button>
+            <button onclick="promptDenial({{ entry.id }})"
+                class="size-6 flex items-center justify-center bg-red-100 hover:bg-red-200 text-red-700 rounded-full transition-colors"
+                title="Reject">
+                <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endfor %}
 {% else %}
-<div class="p-8 text-center text-slate-500 flex flex-col items-center gap-2">
-    <span class="material-symbols-outlined text-2xl opacity-50">search_off</span>
-    <p class="text-xs">No entries found</p>
+<div class="p-8 text-center text-slate-400 flex flex-col items-center gap-2">
+    <span class="material-symbols-outlined text-4xl opacity-30">history_toggle_off</span>
+    <p class="text-sm font-medium">No active entries</p>
 </div>
 {% endif %}

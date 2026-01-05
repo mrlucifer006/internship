@@ -106,6 +106,13 @@ def init_cache():
         except sqlite3.OperationalError:
             pass
 
+        # [NEW] Add return_time for returnable vehicles
+        try:
+            conn.execute('ALTER TABLE vehicle ADD COLUMN return_time TEXT')
+        except sqlite3.OperationalError:
+            pass
+
+
         # Migration: Remove UNIQUE constraint on veh_reg_no (by recreating table)
         # This is complex in SQLite, so we check if constraint exists by trying to insert a duplicate
         # If it fails, we need to migrate. For now, we'll use a simpler check:
@@ -169,102 +176,130 @@ def init_cache():
         conn.close()
 
 def sync_data_from_supabase(force=False):
-    """Fetch all data from Supabase and populate the local cache."""
+    """Fetch all data from Supabase and sync with local cache (Upsert Strategy)."""
     conn = get_db_connection()
     try:
-        if not force:
-            # Check if the cache is already populated
-            cursor = conn.execute('SELECT COUNT(id) FROM employee')
-            count = cursor.fetchone()[0]
-            if count > 0:
-                logger.info(f"Cache already has {count} records. Skipping sync.")
-                print(f"Cache already has {count} records. Skipping sync.")
-                return True
-
-        # If cache is empty or force is True, proceed with sync
         supabase = get_supabase_client()
         logger.info("Syncing data from Supabase...")
+        print("Syncing data from Supabase...")
 
-        # Sync employees
-        employees = supabase.table('employee').select("*").execute().data
-        conn.execute('DELETE FROM employee') # Clear local table first (Handles deletions)
-        if employees:
-            for emp in employees:
+        # --- Sync Visitors ---
+        response = supabase.table('visitors').select('*').execute()
+        visitors = response.data if response.data else []
+        
+        conn.execute("BEGIN TRANSACTION")
+        
+        # Get all local IDs for quick lookup
+        cursor = conn.execute("SELECT id FROM visitors")
+        local_ids = set(row[0] for row in cursor.fetchall())
+        remote_ids = set()
+
+        for v in visitors:
+            v_id = v.get('id')
+            remote_ids.add(v_id)
+            
+            if v_id in local_ids:
                 conn.execute('''
-                    INSERT INTO employee (id, name, login_id, phone, password, Auth_level, status, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    UPDATE visitors
+                    SET name=?, phone=?, person_to_visit=?, reason=?, has_vehicle=?, vehicle_number=?, entry_time=?, exit_time=?, status=?, denial_reason=?, id_type=?, id_number=?, updated_at=?, created_at=?
+                    WHERE id=?
                 ''', (
-                    emp.get('id'),
-                    emp.get('name'),
-                    emp.get('login_id'),
-                    emp.get('phone'),
-                    emp.get('password'),
-                    emp.get('Auth_level'),
-                    emp.get('status', 0),
-                    emp.get('created_at')
+                    v.get('name'), v.get('phone'), v.get('person_to_visit'), v.get('reason'),
+                    v.get('has_vehicle'), v.get('vehicle_number'), v.get('entry_time'), v.get('exit_time'),
+                    v.get('status'), v.get('denial_reason'), v.get('id_type'), v.get('id_number'),
+                    v.get('updated_at'), v.get('created_at'),
+                    v_id
                 ))
-
-        # Sync visitors
-        visitors = supabase.table('visitors').select('*').execute().data
-        conn.execute('DELETE FROM visitors') # Clear local table first (Handles deletions)
-        if visitors:
-            for v in visitors:
+            else:
                 conn.execute('''
                     INSERT INTO visitors (id, name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time, exit_time, status, denial_reason, id_type, id_number, updated_at, created_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
-                    v.get('id'),
-                    v.get('name'),
-                    v.get('phone'),
-                    v.get('person_to_visit'),
-                    v.get('reason'),
-                    v.get('has_vehicle'),
-                    v.get('vehicle_number'),
-                    v.get('entry_time'),
-                    v.get('exit_time'),
-                    v.get('status'),
-                    v.get('denial_reason'),
-                    v.get('id_type'),
-                    v.get('id_number'),
-                    v.get('updated_at'),
-                    v.get('created_at')
-                ))
-
-        # Sync vehicles
-        vehicles = supabase.table('vehicle').select('*').execute().data
-        conn.execute('DELETE FROM vehicle') # Clear local table first (Handles deletions)
-        if vehicles:
-            for v in vehicles:
-                conn.execute('''
-                    INSERT INTO vehicle (id, driver_name, veh_reg_no, vehicle_img, destination, "time", driver_phone, origin, purchase_no, entry_type, is_returnable, material_type, return_reason, created_at, driver_id_type, driver_id_number, vehicle_length)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    v.get('id'),
-                    v.get('driver_name'),
-                    v.get('veh_reg_no'),
-                    v.get('vehicle_img'),
-                    v.get('destination'),
-                    v.get('time'),
-                    v.get('driver_phone'),
-                    v.get('origin'),
-                    v.get('purchase_no'),
-                    v.get('entry_type'),
-                    v.get('is_returnable', 0),
-                    v.get('material_type'),
-                    v.get('return_reason'),
-                    v.get('created_at'),
-                    v.get('driver_id_type'),
-                    v.get('driver_id_number'),
-                    v.get('vehicle_length')
+                    v_id, v.get('name'), v.get('phone'), v.get('person_to_visit'), v.get('reason'),
+                    v.get('has_vehicle'), v.get('vehicle_number'), v.get('entry_time'), v.get('exit_time'),
+                    v.get('status'), v.get('denial_reason'), v.get('id_type'), v.get('id_number'),
+                    v.get('updated_at'), v.get('created_at')
                 ))
         
+        # Cleanup deleted (Rows in local but not in remote)
+        to_delete = local_ids - remote_ids
+        if to_delete:
+            for del_id in to_delete:
+                conn.execute("DELETE FROM visitors WHERE id = ?", (del_id,))
+        
         conn.commit()
-        logger.info("Cache synced with Supabase.")
-        print("Cache synced with Supabase.")
+        
+        # --- Sync Vehicles ---
+        response = supabase.table('vehicle').select('*').execute()
+        vehicles = response.data if response.data else []
+        
+        conn.execute("BEGIN TRANSACTION")
+        
+        cursor = conn.execute("SELECT id FROM vehicle")
+        local_veh_ids = set(row[0] for row in cursor.fetchall())
+        remote_veh_ids = set()
+
+        for v in vehicles:
+            v_id = v.get('id')
+            remote_veh_ids.add(v_id)
+            
+            if v_id in local_veh_ids:
+                conn.execute('''
+                    UPDATE vehicle
+                    SET driver_name=?, veh_reg_no=?, vehicle_img=?, destination=?, "time"=?, driver_phone=?, origin=?, purchase_no=?, entry_type=?, is_returnable=?, material_type=?, return_reason=?, created_at=?, driver_id_type=?, driver_id_number=?, vehicle_length=?, return_time=?
+                    WHERE id=?
+                ''', (
+                    v.get('driver_name'), v.get('veh_reg_no'), v.get('vehicle_img'), v.get('destination'),
+                    v.get('time'), v.get('driver_phone'), v.get('origin'), v.get('purchase_no'),
+                    v.get('entry_type'), v.get('is_returnable', 0), v.get('material_type'), v.get('return_reason'),
+                    v.get('created_at'), v.get('driver_id_type'), v.get('driver_id_number'), v.get('vehicle_length'),
+                    v.get('return_time'),
+                    v_id
+                ))
+            else:
+                conn.execute('''
+                    INSERT INTO vehicle (id, driver_name, veh_reg_no, vehicle_img, destination, "time", driver_phone, origin, purchase_no, entry_type, is_returnable, material_type, return_reason, created_at, driver_id_type, driver_id_number, vehicle_length, return_time)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    v_id, v.get('driver_name'), v.get('veh_reg_no'), v.get('vehicle_img'), v.get('destination'),
+                    v.get('time'), v.get('driver_phone'), v.get('origin'), v.get('purchase_no'),
+                    v.get('entry_type'), v.get('is_returnable', 0), v.get('material_type'), v.get('return_reason'),
+                    v.get('created_at'), v.get('driver_id_type'), v.get('driver_id_number'), v.get('vehicle_length'),
+                    v.get('return_time')
+                ))
+        
+        # Cleanup deleted
+        to_delete_veh = local_veh_ids - remote_veh_ids
+        if to_delete_veh:
+            for del_id in to_delete_veh:
+                conn.execute("DELETE FROM vehicle WHERE id = ?", (del_id,))
+        
+        conn.commit()
+
+        # --- Sync Employees ---
+        employees = supabase.table('employee').select("*").execute().data
+        if employees:
+             # Basic replace for employees as it's small
+             conn.execute("DELETE FROM employee")
+             for emp in employees:
+                conn.execute('''
+                    INSERT INTO employee (id, name, login_id, phone, password, Auth_level, status, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    emp.get('id'), emp.get('name'), emp.get('login_id'), emp.get('phone'),
+                    emp.get('password'), emp.get('auth_level') or emp.get('Auth_level'),
+                    emp.get('status', 0), emp.get('created_at')
+                ))
+             conn.commit()
+
+        logger.info("Cache synced with Supabase (Upsert Mode).")
+        print("Cache synced with Supabase (Upsert Mode).")
         return True
     except Exception as e:
         logger.error(f"Error syncing data from Supabase: {e}")
         print(f"Error syncing data from Supabase: {e}")
+        if conn:
+            conn.rollback()
         return False
     finally:
         conn.close()
@@ -300,7 +335,7 @@ def update_local_employee(data):
                 data.get('name'),
                 data.get('phone'),
                 data.get('password'),
-                data.get('Auth_level'),
+                data.get('auth_level') or data.get('Auth_level'),
                 data.get('status'),
                 data.get('login_id'),
                 data.get('id')
@@ -315,7 +350,7 @@ def update_local_employee(data):
                 data.get('login_id'),
                 data.get('phone'),
                 data.get('password'),
-                data.get('Auth_level'),
+                data.get('auth_level') or data.get('Auth_level'),
                 data.get('status')
             ))
         conn.commit()
@@ -442,7 +477,7 @@ def update_local_vehicle(data):
         if exists:
             conn.execute('''
                 UPDATE vehicle
-                SET driver_name=?, veh_reg_no=?, vehicle_img=?, destination=?, "time"=?, driver_phone=?, origin=?, purchase_no=?, entry_type=?, is_returnable=?, material_type=?, return_reason=?, created_at=?, driver_id_type=?, driver_id_number=?, vehicle_length=?
+                SET driver_name=?, veh_reg_no=?, vehicle_img=?, destination=?, "time"=?, driver_phone=?, origin=?, purchase_no=?, entry_type=?, is_returnable=?, material_type=?, return_reason=?, created_at=?, driver_id_type=?, driver_id_number=?, vehicle_length=?, return_time=?
                 WHERE id=?
             ''', (
                 data.get('driver_name'),
@@ -461,12 +496,13 @@ def update_local_vehicle(data):
                 data.get('driver_id_type'),
                 data.get('driver_id_number'),
                 data.get('vehicle_length'),
+                data.get('return_time'),
                 data.get('id')
             ))
         else:
             conn.execute('''
-                INSERT INTO vehicle (id, driver_name, veh_reg_no, vehicle_img, destination, "time", driver_phone, origin, purchase_no, entry_type, is_returnable, material_type, return_reason, created_at, driver_id_type, driver_id_number, vehicle_length)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO vehicle (id, driver_name, veh_reg_no, vehicle_img, destination, "time", driver_phone, origin, purchase_no, entry_type, is_returnable, material_type, return_reason, created_at, driver_id_type, driver_id_number, vehicle_length, return_time)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 data.get('id'),
                 data.get('driver_name'),
@@ -484,7 +520,8 @@ def update_local_vehicle(data):
                 data.get('created_at'),
                 data.get('driver_id_type'),
                 data.get('driver_id_number'),
-                data.get('vehicle_length')
+                data.get('vehicle_length'),
+                data.get('return_time')
             ))
         conn.commit()
     except Exception as e:

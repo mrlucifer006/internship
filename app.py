@@ -401,44 +401,49 @@ def process_logistics_entry():
     try:
         # 1. Handle File Upload
         photo_filename = None
+        vehicle_img_local_path = None # Store local path for WhatsApp
+
         if 'vehicle_photo' in flask.request.files:
             file = flask.request.files['vehicle_photo']
             if file and file.filename != '':
-                # Use persistent path next to the executable (not temp folder)
+                # Use persistent path next to the executable
                 upload_folder = os.path.join(get_base_path(), 'uploads', 'vehicles')
                 os.makedirs(upload_folder, exist_ok=True)
                 
                 # Secure filename and save
-                # For simplicity, using timestamp to avoid overwrites
                 import time
                 ext = os.path.splitext(file.filename)[1]
                 timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
-                safe_name = f"veh_{timestamp}{ext}"
-                file.save(os.path.join(upload_folder, safe_name))
-                photo_filename = safe_name
+                safe_name = f"vehicle_{timestamp}{ext}"
+                local_path = os.path.join(upload_folder, safe_name)
                 
+                # SAVE LOCALLY FIRST
+                file.save(local_path)
+                vehicle_img_local_path = local_path # Keep for WhatsApp
+                
+                # Default to local filename (Fallback)
+                photo_filename = safe_name
+
                 # --- Upload to Supabase ---
                 try:
-                    with open(os.path.join(upload_folder, safe_name), 'rb') as f:
-                        from db import get_supabase_client
-                        supabase = get_supabase_client()
+                    with open(local_path, 'rb') as f:
                         storage_path = f"vehicles/{safe_name}"
-                        supabase.storage.from_("vehicles").upload(
+                        get_supabase_client().storage.from_("vehicles").upload(
                             file=f,
                             path=storage_path,
                             file_options={"content-type": file.content_type}
                         )
                         # Get Public URL
-                        public_url = supabase.storage.from_("vehicles").get_public_url(storage_path)
+                        public_url = get_supabase_client().storage.from_("vehicles").get_public_url(storage_path)
                         # Remove query params if any
                         if "?" in public_url:
                              public_url = public_url.split("?")[0]
                         
                         logger.info(f"Uploaded to Supabase: {public_url}")
-                        photo_filename = public_url # Use URL for DB
+                        photo_filename = public_url # Success! Overwrite with URL
                 except Exception as upload_err:
-                    logger.error(f"Supabase Upload Failed: {upload_err}")
-                    # Fallback to local filename (photo_filename remains safe_name)
+                    logger.error(f"Supabase Upload Failed (USING LOCAL FALLBACK): {upload_err}")
+                    # photo_filename remains safe_name
 
         # 2. Extract Data
         data = {
@@ -460,11 +465,6 @@ def process_logistics_entry():
         if vehicle_db.insert_vehicle(data):
             # 4. Send WhatsApp Notification (Async)
             try:
-                # Get the full path to the uploaded image
-                vehicle_img_path = None
-                if photo_filename:
-                    vehicle_img_path = os.path.join(get_base_path(), 'uploads', 'vehicles', photo_filename)
-                
                 def send_notification():
                     Logistics_message.send_whatsapp_message(
                         driver_name=data["driver_name"],
@@ -472,7 +472,7 @@ def process_logistics_entry():
                         vehicle_number=data["veh_reg_no"],
                         from_location=data["origin"],
                         to_location=data["destination"],
-                        vehicle_img_path=vehicle_img_path
+                        vehicle_img_path=vehicle_img_local_path
                     )
                 
                 threading.Thread(target=send_notification).start()
@@ -497,6 +497,7 @@ def process_logistics_exit():
     try:
         # 1. Handle File Upload
         photo_filename = None
+        vehicle_img_local_path = None # Store local path for WhatsApp
         if 'vehicle_photo' in flask.request.files:
             file = flask.request.files['vehicle_photo']
             if file and file.filename != '':
@@ -507,22 +508,27 @@ def process_logistics_exit():
                 ext = os.path.splitext(file.filename)[1]
                 timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
                 safe_name = f"veh_exit_{timestamp}{ext}"
-                file.save(os.path.join(upload_folder, safe_name))
+                
+                # Save locally FIRST
+                local_path = os.path.join(upload_folder, safe_name)
+                file.save(local_path)
+                vehicle_img_local_path = local_path
+                
+                # Default to local filename (Fallback)
                 photo_filename = safe_name
 
                 # --- Upload to Supabase ---
                 try:
-                    with open(os.path.join(upload_folder, safe_name), 'rb') as f:
-                        from db import get_supabase_client
-                        supabase = get_supabase_client()
+                    with open(local_path, 'rb') as f:
+                        
                         storage_path = f"vehicles/{safe_name}"
-                        supabase.storage.from_("vehicles").upload(
+                        get_supabase_client().storage.from_("vehicles").upload(
                             file=f,
                             path=storage_path,
                             file_options={"content-type": file.content_type}
                         )
                         # Get Public URL
-                        public_url = supabase.storage.from_("vehicles").get_public_url(storage_path)
+                        public_url = get_supabase_client().storage.from_("vehicles").get_public_url(storage_path)
                         # Remove query params if any
                         if "?" in public_url:
                              public_url = public_url.split("?")[0]
@@ -530,8 +536,8 @@ def process_logistics_exit():
                         logger.info(f"Uploaded to Supabase: {public_url}")
                         photo_filename = public_url # Use URL for DB
                 except Exception as upload_err:
-                    logger.error(f"Supabase Upload Failed: {upload_err}")
-                    # Fallback to local filename (photo_filename remains safe_name)
+                    logger.error(f"Supabase Upload Failed (USING LOCAL FALLBACK): {upload_err}")
+                    # photo_filename remains safe_name
 
         # 2. Extract Data
         data = {
@@ -567,7 +573,7 @@ def process_logistics_exit():
                         po_number=data.get("purchase_no", ""),
                         from_location=data["origin"],
                         to_location=data["destination"],
-                        vehicle_img_path=vehicle_img_path
+                        vehicle_img_path=vehicle_img_local_path
                     )
                 
                 threading.Thread(target=send_notification).start()
@@ -605,6 +611,19 @@ def view_all_logistics():
         search=search or '',
         entry_type=entry_type or ''
     )
+
+@app.route('/mark_returned/<int:vehicle_id>', methods=['POST'])
+def mark_returned(vehicle_id):
+    if not is_logged_in():
+        return flask.redirect(flask.url_for('login'))
+        
+    if vehicle_db.mark_vehicle_returned(vehicle_id):
+        flask.flash("Vehicle marked as returned successfully.", 'success')
+    else:
+        flask.flash("Failed to mark vehicle as returned. Error occurred.", 'error')
+        
+    # Redirect back to referring page or view_all_logistics
+    return flask.redirect(flask.request.referrer or flask.url_for('view_all_logistics'))
 
 @app.route('/check_out_page')
 def check_out_page():
@@ -905,20 +924,27 @@ def continuous_sync():
         time.sleep(config_obj.SYNC_INTERVAL)
 
 
+@app.route('/uploads/vehicles/<path:filename>')
+def uploaded_vehicle_file(filename):
+    upload_folder = os.path.join(get_base_path(), 'uploads', 'vehicles')
+    return flask.send_from_directory(upload_folder, filename)
+
 if __name__ == '__main__':
     
     # Initialize App Logic
     init_db()
     init_cache()
+    
+    # Initial sync from Supabase (must happen after init_cache creates tables)
+    try:
+        sync_data_from_supabase(force=True)
+    except Exception as e:
+        logger.error(f"Failed initial sync from Supabase: {e}")
 
     # Start the background sync thread
     sync_thread = threading.Thread(target=continuous_sync, daemon=True)
     sync_thread.start()
 
-    # Replaced localized create_table calls with init_db() above
-    # create_employee_table() # Removed
-    # vehicle_db.create_table() # Removed
-    
     logger.info("Database initialization complete")
 
     import socket

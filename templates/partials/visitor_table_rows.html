@@ -12,12 +12,15 @@
             class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">{{
             entry.reason }}</span>
     </td>
-    <td class="p-4 font-mono text-slate-600">{{ entry.phone_number }}</td>
+    <td class="p-4 font-mono text-slate-600">{{ entry.phone }}</td>
     <td class="p-4 font-mono text-slate-600">{{ entry.vehicle_number or 'N/A' }}</td>
-    <td class="p-4 text-slate-600">{{ entry.entry_time }}</td>
-    <td class="p-4 text-slate-600">
-        {% if entry.exit_time %}
-        {{ entry.exit_time }}
+    <td class="p-4 text-slate-600 text-xs">{{ entry.display_entry_time }}</td>
+    <td class="p-4 text-slate-600 text-xs">
+        {% if entry.display_exit_time %}
+        {{ entry.display_exit_time }}
+        {% elif entry.status == -1 or entry.status == '-1' or entry.denial_reason %}
+        <span
+            class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">Denied</span>
         {% else %}
         <span
             class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>

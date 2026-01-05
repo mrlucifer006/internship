@@ -33,65 +33,68 @@
             onclick="toggleSidebar()"></div>
 
         <aside id="sidebar"
-            class="fixed md:static inset-y-0 left-0 w-64 bg-sidebar-bg flex-shrink-0 flex flex-col h-full text-white transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
-            <div class="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
+            class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
+            <div class="h-16 flex items-center px-6 border-b border-slate-800">
                 <div class="flex items-center gap-3">
                     <img src="{{ url_for('static', filename='favicon.ico') }}" alt="SSBS Logo"
                         class="size-8 rounded-lg">
-                    <span class="font-bold text-lg tracking-tight">SSBS Portal</span>
+                    <h1 class="font-bold text-white tracking-wide">SSBS Portal</h1>
                 </div>
             </div>
-            <div class="p-4">
-                <div class="bg-slate-800/50 rounded-xl p-3 flex items-center gap-3 mb-2 border border-slate-700/50">
-                    <div
-                        class="size-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
-                        S</div>
-                    <div class="flex flex-col overflow-hidden">
-                        <span class="text-sm font-bold truncate">super</span>
-                        <span class="text-[10px] text-indigo-300 uppercase font-bold tracking-wider">Developer</span>
+
+            <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+                <div class="px-3 mb-6">
+                    <div class="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 flex items-center gap-3">
+                        <div
+                            class="size-10 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-900/30">
+                            {{ session.get('user', 'U')[0]|upper }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-white font-bold text-sm truncate">{{ session.get('user', 'User') }}</p>
+                            <p class="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">{{
+                                get_role_name(session.get('auth_level')) }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <nav class="flex-1 overflow-y-auto custom-scrollbar">
-                <div class="px-3 mb-2 mt-2">
-                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Portals</span>
-                </div>
+
+                <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Portals</div>
+
                 <a href="{{ url_for('home') }}"
                     class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
                     <span
-                        class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">security</span>
-                    <span class="text-sm font-medium">Gate Portal</span>
+                        class="material-symbols-outlined text-[22px] group-hover:text-indigo-400 transition-colors">security</span>
+                    <span class="font-medium text-sm">Gate Portal</span>
                 </a>
+
                 <a href="{{ url_for('logistics') }}"
-                    class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#4f46e5] text-white shadow-md shadow-indigo-900/20 transition-all">
-                    <span class="material-symbols-outlined text-[20px]">local_shipping</span>
-                    <span class="text-sm font-medium">Logistics Portal</span>
+                    class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-600 text-white shadow-md shadow-indigo-900/20 transition-all">
+                    <span class="material-symbols-outlined text-[22px]">local_shipping</span>
+                    <span class="font-medium text-sm">Logistics Portal</span>
                 </a>
 
                 {% if session.get('auth_level', 0) >= 4 %}
-                <div class="px-3 mb-2 mt-8">
-                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Admin</span>
-                </div>
+                <div class="px-3 mt-8 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Admin</div>
                 <a href="{{ url_for('view_status') }}"
                     class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
                     <span
-                        class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">bar_chart</span>
-                    <span class="text-sm font-medium">View Status</span>
+                        class="material-symbols-outlined text-[22px] group-hover:text-amber-400 transition-colors">bar_chart</span>
+                    <span class="font-medium text-sm">View Status</span>
                 </a>
                 <a href="{{ url_for('new_user') }}"
                     class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
                     <span
-                        class="material-symbols-outlined text-[20px] group-hover:text-white transition-colors">person_add</span>
-                    <span class="text-sm font-medium">Add New User</span>
+                        class="material-symbols-outlined text-[22px] group-hover:text-emerald-400 transition-colors">person_add</span>
+                    <span class="font-medium text-sm">Add New User</span>
                 </a>
                 {% endif %}
             </nav>
-            <div class="p-4 border-t border-gray-800/50">
+
+            <div class="p-4 border-t border-slate-800">
                 <a href="{{ url_for('logout') }}"
-                    class="flex w-full items-center gap-3 px-3 py-2.5 text-slate-400 rounded-lg hover:text-white hover:bg-red-900/30 transition-all group">
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-red-900/30 transition-all group">
                     <span
-                        class="material-symbols-outlined text-[20px] group-hover:text-red-400 transition-colors">logout</span>
-                    <span class="text-sm font-medium">Logout</span>
+                        class="material-symbols-outlined text-[22px] group-hover:text-red-400 transition-colors">logout</span>
+                    <span class="font-medium text-sm">Logout</span>
                 </a>
             </div>
         </aside>
@@ -149,7 +152,7 @@
                                         <th class="table-th">From (Origin)</th>
                                         <th class="table-th">To (Destination)</th>
                                         <th class="table-th">Purchase No.</th>
-                                        <th class="table-th text-center">Vehicle Photo</th>
+                                        <th class="table-th text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
@@ -170,20 +173,60 @@
                                         </td>
                                         <td class="table-td">{{ vehicle.purchase_no or '-' }}</td>
                                         <td class="table-td text-center">
-                                            {% if vehicle.vehicle_img %}
-                                            <a href="{{ url_for('serve_upload', filename='vehicles/' + vehicle.vehicle_img) }}"
-                                                target="_blank"
-                                                class="inline-flex items-center justify-center size-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
-                                                <span class="material-symbols-outlined text-lg">image</span>
-                                            </a>
-                                            {% else %}
-                                            <span class="text-slate-300">-</span>
-                                            {% endif %}
+                                            <div class="flex items-center justify-center gap-2">
+                                                <button onclick="openLogisticsModal(this)"
+                                                    data-driver-name="{{ vehicle.driver_name }}"
+                                                    data-driver-phone="{{ vehicle.driver_phone }}"
+                                                    data-veh-reg-no="{{ vehicle.veh_reg_no }}"
+                                                    data-origin="{{ vehicle.origin }}"
+                                                    data-destination="{{ vehicle.destination }}"
+                                                    data-entry-type="{{ vehicle.entry_type|default('Entry') }}"
+                                                    data-purchase-no="{{ vehicle.purchase_no }}"
+                                                    data-time="{{ vehicle.time }}"
+                                                    data-material="{{ vehicle.material_type }}"
+                                                    data-returnable="{{ vehicle.is_returnable }}"
+                                                    data-return-reason="{{ vehicle.return_reason }}"
+                                                    data-id-type="{{ vehicle.driver_id_type }}"
+                                                    data-id-number="{{ vehicle.driver_id_number }}"
+                                                    data-img="{% if vehicle.vehicle_img %}{% if vehicle.vehicle_img.startswith('http') %}{{ vehicle.vehicle_img }}{% else %}{{ url_for('uploaded_vehicle_file', filename=vehicle.vehicle_img) }}{% endif %}{% endif %}"
+                                                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors text-xs font-bold border border-indigo-100">
+                                                    <span class="material-symbols-outlined text-sm">visibility</span>
+                                                    Details
+                                                </button>
+
+                                                {% if vehicle.entry_type == 'Exit' and vehicle.is_returnable %}
+                                                {% if vehicle.return_time %}
+                                                <span
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-bold cursor-default"
+                                                    title="Returned at {{ vehicle.return_time }}">
+                                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                                    {% if 'T' in vehicle.return_time %}
+                                                    {{ vehicle.return_time.split('T')[1][:5] }}
+                                                    {% else %}
+                                                    {{ vehicle.return_time }}
+                                                    {% endif %}
+                                                </span>
+                                                {% else %}
+                                                <form method="POST"
+                                                    action="{{ url_for('mark_returned', vehicle_id=vehicle.id) }}"
+                                                    class="inline-block"
+                                                    onsubmit="return confirm('Mark this vehicle as returned?');">
+                                                    <button type="submit"
+                                                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors text-xs font-bold border border-amber-100">
+                                                        <span
+                                                            class="material-symbols-outlined text-sm">restore_from_trash</span>
+                                                        Mark Returned
+                                                    </button>
+                                                </form>
+                                                {% endif %}
+                                                {% endif %}
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
                                     {% else %}
                                     <tr>
+                                        <!-- ... existing empty state ... -->
                                         <td class="px-6 py-16 text-center text-slate-500" colspan="7">
                                             <div class="flex flex-col items-center justify-center">
                                                 <div class="bg-slate-50 p-4 rounded-full mb-3">
@@ -192,8 +235,7 @@
                                                 </div>
                                                 <p class="text-base font-medium text-slate-600">No entries found</p>
                                                 <p class="text-sm text-slate-400 mt-1">There are currently no logistics
-                                                    details
-                                                    to display.</p>
+                                                    details to display.</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -202,20 +244,19 @@
                             </table>
                         </div>
 
-                        <!-- Pagination Controls -->
+                        <!-- Pagination Controls (Existing) -->
                         {% if pagination %}
                         <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                            <!-- ... existing pagination ... -->
                             <div class="text-sm text-slate-600">
                                 Showing <span class="font-semibold">{{ ((pagination.page - 1) * pagination.per_page) + 1
                                     }}</span>
                                 to <span class="font-semibold">{{ [pagination.page * pagination.per_page,
-                                    pagination.total]|min
-                                    }}</span>
+                                    pagination.total]|min }}</span>
                                 of <span class="font-semibold">{{ pagination.total }}</span> entries
                             </div>
 
                             <div class="flex items-center gap-2">
-                                <!-- Previous Button -->
                                 {% if pagination.has_prev %}
                                 <a href="{{ url_for('view_all_logistics', page=pagination.page-1, search=search) }}"
                                     class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
@@ -230,7 +271,6 @@
                                 </span>
                                 {% endif %}
 
-                                <!-- Page Numbers -->
                                 <div class="flex items-center gap-1">
                                     {% for p in range(1, pagination.total_pages + 1) %}
                                     {% if p == pagination.page %}
@@ -251,7 +291,6 @@
                                                 {% endfor %}
                                 </div>
 
-                                <!-- Next Button -->
                                 {% if pagination.has_next %}
                                 <a href="{{ url_for('view_all_logistics', page=pagination.page+1, search=search) }}"
                                     class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1">
@@ -275,6 +314,155 @@
         </div>
     </div>
 
+    <!-- Logistics Details Modal -->
+    <div id="logistics-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog"
+        aria-modal="true">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" onclick="closeLogisticsModal()">
+        </div>
+
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div
+                    class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200">
+
+                    <!-- Header -->
+                    <div
+                        class="bg-slate-50 px-4 py-3 sm:px-6 border-b border-slate-200 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900" id="modal-title">Logistics Details</h3>
+                            <p class="text-xs text-slate-500 mt-0.5" id="modal-subtitle">Entry ID: <span
+                                    id="modal-id">--</span></p>
+                        </div>
+                        <button type="button" onclick="closeLogisticsModal()"
+                            class="rounded-lg p-1 text-slate-400 hover:text-slate-500 hover:bg-slate-200 transition-colors">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="px-4 py-5 sm:p-6 space-y-6">
+
+                        <!-- Top Section: Driver & Vehicle -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Driver Card -->
+                            <div class="bg-indigo-50/50 rounded-lg p-4 border border-indigo-100">
+                                <h4 class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-3">Driver
+                                    Information</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-slate-500">Name:</span>
+                                        <span class="text-sm font-medium text-slate-900"
+                                            id="modal-driver-name">--</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-slate-500">Phone:</span>
+                                        <span class="text-sm font-medium text-slate-900"
+                                            id="modal-driver-phone">--</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-slate-500">ID Proof:</span>
+                                        <div class="text-right">
+                                            <span
+                                                class="text-xs font-bold px-1.5 py-0.5 rounded bg-white border border-indigo-200 text-indigo-700"
+                                                id="modal-id-type">--</span>
+                                            <span class="text-sm font-medium text-slate-900 ml-1"
+                                                id="modal-id-num">--</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Trip Card -->
+                            <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Trip Details
+                                </h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-slate-500">Vehicle No:</span>
+                                        <span
+                                            class="text-sm font-mono font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200"
+                                            id="modal-veh-no">--</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-slate-500">Route:</span>
+                                        <span class="text-sm font-medium text-slate-900"><span
+                                                id="modal-origin">--</span> &rarr; <span
+                                                id="modal-dest">--</span></span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-slate-500">Type:</span>
+                                        <span
+                                            class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700"
+                                            id="modal-entry-type">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Material Info -->
+                        <div class="border-t border-slate-100 pt-4">
+                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Material
+                                Information</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <span class="block text-xs text-slate-400">Material Type</span>
+                                    <span class="block text-sm font-medium text-slate-900 mt-0.5"
+                                        id="modal-material">--</span>
+                                </div>
+                                <div>
+                                    <span class="block text-xs text-slate-400">Purchase Order</span>
+                                    <span class="block text-sm font-medium text-slate-900 mt-0.5"
+                                        id="modal-purchase">--</span>
+                                </div>
+                                <div>
+                                    <span class="block text-xs text-slate-400">Return Status</span>
+                                    <div class="mt-0.5" id="modal-return-status">--</div>
+                                </div>
+                            </div>
+                            <!-- Return Reason (Conditional) -->
+                            <div id="modal-return-reason-container"
+                                class="mt-3 bg-amber-50 text-amber-800 text-sm p-3 rounded-lg border border-amber-100 hidden">
+                                <span class="font-bold text-xs uppercase mr-2">Reason:</span> <span
+                                    id="modal-return-reason">--</span>
+                            </div>
+                        </div>
+
+                        <!-- Vehicle Image -->
+                        <div class="border-t border-slate-100 pt-4">
+                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Vehicle Image
+                            </h4>
+                            <div
+                                class="aspect-video w-full rounded-lg border border-slate-200 bg-slate-100 overflow-hidden flex items-center justify-center relative group">
+                                <img id="modal-img" src="" alt="Vehicle Photo"
+                                    class="w-full h-full object-cover hidden">
+                                <div id="modal-no-img" class="flex flex-col items-center justify-center text-slate-400">
+                                    <span class="material-symbols-outlined text-4xl">no_photography</span>
+                                    <span class="text-xs mt-2 font-medium">No image available</span>
+                                </div>
+                                <a id="modal-img-link" href="#" target="_blank"
+                                    class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden">
+                                    <span
+                                        class="bg-white text-slate-900 px-4 py-2 rounded-lg font-bold text-sm shadow-lg transform scale-95 group-hover:scale-100 transition-transform">
+                                        Open Full Size
+                                    </span>
+                                </a>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-2 text-right" id="modal-time">Captured: --</p>
+                        </div>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-slate-200">
+                        <button type="button" onclick="closeLogisticsModal()"
+                            class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Mobile Sidebar Toggle
         function toggleSidebar() {
@@ -282,6 +470,72 @@
             const overlay = document.getElementById('sidebar-overlay');
             sidebar.classList.toggle('-translate-x-full');
             overlay.classList.toggle('hidden');
+        }
+
+        // Modal Logic
+        function openLogisticsModal(btn) {
+            const modal = document.getElementById('logistics-modal');
+            const data = btn.dataset;
+
+            // Populate Fields
+            document.getElementById('modal-driver-name').textContent = data.driverName || '-';
+            document.getElementById('modal-driver-phone').textContent = data.driverPhone || '-';
+            document.getElementById('modal-veh-no').textContent = data.vehRegNo || '-';
+            document.getElementById('modal-origin').textContent = data.origin || '?';
+            document.getElementById('modal-dest').textContent = data.destination || '?';
+            document.getElementById('modal-entry-type').textContent = data.entryType || 'Entry';
+            document.getElementById('modal-purchase').textContent = data.purchaseNo || '-';
+            document.getElementById('modal-material').textContent = data.material || '-';
+
+            // ID Proof
+            document.getElementById('modal-id-type').textContent = data.idType || 'ID';
+            document.getElementById('modal-id-num').textContent = data.idNumber || '-';
+
+            // Return Status
+            const isReturnable = data.returnable === '1';
+            const statusDiv = document.getElementById('modal-return-status');
+            statusDiv.innerHTML = isReturnable
+                ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-700"><span class="material-symbols-outlined text-[14px]">refresh</span> Returnable</span>'
+                : '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-600">Non-Returnable</span>';
+
+            // Return Reason
+            const reasonContainer = document.getElementById('modal-return-reason-container');
+            if (data.returnReason && data.returnReason !== 'None' && data.returnReason.trim() !== '') {
+                document.getElementById('modal-return-reason').textContent = data.returnReason;
+                reasonContainer.classList.remove('hidden');
+            } else {
+                reasonContainer.classList.add('hidden');
+            }
+
+            // Image
+            const imgEl = document.getElementById('modal-img');
+            const noImgEl = document.getElementById('modal-no-img');
+            const imgLink = document.getElementById('modal-img-link');
+
+            if (data.img && data.img !== 'None') {
+                imgEl.src = data.img;
+                imgEl.classList.remove('hidden');
+                noImgEl.classList.add('hidden');
+
+                imgLink.href = data.img;
+                imgLink.classList.remove('hidden');
+            } else {
+                imgEl.src = '';
+                imgEl.classList.add('hidden');
+                noImgEl.classList.remove('hidden');
+                imgLink.classList.add('hidden');
+            }
+
+            // Time
+            document.getElementById('modal-time').textContent = 'Time: ' + (data.time || '--');
+
+            // Show Modal
+            modal.classList.remove('hidden');
+        }
+
+        function closeLogisticsModal() {
+            const modal = document.getElementById('logistics-modal');
+            modal.classList.add('hidden');
         }
     </script>
     {% include 'notification_popup.html' %}

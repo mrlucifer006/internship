@@ -6,7 +6,9 @@ from cache_manager import get_local_employee, update_local_employee, remove_loca
 
 logger = logging.getLogger(__name__)
 
+# Initialize Supabase client
 supabase = get_supabase_client()
+
 
 def hash_password(password):
     """
@@ -42,6 +44,7 @@ def insert_employee(data):
     """
     Insert a new employee with hashed password.
     """
+    
     try:
         # Hash the password before storing
         hashed_pwd = hash_password(data["password"])
@@ -51,20 +54,23 @@ def insert_employee(data):
             "phone": "+91" + data["phone"],
             "login_id": data["login_id"],
             "password": hashed_pwd,
-            "Auth_level": data["Auth_level"],
+            "auth_level": data["Auth_level"],
             "status": data["status"]
         }
 
+        logger.info(f"Attempting to insert employee: {data['login_id']}")
         response = supabase.table('employee').insert(payload).execute()
         
         if response.data:
-            logger.info(f"Employee created: {data['login_id']}")
+            logger.info(f"Employee created successfully: {data['login_id']}")
             # Update local cache
             update_local_employee(response.data[0])
             return True
-        return False
+        else:
+            logger.error(f"Insert returned no data. Response: {response}")
+            return False
     except Exception as e:
-        logger.error(f"Error inserting employee: {e}")
+        logger.exception(f"Error inserting employee: {e}")
         return False
 
 def get_employee_by_name(data):
@@ -120,6 +126,7 @@ def check_credentials(login_id, password):
         return None
 
 def update_employee_status(login_id, status):
+    
     try:
         response = supabase.table('employee').update({'status': status}).eq('login_id', login_id).execute()
         
@@ -189,6 +196,7 @@ def get_all_employees_full(search=None, role=None, status=None):
 
 def reset_all_employee_statuses():
     """Resets the status of all employees to 0 (Offline)."""
+    
     try:
         response = supabase.table('employee').update({'status': 0}).neq('status', 0).execute()
         print("All employee statuses have been reset to 0.")
@@ -202,6 +210,7 @@ def reset_all_employee_statuses():
 
 def delete_employee(login_id):
     """Deletes an employee and triggers a backup."""
+    
     try:
         response = supabase.table('employee').delete().eq('login_id', login_id).execute()
         if response.data:

@@ -273,65 +273,6 @@
             }
         });
     </script>
-    <td class="p-4 font-mono text-slate-500">{{ entry.phone }}</td>
-    <td class="p-4 font-mono text-slate-500">
-        {% if entry.vehicle_number %}
-        {{ entry.vehicle_number }}
-        {% else %}
-        <span class="text-slate-300">-</span>
-        {% endif %}
-    </td>
-    <td class="p-4 text-slate-500">{{ entry.entry_time }}</td>
-    <td class="p-4">
-        {% if entry.exit_time %}
-        <span
-            class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Exited:
-            {{ entry.exit_time }}</span>
-        {% elif entry.status == -1 %}
-        <span
-            class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Denied</span>
-        {% elif entry.status == 0 %}
-        <span
-            class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Pending</span>
-        {% else %}
-        <span
-            class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
-        {% endif %}
-    </td>
-    <td class="p-4">
-        {% if entry.status == -1 and entry.denial_reason %}
-        <span class="text-xs text-red-600 font-medium leading-tight">
-            {{ entry.denial_reason }}
-        </span>
-        {% else %}
-        <span class="text-slate-300">-</span>
-        {% endif %}
-    </td>
-    </tr>
-    {% endfor %}
-    {% else %}
-    <tr>
-        <td class="p-12 text-center" colspan="7">
-            <div class="flex flex-col items-center justify-center text-slate-400 py-6">
-                <div class="bg-slate-50 p-4 rounded-full mb-3">
-                    <span class="material-symbols-outlined text-4xl text-slate-300">folder_off</span>
-                </div>
-                <p class="text-lg font-bold text-slate-600">No entries found</p>
-                <p class="text-sm text-slate-500 mt-1 max-w-xs">There are currently no
-                    visitor
-                    details recorded. New entries will appear here.</p>
-            </div>
-        </td>
-    </tr>
-    {% endif %}
-    </tbody>
-    </table>
-    </div>
-    </div>
-    </div>
-    </main>
-    </div>
-    </div>
 
     <script>
         // Mobile Sidebar Toggle

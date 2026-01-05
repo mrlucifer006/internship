@@ -9,24 +9,10 @@
         :root {
           --brand-blue: #1e73be;
           --brand-green: #5c8a42;
-          --brand-orange: #1e73be;
+          --brand-orange: #f08422;
         }
-        .form-input {
-            @apply border-slate-200 focus:border-[var(--brand-blue)] focus:ring-[var(--brand-blue)];
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        .text-primary { color: var(--brand-blue); }
+        .bg-primary { background-color: var(--brand-blue); }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -54,22 +40,24 @@
     </style>
 </head>
 
-<body class="bg-[#f8fafc] font-display antialiased h-screen flex overflow-hidden text-slate-600">
-    <div class="flex h-screen bg-[#f8fafc] overflow-hidden w-full">
+<body class="bg-background-light font-display antialiased min-h-screen flex flex-col text-slate-600">
+    <div class="flex h-screen bg-background-light overflow-hidden w-full">
         <!-- Mobile Sidebar Overlay -->
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden"
             onclick="toggleSidebar()"></div>
 
+        <!-- Sidebar -->
         <aside id="sidebar"
-            class="fixed md:static inset-y-0 left-0 w-64 bg-sidebar-dark flex flex-col flex-shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
-            <div class="h-16 flex items-center px-6 border-b border-gray-800/50">
-                <div class="flex items-center gap-3 text-white">
+            class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
+            <div class="h-16 flex items-center px-6 border-b border-slate-800">
+                <div class="flex items-center gap-3">
                     <img src="{{ url_for('static', filename='favicon.ico') }}" alt="SSBS Logo"
                         class="size-8 rounded-lg">
-                    <span class="font-bold text-lg tracking-tight">SSBS Portal</span>
+                    <h1 class="font-bold text-white tracking-wide">SSBS Portal</h1>
                 </div>
             </div>
-            <nav class="flex-1 overflow-y-auto px-3 py-6 space-y-1">
+
+            <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
                 <div class="px-3 mb-6">
                     <div class="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 flex items-center gap-3">
                         <div
@@ -126,8 +114,8 @@
             </div>
         </aside>
 
+        <!-- Main Content -->
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-            <!-- Mobile Header -->
             <header
                 class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 shrink-0">
                 <button onclick="toggleSidebar()"
@@ -144,28 +132,29 @@
                 <div class="flex-1 overflow-y-auto p-6 md:p-10 pb-32 scroll-smooth relative">
                     <!-- Skeleton Overlay -->
                     <div id="form-skeleton"
-                        class="absolute inset-0 z-20 bg-[#f8fafc] p-6 lg:p-10 transition-opacity duration-500">
-                        <div class="w-full">
-                            <div class="flex items-start justify-between mb-8">
-                                <div class="flex flex-col gap-2">
-                                    <div class="h-10 w-48 bg-slate-200 rounded animate-pulse"></div>
-                                    <div class="h-5 w-64 bg-slate-200 rounded animate-pulse"></div>
-                                </div>
+                        class="absolute inset-0 z-20 bg-background-light p-6 md:p-10 transition-opacity duration-500">
+                        <div class="w-full flex flex-col gap-8">
+                            <div class="flex flex-col gap-2">
+                                <div class="h-10 w-48 bg-slate-200 rounded animate-pulse"></div>
+                                <div class="h-5 w-64 bg-slate-200 rounded animate-pulse"></div>
                             </div>
-                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8 space-y-8">
+                            <div class="bg-white rounded-xl border border-slate-200 p-6 md:p-8 shadow-sm space-y-8">
                                 <div class="space-y-4">
                                     <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
-                                    <div class="grid md:grid-cols-2 gap-6">
+                                    <div class="grid md:grid-cols-2 gap-5">
                                         <div class="h-11 w-full bg-slate-100 rounded animate-pulse"></div>
                                         <div class="h-11 w-full bg-slate-100 rounded animate-pulse"></div>
                                     </div>
+                                    <div class="h-11 w-full bg-slate-100 rounded animate-pulse"></div>
                                 </div>
+                                <hr class="border-slate-100" />
                                 <div class="space-y-4">
                                     <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
-                                    <div class="grid md:grid-cols-2 gap-6">
+                                    <div class="grid md:grid-cols-2 gap-5">
+                                        <div class="h-11 w-full bg-slate-100 rounded animate-pulse"></div>
                                         <div class="h-11 w-full bg-slate-100 rounded animate-pulse"></div>
                                     </div>
-                                    <div class="grid md:grid-cols-2 gap-6">
+                                    <div class="grid md:grid-cols-2 gap-5">
                                         <div class="h-11 w-full bg-slate-100 rounded animate-pulse"></div>
                                         <div class="h-11 w-full bg-slate-100 rounded animate-pulse"></div>
                                     </div>
@@ -173,38 +162,24 @@
                                 <div class="space-y-4 pt-2">
                                     <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
                                     <div
-                                        class="w-full h-36 bg-slate-50 border-2 border-dashed border-slate-200 rounded-lg animate-pulse">
+                                        class="w-full h-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl animate-pulse">
                                     </div>
                                 </div>
-                                <div class="flex gap-4 pt-4 border-t border-slate-100">
-                                    <div class="flex-1 h-12 bg-indigo-200 rounded animate-pulse"></div>
-                                    <div class="w-24 h-12 bg-slate-100 rounded animate-pulse"></div>
+                                <div class="flex gap-4 pt-4">
+                                    <div class="flex-1 h-11 bg-indigo-200 rounded animate-pulse"></div>
+                                    <div class="w-24 h-11 bg-slate-100 rounded animate-pulse"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="w-full">
-                        <div class="flex items-start justify-between mb-8">
-                            <div>
-                                <h1 class="text-[#1e293b] text-3xl font-bold leading-tight tracking-tight mb-2">New
-                                    Logistics Exit</h1>
-                                <p class="text-slate-500 text-base">Record outgoing vehicle and driver details
-                                    accurately.
-                                </p>
-                            </div>
-
-                        </div>
-
+                    <div class="w-full flex flex-col gap-8">
                         {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
-                        <div class="mb-6 flex flex-col gap-2">
+                        <div class="mb-2 flex flex-col gap-2">
                             {% for category, message in messages %}
                             <div
-                                class="p-4 rounded-lg {{ 'bg-red-50 text-red-700 border border-red-200' if category == 'error' else 'bg-green-50 text-green-700 border border-green-200' }} text-sm font-medium animate-fade-in flex items-center gap-3">
-                                <span class="material-symbols-outlined text-xl">{{ 'error' if category == 'error'
-                                    else
-                                    'check_circle' }}</span>
+                                class="p-4 rounded-lg {{ 'bg-red-50 text-red-700 border border-red-200' if category == 'error' else 'bg-green-50 text-green-700 border border-green-200' }} text-sm font-medium animate-fade-in">
                                 {{ message }}
                             </div>
                             {% endfor %}
@@ -212,208 +187,209 @@
                         {% endif %}
                         {% endwith %}
 
-                        <div
-                            class="bg-white rounded-xl border border-slate-200 shadow-[0_2px_10px_rgba(0,0,0,0.02)] p-6 lg:p-8">
+                        <div class="flex flex-col gap-2">
+                            <h1 class="text-slate-800 text-3xl font-bold tracking-tight">New Logistics Exit</h1>
+                            <p class="text-slate-500">Record outgoing vehicle details and return status accurately.</p>
+                        </div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-6 md:p-8 shadow-sm">
                             <form class="flex flex-col gap-8" id="logistics-form"
                                 action="{{ url_for('process_logistics_exit') }}" method="POST"
                                 enctype="multipart/form-data">
-                                <div class="space-y-5">
+                                <section class="space-y-4">
                                     <h3
-                                        class="text-xs font-bold uppercase tracking-wider text-[#4f46e5] flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-lg">person</span>
+                                        class="text-xs font-bold uppercase tracking-wider text-indigo-500 flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-base">person</span>
                                         Driver Details
                                     </h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <label class="flex flex-col gap-2">
-                                            <span class="text-slate-700 text-sm font-semibold">Driver Name</span>
+                                    <div class="grid md:grid-cols-2 gap-5">
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">Driver
+                                                Name</span>
                                             <input
-                                                class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 px-4 text-sm focus:bg-white transition-all placeholder:text-slate-400"
+                                                class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 placeholder:text-slate-400"
                                                 id="driver-name" name="driver_name" placeholder="Full name from License"
-                                                required="" type="text" />
+                                                required type="text" />
                                         </label>
-                                        <label class="flex flex-col gap-2">
-                                            <span class="text-slate-700 text-sm font-semibold">Driver Phone
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">Driver Phone
                                                 Number</span>
                                             <div class="relative">
                                                 <span
                                                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                                    <span class="material-symbols-outlined text-[18px]">phone</span>
+                                                    <span class="material-symbols-outlined text-lg">phone</span>
                                                 </span>
                                                 <input
-                                                    class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 pl-10 pr-4 text-sm focus:bg-white transition-all placeholder:text-slate-400"
+                                                    class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 pl-10 placeholder:text-slate-400"
                                                     id="driver-phone" name="driver_phone" maxlength="10" minlength="10"
-                                                    oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length > 10) this.value = this.value.slice(0, 10);"
-                                                    pattern="\d{10}" placeholder="10-digit mobile number" required=""
+                                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                                    pattern="[0-9]{10}" placeholder="10-digit mobile number" required
                                                     title="Please enter exactly 10 digits" type="tel" />
                                             </div>
                                         </label>
                                     </div>
-                                    <!-- ID Verification Fields -->
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                                        <label class="flex flex-col gap-2">
-                                            <span class="text-slate-700 text-sm font-semibold">ID Type</span>
+                                    <div class="grid md:grid-cols-2 gap-5 mt-4">
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">ID Type <span
+                                                    class="text-red-500">*</span></span>
                                             <select
-                                                class="form-select flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 px-4 text-sm focus:bg-white transition-all"
-                                                id="id-type" name="id_type" required onchange="updateIdValidation()">
+                                                class="form-select w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 transition-shadow"
+                                                name="id_type" id="id-type" required onchange="updateIdValidation()">
                                                 <option value="" disabled selected>Select ID Type</option>
                                                 <option value="Aadhar">Aadhar Card</option>
                                                 <option value="PAN">PAN Card</option>
                                                 <option value="Driving License">Driving License</option>
                                             </select>
                                         </label>
-                                        <label class="flex flex-col gap-2">
-                                            <span class="text-slate-700 text-sm font-semibold">ID Number</span>
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">ID Number
+                                                <span class="text-red-500">*</span></span>
                                             <div class="relative">
                                                 <span
                                                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                                    <span class="material-symbols-outlined text-[18px]">badge</span>
+                                                    <span class="material-symbols-outlined text-lg">badge</span>
                                                 </span>
                                                 <input
-                                                    class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 pl-10 pr-4 text-sm focus:bg-white transition-all placeholder:text-slate-400 uppercase"
-                                                    id="id-number" name="id_number" placeholder="Select ID Type First"
-                                                    required disabled type="text" />
+                                                    class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 pl-10 placeholder:text-slate-400 uppercase font-mono"
+                                                    name="id_number" id="id-number" required type="text"
+                                                    placeholder="Select ID Type first" disabled />
                                             </div>
                                         </label>
                                     </div>
-                                </div>
-                                <div class="space-y-5">
+                                </section>
+                                <hr class="border-slate-100" />
+                                <section class="space-y-4">
                                     <h3
-                                        class="text-xs font-bold uppercase tracking-wider text-[#4f46e5] flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-lg">local_shipping</span>
+                                        class="text-xs font-bold uppercase tracking-wider text-indigo-500 flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-base">local_shipping</span>
                                         Vehicle &amp; Trip Details
                                     </h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <label class="flex flex-col gap-2">
-                                            <span class="text-slate-700 text-sm font-semibold">Vehicle Number</span>
+
+                                    <div class="grid md:grid-cols-2 gap-5">
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">Vehicle
+                                                Number</span>
                                             <input
-                                                class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 px-4 text-sm focus:bg-white transition-all placeholder:text-slate-400 uppercase tracking-wider font-medium"
+                                                class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 uppercase font-mono tracking-wider placeholder:normal-case placeholder:font-sans"
                                                 id="vehicle-number" name="vehicle_number"
-                                                pattern="[A-Za-z]{2}\d{2}[A-Za-z]{2}\d{4}" placeholder="e.g. MH01AB1234"
-                                                required="" title="Format: MH01AB1234" type="text" />
+                                                pattern="[A-Za-z]{2}[ -]?[0-9]{2}[ -]?[A-Za-z]{2}[ -]?[0-9]{4}"
+                                                placeholder="e.g. MH 12 AB 1234" required
+                                                title="Format: MH 01 AB 1234 (2 letters, 2 digits, 2 letters, 4 digits)"
+                                                type="text" />
                                         </label>
 
-                                    </div>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div
-                                            class="flex items-center p-4 border border-slate-200 rounded-lg bg-slate-50">
-                                            <label class="inline-flex items-center cursor-pointer w-full">
-                                                <input type="checkbox" name="is_returnable" id="is-returnable" value="1"
-                                                    class="sr-only peer" onchange="toggleReturnReason()">
-                                                <div
-                                                    class="relative w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600">
-                                                </div>
-                                                <span class="ms-3 text-sm font-medium text-slate-900 flex-1">Returnable
-                                                    Vehicle</span>
-                                            </label>
-                                        </div>
-                                        <label class="flex flex-col gap-2">
-                                            <span class="text-slate-700 text-sm font-semibold">Material Type</span>
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">Material
+                                                Type</span>
                                             <div class="relative">
                                                 <span
                                                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                                    <span class="material-symbols-outlined text-[18px]">category</span>
+                                                    <span class="material-symbols-outlined text-lg">category</span>
                                                 </span>
                                                 <input
-                                                    class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 pl-10 pr-4 text-sm focus:bg-white transition-all placeholder:text-slate-400"
+                                                    class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 pl-10 placeholder:text-slate-400"
                                                     id="material-type" name="material_type"
                                                     placeholder="e.g. Scraps, Empty Drums" type="text" />
                                             </div>
                                         </label>
                                     </div>
-                                    <div id="return-reason-container" class="hidden animate-fade-in">
-                                        <label class="flex flex-col gap-2">
-                                            <span class="text-slate-700 text-sm font-semibold">Reason for Return
-                                                <span class="text-red-500">*</span></span>
-                                            <div class="relative">
-                                                <span
-                                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                                    <span class="material-symbols-outlined text-[18px]">notes</span>
-                                                </span>
+
+                                    <!-- Returnable Checkbox and Reason -->
+                                    <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                                        <div class="flex items-center">
+                                            <input type="checkbox" name="is_returnable" id="is-returnable" value="1"
+                                                class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 cursor-pointer"
+                                                onchange="toggleReturnReason()">
+                                            <label for="is-returnable"
+                                                class="ml-3 text-sm font-medium text-slate-700 cursor-pointer select-none">
+                                                Is this a Returnable Vehicle?
+                                            </label>
+                                        </div>
+
+                                        <div id="return-reason-container"
+                                            class="hidden mt-4 animate-fade-in pl-7 border-l-2 border-indigo-200">
+                                            <label class="block">
+                                                <span class="text-slate-700 font-medium text-sm mb-1.5 block">Reason for
+                                                    Return <span class="text-red-500">*</span></span>
                                                 <input
-                                                    class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 pl-10 pr-4 text-sm focus:bg-white transition-all placeholder:text-slate-400"
+                                                    class="form-input w-full rounded-lg border-slate-300 bg-white focus:border-indigo-500 focus:ring-indigo-500 h-11 placeholder:text-slate-400"
                                                     id="return-reason" name="return_reason"
                                                     placeholder="Why will this vehicle return?" type="text" />
-                                            </div>
-                                        </label>
+                                            </label>
+                                        </div>
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <label class="flex flex-col gap-2">
-                                            <span class="text-slate-700 text-sm font-semibold">From (Origin)</span>
+                                    <div class="grid md:grid-cols-2 gap-5">
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">From
+                                                (Origin)</span>
                                             <div class="relative">
                                                 <span
                                                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                                                     <span
-                                                        class="material-symbols-outlined text-[18px]">flight_takeoff</span>
+                                                        class="material-symbols-outlined text-lg">flight_takeoff</span>
                                                 </span>
                                                 <input
-                                                    class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 pl-10 pr-4 text-sm focus:bg-white transition-all placeholder:text-slate-400"
+                                                    class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 pl-10 placeholder:text-slate-400"
                                                     id="loc-from" name="loc_from" placeholder="City or Warehouse"
-                                                    required="" type="text" />
+                                                    required type="text" />
                                             </div>
                                         </label>
-                                        <label class="flex flex-col gap-2">
-                                            <span class="text-slate-700 text-sm font-semibold">To
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-sm mb-1.5 block">To
                                                 (Destination)</span>
                                             <div class="relative">
                                                 <span
                                                     class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                                    <span
-                                                        class="material-symbols-outlined text-[18px]">flight_land</span>
+                                                    <span class="material-symbols-outlined text-lg">flight_land</span>
                                                 </span>
                                                 <input
-                                                    class="form-input flex w-full rounded-lg text-slate-800 border-slate-200 bg-slate-50/50 h-11 pl-10 pr-4 text-sm focus:bg-white transition-all placeholder:text-slate-400"
+                                                    class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:border-indigo-500 focus:ring-indigo-500 h-11 pl-10 placeholder:text-slate-400"
                                                     id="loc-to" name="loc_to" placeholder="Department or Location"
-                                                    required="" type="text" />
+                                                    required type="text" />
                                             </div>
                                         </label>
                                     </div>
-                                </div>
-                                <div class="space-y-5">
+                                </section>
+                                <section class="space-y-4 pt-2">
                                     <h3
-                                        class="text-xs font-bold uppercase tracking-wider text-[#4f46e5] flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-lg">photo_camera</span>
+                                        class="text-xs font-bold uppercase tracking-wider text-indigo-500 flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-base">photo_camera</span>
                                         Vehicle Photo
                                     </h3>
                                     <div class="w-full">
                                         <label
-                                            class="flex flex-col items-center justify-center w-full h-36 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-slate-50 hover:bg-blue-50/50 hover:border-[#4f46e5]/50 transition-all group"
+                                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 transition-all group"
                                             for="vehicle-photo-upload">
                                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                                 <div
-                                                    class="bg-white p-2.5 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform">
-                                                    <span
-                                                        class="material-symbols-outlined text-2xl text-slate-400 group-hover:text-[#4f46e5]">add_a_photo</span>
+                                                    class="bg-white p-2 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform text-indigo-500">
+                                                    <span class="material-symbols-outlined text-3xl">add_a_photo</span>
                                                 </div>
-                                                <p class="mb-1 text-sm text-slate-500 group-hover:text-slate-700">
-                                                    <span class="font-semibold text-[#4f46e5]">Click to
-                                                        upload</span> or drag
-                                                    and drop
-                                                </p>
+                                                <p
+                                                    class="mb-1 text-sm text-slate-500 group-hover:text-indigo-700 font-medium">
+                                                    Click to upload photo</p>
                                                 <p class="text-xs text-slate-400">SVG, PNG, JPG (MAX. 5MB)</p>
                                             </div>
                                             <input accept="image/*" class="hidden" id="vehicle-photo-upload"
                                                 name="vehicle_photo" onchange="handleFileSelect(this)" type="file" />
                                         </label>
-                                        <div class="mt-3 hidden flex items-center gap-2 p-2.5 bg-green-50 text-green-700 text-sm rounded-lg border border-green-200 animate-fade-in"
+                                        <div class="mt-2 hidden flex items-center gap-2 p-2 bg-emerald-50 text-emerald-700 text-sm rounded-lg border border-emerald-200 animate-fade-in"
                                             id="file-upload-success">
                                             <span class="material-symbols-outlined text-lg">check_circle</span>
-                                            <span class="font-medium" id="filename-display">Photo uploaded
+                                            <span id="filename-display" class="font-medium">Photo uploaded
                                                 successfully</span>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="flex gap-4 pt-4 border-t border-slate-100">
+                                </section>
+                                <div class="flex gap-4 pt-4">
                                     <button
-                                        class="flex-1 cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold tracking-wide shadow-md transition-all active:scale-[0.98] flex gap-2"
+                                        class="flex-1 h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md shadow-indigo-200 transition-all active:scale-[0.98]"
                                         type="submit">
-                                        <span class="material-symbols-outlined text-xl">logout</span>
-                                        <span>Record Exit</span>
+                                        Record Exit
                                     </button>
                                     <button
-                                        class="cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-white border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 hover:text-slate-900 transition-all"
-                                        onclick="resetForm()" type="button">
+                                        class="px-6 h-11 bg-white border border-slate-300 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors"
+                                        onclick="resetForm();" type="button">
                                         Reset
                                     </button>
                                 </div>
@@ -421,105 +397,132 @@
                         </div>
                     </div>
                 </div>
-                <div
-                    class="fixed bottom-1 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border border-slate-200/60 p-1.5 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-30 flex gap-1">
-                    <a href="{{ url_for('logistics') }}"
-                        class="flex items-center gap-2 px-5 py-2.5 rounded-full text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all hover:text-slate-900"
-                        id="mode-new-entry">
-                        <span class="material-symbols-outlined text-[18px]">login</span>
-                        <span class="hidden sm:inline">Vehicle Entry</span>
-                    </a>
-                    <button
-                        class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-bold shadow-sm transition-transform hover:scale-105"
-                        id="mode-visitor-exit">
-                        <span class="material-symbols-outlined text-[18px]">logout</span>
-                        <span class="hidden sm:inline">Vehicle Exit</span>
-                    </button>
-                </div>
-            </main>
-            <!-- Right Sidebar (Recent Entries) -->
-            <aside
-                class="w-full xl:w-80 flex flex-col xl:border-l border-t xl:border-t-0 border-slate-200 bg-white/50 backdrop-blur-sm p-6 gap-6 overflow-y-auto max-h-[600px] xl:max-h-full mb-24 xl:mb-0">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-slate-800 font-bold text-base">Recent Logistics</h3>
-                    <a href="{{ url_for('view_all_logistics') }}"
-                        class="text-xs font-bold text-indigo-600 hover:text-indigo-800">VIEW ALL</a>
-                </div>
 
-                <!-- Search Bar -->
-                <form method="get" action="{{ url_for('logistics') }}" class="mt-2">
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                            <span class="material-symbols-outlined text-lg">search</span>
-                        </span>
-                        <input type="text" name="search" value="{{ request.args.get('search', '') }}"
-                            class="form-input w-full rounded-lg border-slate-300 bg-white focus:border-indigo-500 focus:ring-indigo-500 h-10 pl-10 text-sm placeholder:text-slate-400"
-                            placeholder="Search entries..." autocomplete="off">
+                <!-- Right Sidebar (Recent Logistics) -->
+                <aside
+                    class="w-80 flex-shrink-0 flex flex-col border-l border-slate-200 bg-white/50 backdrop-blur-sm p-6 gap-6 overflow-y-auto">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-slate-800 font-bold text-base">Recent Logistics</h3>
+                        <a href="{{ url_for('view_all_logistics') }}"
+                            class="text-xs font-bold text-indigo-600 hover:text-indigo-800">VIEW ALL</a>
                     </div>
-                </form>
-                <div id="recent-entries-list" class="space-y-3 hidden xl:block">
-                    {% if recent_vehicles %}
-                    {% for vehicle in recent_vehicles %}
-                    <div
-                        class="p-4 rounded-xl bg-white border border-slate-100 hover:border-indigo-100 hover:shadow-sm transition-all animate-fade-in group">
-                        <div class="flex items-start gap-3">
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center justify-between mb-1">
-                                    <p class="text-sm font-bold text-slate-700 truncate">{{ vehicle.veh_reg_no }}</p>
+
+                    <!-- Search Bar -->
+                    <div class="pt-4">
+                        <form method="get" action="{{ url_for('view_all_logistics') }}">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                    <span class="material-symbols-outlined text-lg">search</span>
+                                </span>
+                                <input type="text" name="search"
+                                    class="form-input w-full rounded-lg border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 h-9 pl-9 text-xs placeholder:text-slate-400 transition-colors"
+                                    placeholder="Search logistics..." autocomplete="off">
+                            </div>
+                        </form>
+                    </div>
+                    <div id="recent-entries-list" class="flex-1 overflow-y-auto flex flex-col gap-4 bg-slate-50/30">
+                        {% if recent_vehicles %}
+                        {% for vehicle in recent_vehicles %}
+                        <div
+                            class="p-4 rounded-lg border border-slate-200 bg-white flex flex-col gap-2 hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start">
+                                <div class="flex flex-col">
+                                    <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wide">{{
+                                        vehicle.veh_reg_no
+                                        }}
+                                    </h4>
                                     <span
-                                        class="px-2 py-0.5 rounded-md {{ 'bg-indigo-50 text-indigo-600 border-indigo-100' if vehicle.entry_type == 'Entry' else 'bg-orange-50 text-orange-600 border-orange-100' }} text-[10px] font-bold uppercase tracking-wide border">
-                                        {{ vehicle.entry_type|default('Entry') }}
+                                        class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Vehicle
+                                        No.</span>
+                                </div>
+                                <span class="text-[10px] font-bold px-2 py-1 {{ 'bg-blue-50 text-blue-600 border-blue-100' if
+                                vehicle.entry_type == 'Entry' else 'bg-orange-50 text-orange-600 border-orange-100' }}
+                                rounded-full border uppercase tracking-wide">
+                                    {{ vehicle.entry_type|default('Entry') }} {{ vehicle.display_time }}
+                                </span>
+                            </div>
+                            <hr class="border-slate-100 my-1" />
+                            <div class="text-xs text-slate-600 flex flex-col gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[16px] text-slate-400">person</span>
+                                    <span class="font-bold text-slate-700">{{ vehicle.driver_name }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[16px] text-slate-400">route</span>
+                                    <span class="truncate" title="{{ vehicle.origin }} to {{ vehicle.destination }}">
+                                        {{ vehicle.origin }} <span class="text-slate-400">→</span> {{
+                                        vehicle.destination }}
                                     </span>
                                 </div>
-                                <p class="text-xs text-slate-500 truncate">{{ vehicle.driver_name }}</p>
-                                <div class="flex items-center gap-2 mt-2">
+                                {% if vehicle.entry_type == 'Exit' and vehicle.is_returnable %}
+                                <div class="flex items-center gap-2 mt-1">
+                                    {% if vehicle.return_time %}
                                     <span
-                                        class="text-[10px] text-slate-400 font-mono bg-slate-50 px-1.5 py-0.5 rounded">{{
-                                        vehicle.display_time }}</span>
-                                    {% if vehicle.vehicle_img %}
-                                    <span class="material-symbols-outlined text-[14px] text-green-500"
-                                        title="Photo Attached">image</span>
+                                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold"
+                                        title="Returned at {{ vehicle.return_time }}">
+                                        <span class="material-symbols-outlined text-[10px]">check_circle</span>
+                                        {% if 'T' in vehicle.return_time %}
+                                        {{ vehicle.return_time.split('T')[1][:5] }}
+                                        {% else %}
+                                        {{ vehicle.return_time }}
+                                        {% endif %}
+                                    </span>
+                                    {% else %}
+                                    <form method="POST" action="{{ url_for('mark_returned', vehicle_id=vehicle.id) }}"
+                                        class="inline-block" onsubmit="return confirm('Mark as returned?');">
+                                        <button type="submit"
+                                            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors text-[10px] font-bold border border-amber-100">
+                                            <span
+                                                class="material-symbols-outlined text-[10px]">restore_from_trash</span>
+                                            Mark Ret.
+                                        </button>
+                                    </form>
                                     {% endif %}
                                 </div>
+                                {% endif %}
+                                {% if vehicle.vehicle_img %}
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[16px] text-slate-400">image</span>
+                                    <span class="text-xs text-green-600 font-medium">Photo Attached</span>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
+                        {% endfor %}
+                        {% else %}
+                        <div
+                            class="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                            <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">inbox</span>
+                            <p class="text-slate-500 font-medium text-sm">No recent entries</p>
+                            <p class="text-slate-400 text-xs mt-1">New logistics entries will appear here</p>
+                        </div>
+                        {% endif %}
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px] text-slate-400">person</span>
-                        <span class="font-bold text-slate-700">{{ vehicle.driver_name }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px] text-slate-400">route</span>
-                        <span class="truncate" title="{{ vehicle.origin }} to {{ vehicle.destination }}">
-                            {{ vehicle.origin }} <span class="text-slate-400">→</span> {{
-                            vehicle.destination }}
-                        </span>
-                    </div>
-                    {% if vehicle.vehicle_img %}
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px] text-slate-400">image</span>
-                        <span class="text-[10px] text-green-600 font-bold uppercase tracking-wide">Photo
-                            Attached</span>
-                    </div>
-                    {% endif %}
-                </div>
-        </div>
-        {% endfor %}
-        {% else %}
-        <div
-            class="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-lg bg-white">
-            <div class="bg-slate-50 p-3 rounded-full mb-3">
-                <span class="material-symbols-outlined text-3xl text-slate-300">inbox</span>
+                </aside>
+            </main>
+
+            <!-- Bottom Mode Switcher -->
+            <div
+                class="fixed bottom-1 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border border-slate-200/60 p-1.5 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-30 flex gap-1">
+                <a href="{{ url_for('logistics') }}"
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-full text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all hover:text-slate-900"
+                    id="mode-new-entry">
+                    <span class="material-symbols-outlined text-[18px]">login</span>
+                    <span class="hidden sm:inline">Vehicle Entry</span>
+                </a>
+                <button
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-bold shadow-sm transition-transform hover:scale-105"
+                    id="mode-visitor-exit">
+                    <span class="material-symbols-outlined text-[18px]">logout</span>
+                    <span class="hidden sm:inline">Vehicle Exit</span>
+                </button>
             </div>
-            <p class="text-slate-600 font-medium text-sm">No recent entries</p>
-            <p class="text-slate-400 text-xs mt-1">New logistics entries will appear here</p>
         </div>
-        {% endif %}
-    </div>
-    </aside>
     </div>
     </div>
+
     <script>
+
         function handleFileSelect(input) {
             const successMsg = document.getElementById('file-upload-success');
             const filenameDisplay = document.getElementById('filename-display');
@@ -542,71 +545,7 @@
             } else {
                 reasonContainer.classList.add('hidden');
                 reasonInput.removeAttribute('required');
-                reasonInput.value = ''; // Clear value when hiding
-            }
-        }
-        function handleLogisticsCheckIn() {
-            const driverName = document.getElementById('driver-name').value;
-            const driverPhone = document.getElementById('driver-phone').value;
-            const vehicleNumber = document.getElementById('vehicle-number').value;
-            const purchaseNumber = document.getElementById('purchase-number').value;
-            const locFrom = document.getElementById('loc-from').value;
-            const locTo = document.getElementById('loc-to').value;
-            if (!driverName || !driverPhone || !vehicleNumber || !locFrom || !locTo) {
-                return;
-            }
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-            const entryHTML = `
-            <div class="p-4 rounded-lg border border-slate-200 bg-white flex flex-col gap-2 animate-fade-in shadow-sm hover:shadow-md transition-shadow group">
-                <div class="flex justify-between items-start">
-                    <div class="flex flex-col">
-                        <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wide">${vehicleNumber}</h4>
-                        <span class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Vehicle No.</span>
-                    </div>
-                    <span class="text-[10px] font-bold px-2 py-1 bg-orange-50 text-orange-600 rounded-full border border-orange-100 uppercase tracking-wide">Exit ${timeString}</span>
-                </div>
-                <hr class="border-slate-100 my-1"/>
-                <div class="text-xs text-slate-600 flex flex-col gap-2">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px] text-slate-400">person</span>
-                        <span class="font-medium text-slate-700">${driverName}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px] text-slate-400">route</span>
-                        <span class="truncate" title="${locFrom} to ${locTo}">${locFrom} <span class="text-slate-400 px-1">→</span> ${locTo}</span>
-                    </div>
-                    ${purchaseNumber ? `
-                    <div class="flex items-center gap-2">
-                         <span class="material-symbols-outlined text-[16px] text-slate-400">receipt_long</span>
-                         <span>PO: <span class="font-medium text-slate-700">${purchaseNumber}</span></span>
-                    </div>` : ''}
-                    <div class="flex items-center gap-2 mt-1">
-                         <span class="material-symbols-outlined text-[16px] text-green-500">check_circle</span>
-                         <span class="text-[11px] text-green-600 font-bold uppercase">Recorded</span>
-                    </div>
-                </div>
-            </div>
-        `;
-            const list = document.getElementById('recent-entries-list');
-            // If it's the empty state, clear it first (rudimentary check)
-            if (list.querySelector('.material-symbols-outlined.text-3xl')) {
-                list.innerHTML = '';
-            }
-            const tempContainer = document.createElement('div');
-            tempContainer.innerHTML = entryHTML;
-            list.prepend(tempContainer.firstElementChild);
-            resetForm();
-        }
-        function resetForm() {
-            document.getElementById('logistics-form').reset();
-            document.getElementById('file-upload-success').classList.add('hidden');
-            // Reset ID fields
-            const idInput = document.getElementById('id-number');
-            if (idInput) {
-                idInput.disabled = true;
-                idInput.placeholder = 'Select ID Type First';
-                idInput.value = '';
+                reasonInput.value = ''; // Clear value
             }
         }
 
@@ -616,7 +555,7 @@
             const input = document.getElementById('id-number');
 
             input.disabled = false;
-            input.value = '';
+            input.value = ''; // Reset value
 
             if (type === 'Aadhar') {
                 input.placeholder = '12 Digit Aadhar Number';
@@ -632,38 +571,35 @@
                 input.maxLength = 10;
                 input.minLength = 10;
                 input.pattern = "[A-Z]{5}[0-9]{4}[A-Z]{1}";
-                input.title = "Format: ABCDE1234F";
+                input.title = "10 character PAN (5 Letters, 4 Numbers, 1 Letter)";
                 input.oninput = function () {
                     this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
                 };
             } else if (type === 'Driving License') {
-                input.placeholder = 'e.g. MH0120230001234';
-                input.maxLength = 20;
-                input.minLength = 10;
-                input.pattern = "[A-Z0-9]+";
-                input.title = "Enter valid Driving License number";
+                input.placeholder = '15 Character License No.';
+                input.maxLength = 15;
+                input.minLength = 15;
+                input.pattern = "[A-Z0-9]{15}";
+                input.title = "15 character alphanumeric license number";
                 input.oninput = function () {
                     this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
                 };
             }
         }
-        // Toggle logic for visual appearance only
-        const modeNewEntry = document.getElementById('mode-new-entry');
-        const modeVisitorExit = document.getElementById('mode-visitor-exit');
-        const activeClasses = ['bg-[#111827]', 'text-white', 'shadow-md'];
-        const inactiveClasses = ['text-slate-500', 'hover:bg-slate-50'];
-        modeNewEntry.addEventListener('click', () => {
-            modeNewEntry.classList.add(...activeClasses);
-            modeNewEntry.classList.remove(...inactiveClasses);
-            modeVisitorExit.classList.remove(...activeClasses);
-            modeVisitorExit.classList.add(...inactiveClasses);
-        });
-        modeVisitorExit.addEventListener('click', () => {
-            modeVisitorExit.classList.add(...activeClasses);
-            modeVisitorExit.classList.remove(...inactiveClasses);
-            modeNewEntry.classList.remove(...activeClasses);
-            modeNewEntry.classList.add(...inactiveClasses);
-        });
+
+        function resetForm() {
+            document.getElementById('logistics-form').reset();
+            document.getElementById('file-upload-success').classList.add('hidden');
+            toggleReturnReason(); // Hide return reason field
+
+            // Reset ID Validation
+            const idInput = document.getElementById('id-number');
+            idInput.disabled = true;
+            idInput.value = '';
+            idInput.placeholder = 'Select ID Type first';
+            idInput.removeAttribute('pattern');
+            idInput.removeAttribute('title');
+        }
 
         // Mobile Sidebar Toggle
         function toggleSidebar() {
@@ -677,7 +613,6 @@
         window.addEventListener('load', () => {
             const skeleton = document.getElementById('form-skeleton');
             if (skeleton) {
-                // Minimum display time to prevent flickering (e.g. 500ms)
                 setTimeout(() => {
                     skeleton.style.opacity = '0';
                     skeleton.style.pointerEvents = 'none';
@@ -688,7 +623,6 @@
             }
         });
     </script>
-
     {% include 'notification_popup.html' %}
 </body>
 

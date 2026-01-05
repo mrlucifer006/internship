@@ -404,18 +404,11 @@
 
                 <!-- Right Sidebar (Recent Logistics) -->
                 <aside
-                    class="w-full xl:w-80 flex flex-col xl:border-l border-t xl:border-t-0 border-slate-200 bg-white/50 backdrop-blur-sm p-6 gap-6 overflow-y-auto max-h-[600px] xl:max-h-full mb-24 xl:mb-0">
+                    class="w-80 flex-shrink-0 flex flex-col border-l border-slate-200 bg-white/50 backdrop-blur-sm p-6 gap-6 overflow-y-auto">
                     <div class="flex items-center justify-between">
                         <h3 class="text-slate-800 font-bold text-base">Recent Logistics</h3>
-                        <div class="flex items-center gap-2">
-                            <a href="{{ url_for('view_all_logistics') }}"
-                                class="text-xs font-bold text-indigo-600 hover:text-indigo-800">VIEW ALL</a>
-                            <button onclick="toggleRecentEntries()"
-                                class="xl:hidden text-slate-600 hover:text-slate-900 transition-colors p-1">
-                                <span id="recent-entries-icon"
-                                    class="material-symbols-outlined transition-transform">expand_more</span>
-                            </button>
-                        </div>
+                        <a href="{{ url_for('view_all_logistics') }}"
+                            class="text-xs font-bold text-indigo-600 hover:text-indigo-800">VIEW ALL</a>
                     </div>
 
                     <!-- Search Bar -->
@@ -431,8 +424,7 @@
                             </div>
                         </form>
                     </div>
-                    <div id="recent-entries-list"
-                        class="flex-1 overflow-y-auto p-4 flex-col gap-4 bg-slate-50/30 hidden xl:flex">
+                    <div id="recent-entries-list" class="flex-1 overflow-y-auto flex flex-col gap-4 bg-slate-50/30">
                         {% if recent_vehicles %}
                         {% for vehicle in recent_vehicles %}
                         <div
@@ -466,6 +458,32 @@
                                         vehicle.destination }}
                                     </span>
                                 </div>
+                                {% if vehicle.entry_type == 'Exit' and vehicle.is_returnable %}
+                                <div class="flex items-center gap-2 mt-1">
+                                    {% if vehicle.return_time %}
+                                    <span
+                                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold"
+                                        title="Returned at {{ vehicle.return_time }}">
+                                        <span class="material-symbols-outlined text-[10px]">check_circle</span>
+                                        {% if 'T' in vehicle.return_time %}
+                                        {{ vehicle.return_time.split('T')[1][:5] }}
+                                        {% else %}
+                                        {{ vehicle.return_time }}
+                                        {% endif %}
+                                    </span>
+                                    {% else %}
+                                    <form method="POST" action="{{ url_for('mark_returned', vehicle_id=vehicle.id) }}"
+                                        class="inline-block" onsubmit="return confirm('Mark as returned?');">
+                                        <button type="submit"
+                                            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors text-[10px] font-bold border border-amber-100">
+                                            <span
+                                                class="material-symbols-outlined text-[10px]">restore_from_trash</span>
+                                            Mark Ret.
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
                                 {% if vehicle.vehicle_img %}
                                 <div class="flex items-center gap-2">
                                     <span class="material-symbols-outlined text-[16px] text-slate-400">image</span>
