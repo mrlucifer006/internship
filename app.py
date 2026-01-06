@@ -21,7 +21,7 @@ from employee_db import (
     get_employee_phone, check_credentials, insert_employee, 
     update_employee_status, get_employee_by_name, 
     get_all_employees, reset_all_employee_statuses, 
-    get_employee_status,employee_ip
+    get_employee_status, update_employee_connection
 )
 
 # Import messaging modules
@@ -102,8 +102,23 @@ def login():
             flask.session['user'] = user['name']
             flask.session['auth_level'] = user['Auth_level'] # Store auth level
             flask.session['login_id'] = user['login_id']
-            # Explicitly set to 1 (integer)
-            update_employee_status(user['login_id'], 1)
+            
+            # --- Detect Connection Mode ---
+            try:
+                request_ip = flask.request.remote_addr
+                # If accessing via localhost or 127.0.0.1, it's the Server machine
+                # Note: If accessing via LAN IP from the same machine, it might show LAN IP.
+                # Ideally check against local network interfaces, but localhost is a strong signal.
+                mode = 'Server' if request_ip in ['127.0.0.1', 'localhost', '::1'] else 'Client'
+                
+                # Update connection info and status=1
+                update_employee_connection(user['login_id'], request_ip, mode)
+                
+            except Exception as e:
+                logger.error(f"Error updating connection mode: {e}")
+                # Fallback to just status update
+                update_employee_status(user['login_id'], 1)
+
             return flask.redirect(flask.url_for('home'))
         
 
@@ -966,7 +981,6 @@ if __name__ == '__main__':
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
         ip_address = s.getsockname()[0]
-        employee_ip(ip_address)
         s.close()
         logger.info(f"Starting server on http://{ip_address}:{config_obj.PORT}")
         print(f"\n🚀 Visitor Management System running on: http://{ip_address}:{config_obj.PORT}\n")

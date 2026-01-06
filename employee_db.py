@@ -224,14 +224,28 @@ def delete_employee(login_id):
         logger.error(f"Error deleting employee {login_id}: {e}")
         return False
 
-def employee_ip(ip_address):
+def update_employee_connection(login_id, ip_address, mode):
+    """
+    Updates the employee's connection info (IP and Mode) upon login.
+    """
     try:
-        response = supabase.table('employee').insert({'ip_address': ip_address}).execute()
+        payload = {
+            'ip_address': ip_address,
+            'connection_mode': mode,
+            'status': 1 # Ensure they are marked Online
+        }
+        
+        response = supabase.table('employee').update(payload).eq('login_id', login_id).execute()
+        
         if response.data:
+            logger.info(f"Updated connection info for {login_id}: {mode} ({ip_address})")
             # Update local cache
             update_local_employee(response.data[0])
             return True
-        return False
+        else:
+            logger.warning(f"Failed to update connection info for {login_id}")
+            return False
+            
     except Exception as e:
-        logger.error(f"Error updating employee ip address {ip_address}: {e}")
+        logger.error(f"Error updating employee connection info: {e}")
         return False
