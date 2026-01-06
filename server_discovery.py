@@ -36,60 +36,42 @@ def check_server_health(ip, port=5000):
 def discover_server():
     """
     Determines if this instance should act as Server or Client.
-    
-    Returns:
-        tuple: (mode, ip_address)
-        mode: 'SERVER' or 'CLIENT'
-        ip_address: The IP to connect to (Local IP if Server, Remote IP if Client)
+    Checks 'employee' table for any active user connecting as 'Server'.
     """
     supabase = get_supabase_client()
     local_ip = get_local_ip()
     
     try:
-        # 1. Fetch current server IP from DB
-        response = supabase.table('app_config').select('value').eq('key', 'server_ip').execute()
+        # 1. Look for any Online employee who is acting as Server
+        response = supabase.table('employee').select('ip_address') \
+            .eq('connection_mode', 'Server') \
+            .eq('status', 1) \
+            .execute()
         
-        server_ip = ""
-        if response.data and len(response.data) > 0:
-            server_ip = response.data[0]['value']
-            
-        logger.info(f"Discovered Server IP in DB: '{server_ip}'")
-
-        # 2. Logic to decide role
-        should_be_server = False
-
-        if not server_ip:
-            # Case A: No IP registered -> I become Server
-            logger.info("No Server IP found. taking ownership.")
-            should_be_server = True
-        elif server_ip == local_ip:
-             # Case B: I am already the registered server -> I am Server
-             logger.info("I am the registered server.")
-             should_be_server = True
-        else:
-            # Case C: Remote IP exists. Check if it's alive.
-            if check_server_health(server_ip):
-                logger.info(f"Remote server {server_ip} is healthy. Acting as CLIENT.")
-                return 'CLIENT', server_ip
-            else:
-                # Case D: Remote IP is registered but dead -> Failover -> I become Server
-                logger.warning(f"Remote server {server_ip} is unreachable. Performing FAILOVER.")
-                should_be_server = True
+        server_ip = None
+        if response.data:
+            # Check candidate IPs
+            for row in response.data:
+                candidate_ip = row.get('ip_address')
+                if not candidate_ip: continue
+                
+                # If the registered server is ME, then I am Server
+                if candidate_ip == local_ip:
+                    logger.info("Found myself listed as Active Server.")
+                    return 'SERVER', local_ip
+                
+                # Check if remote server is healthy
+                if check_server_health(candidate_ip):
+                    logger.info(f"Found active Remote Server at {candidate_ip}. Acting as CLIENT.")
+                    return 'CLIENT', candidate_ip
+                else:
+                    logger.warning(f"Registered Server at {candidate_ip} is unreachable.")
         
-        # 3. If I am Server, update DB
-        if should_be_server:
-            try:
-                # Upsert current IP
-                payload = { 'key': 'server_ip', 'value': local_ip, 'updated_at': datetime.now().isoformat() }
-                supabase.table('app_config').upsert(payload).execute()
-                logger.info(f"Registered as MASTER SERVER with IP: {local_ip}")
-            except Exception as e:
-                logger.error(f"Failed to register server IP: {e}")
-                # Proceed anyway, we can run locally
-            
-            return 'SERVER', local_ip
+        # 2. No active/healthy server found -> I become Server
+        logger.info("No active server found. Starting Local Server.")
+        return 'SERVER', local_ip
 
     except Exception as e:
         logger.error(f"Server Discovery Failed: {e}")
-        # Fallback to Server Mode (Safest for standalone usage)
+        # Fallback to Server Mode
         return 'SERVER', local_ip
