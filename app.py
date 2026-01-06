@@ -743,6 +743,9 @@ def api_employees():
     
     search = flask.request.args.get('search', None)
     role = flask.request.args.get('role', None)
+    if role in ['All', '']:
+        role = None
+        
     status = flask.request.args.get('status', None)
     from employee_db import get_all_employees_full
     employees = get_all_employees_full(search=search, role=role, status=status)
