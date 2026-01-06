@@ -106,10 +106,16 @@ def login():
             # --- Detect Connection Mode ---
             try:
                 request_ip = flask.request.remote_addr
-                # If accessing via localhost or 127.0.0.1, it's the Server machine
-                # Note: If accessing via LAN IP from the same machine, it might show LAN IP.
-                # Ideally check against local network interfaces, but localhost is a strong signal.
-                mode = 'Server' if request_ip in ['127.0.0.1', 'localhost', '::1'] else 'Client'
+                
+                # Dynamic import to avoid circular dependency issues if any
+                from server_discovery import get_local_ip
+                server_lan_ip = get_local_ip()
+                
+                # Check if accessing from Localhost or the Server's own LAN IP
+                if request_ip in ['127.0.0.1', 'localhost', '::1', server_lan_ip]:
+                    mode = 'Server'
+                else:
+                    mode = 'Client'
                 
                 # Update connection info and status=1
                 update_employee_connection(user['login_id'], request_ip, mode)
