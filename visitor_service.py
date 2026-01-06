@@ -114,6 +114,31 @@ def update_visitor_status(visitor_id, status, denial_reason=None):
         logger.error(f"Error updating visitor status: {e}")
         return {"success": False, "errors": [str(e)]}
 
+def forward_visitor(visitor_id, new_host):
+    """
+    Forwards a visitor request to a new host.
+    """
+    if not new_host:
+        return {"success": False, "errors": ["New host name is required."]}
+
+    try:
+        payload = {
+            "person_to_visit": new_host,
+            "updated_at": datetime.now().isoformat()
+        }
+        
+        response = supabase.table('visitors').update(payload).eq('id', visitor_id).execute()
+        
+        if response.data:
+            update_local_visitor(response.data[0])
+            return {"success": True, "message": f"Visitor forwarded to {new_host}."}
+        else:
+            return {"success": False, "errors": ["Failed to forward visitor."]}
+            
+    except Exception as e:
+        logger.error(f"Error forwarding visitor: {e}")
+        return {"success": False, "errors": [str(e)]}
+
 def parse_iso_datetime(date_string):
     """Helper to parse ISO datetime strings with variable precision."""
     if not date_string:

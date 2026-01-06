@@ -810,10 +810,20 @@ def action_visitor():
     if not visitor_id or not action:
         return flask.jsonify({'success': False, 'error': 'Missing data'})
         
-    status = 1 if action == 'approve' else -1
-    reason = data.get('reason') if status == -1 else None
-    
-    result = update_visitor_status(visitor_id, status, reason)
+    if action == 'forward':
+        new_host = data.get('details') # 'details' holds the new host name for forward action
+        from visitor_service import forward_visitor
+        result = forward_visitor(visitor_id, new_host)
+        status = 0 # Remains pending
+    elif action == 'approve':
+        status = 1
+        result = update_visitor_status(visitor_id, status)
+    elif action == 'deny':
+        status = -1
+        reason = data.get('reason')
+        result = update_visitor_status(visitor_id, status, reason)
+    else:
+        return flask.jsonify({'success': False, 'error': 'Invalid action'})
     
     if result['success']:
         return flask.jsonify({'success': True, 'status': status})

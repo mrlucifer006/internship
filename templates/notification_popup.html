@@ -1,12 +1,152 @@
-<!-- Notification System (Native Dialogs & Polling) -->
 <!-- Notification Sound -->
 <audio id="notification-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
     preload="auto"></audio>
 
+<!-- Custom Notification Modal -->
+<div id="custom-notification-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog"
+    aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
+
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+
+            <div
+                class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
+
+                <!-- Main Content -->
+                <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div
+                            class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <span class="material-symbols-outlined text-indigo-600">person_alert</span>
+                        </div>
+                        <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                            <h3 class="text-lg font-bold leading-6 text-slate-900" id="modal-title">Visitor Request</h3>
+                            <div class="mt-4 space-y-3">
+                                <div class="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-tighter">Visitor
+                                        Name</p>
+                                    <p class="text-base font-bold text-slate-800" id="modal-visitor-name">Loading...</p>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-tighter">Reason
+                                    </p>
+                                    <p class="text-base font-medium text-slate-700" id="modal-visitor-reason">Loading...
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Deny Reason Input (Hidden by default) -->
+                            <div id="deny-input-container" class="hidden mt-4 animate-fade-in">
+                                <label for="deny-reason" class="block text-sm font-medium text-red-700 mb-1">Reason for
+                                    Denial <span class="text-red-500">*</span></label>
+                                <textarea id="deny-reason" rows="2"
+                                    class="form-textarea w-full rounded-md border-red-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                                    placeholder="e.g. Host unavailable"></textarea>
+                            </div>
+
+                            <!-- Forward Select Input (Hidden by default) -->
+                            <div id="forward-input-container" class="hidden mt-4 animate-fade-in">
+                                <label for="forward-select"
+                                    class="block text-sm font-medium text-indigo-700 mb-1">Forward To <span
+                                        class="text-red-500">*</span></label>
+                                <select id="forward-select"
+                                    class="form-select w-full rounded-md border-indigo-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option value="" disabled selected>Select Host...</option>
+                                    <!-- Options populated via JS -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Buttons -->
+                <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2" id="modal-actions-default">
+                    <button type="button" onclick="confirmAccept()"
+                        class="inline-flex w-full justify-center rounded-lg bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto transition-colors">
+                        Accept
+                    </button>
+                    <button type="button" onclick="showForward()"
+                        class="mt-3 inline-flex w-full justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-blue-500 sm:mt-0 sm:w-auto transition-colors">
+                        Forward
+                    </button>
+                    <button type="button" onclick="showDeny()"
+                        class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-200 hover:bg-red-50 sm:mt-0 sm:w-auto transition-colors">
+                        Deny
+                    </button>
+                    <button type="button" onclick="snoozeNotification()"
+                        class="mt-3 inline-flex w-full justify-center rounded-lg px-3 py-2 text-xs font-medium text-slate-400 hover:text-slate-600 sm:mt-0 sm:w-auto sm:mr-auto transition-colors">
+                        Ignore
+                    </button>
+                </div>
+
+                <!-- Footer Buttons (Deny Mode) -->
+                <div class="bg-red-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2 hidden"
+                    id="modal-actions-deny">
+                    <button type="button" onclick="confirmDeny()"
+                        class="inline-flex w-full justify-center rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto transition-colors">
+                        Confirm Denial
+                    </button>
+                    <button type="button" onclick="resetModalView()"
+                        class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto transition-colors">
+                        Cancel
+                    </button>
+                </div>
+
+                <!-- Footer Buttons (Forward Mode) -->
+                <div class="bg-blue-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2 hidden"
+                    id="modal-actions-forward">
+                    <button type="button" onclick="confirmForward()"
+                        class="inline-flex w-full justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto transition-colors">
+                        Confirm Forward
+                    </button>
+                    <button type="button" onclick="resetModalView()"
+                        class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // --- Global Polling Logic for Notifications ---
-    let isNotificationActive = false; // Prevent multiple dialogs if poll fires again
-    const ignoredVisitorIds = new Set(); // Store IDs of visitors we've "Snoozed" (Cancelled prompt)
+    let isNotificationActive = false;
+    let currentVisitorId = null;
+    const ignoredVisitorIds = new Set();
+    let availableHosts = [];
+
+    // Pre-fetch hosts for the forward dropdown
+    function fetchHosts() {
+        fetch('/api/employees?role=All') // Assuming API exists or we reuse one
+            .then(res => res.json())
+            .then(data => {
+                availableHosts = data;
+                populateForwardDropdown();
+            })
+            .catch(err => console.error("Failed to load hosts:", err));
+    }
+
+    function populateForwardDropdown() {
+        const select = document.getElementById('forward-select');
+        select.innerHTML = '<option value="" disabled selected>Select Host...</option>';
+        // Assuming data is list of {name, ...}
+        // If data is list of objects
+        if (Array.isArray(availableHosts)) {
+            availableHosts.forEach(host => {
+                const opt = document.createElement('option');
+                opt.value = host.name;
+                opt.textContent = host.name;
+                select.appendChild(opt);
+            });
+        }
+    }
+
+    // Initialize
+    fetchHosts();
+    setInterval(pollNotifications, 4000);
 
     function pollNotifications() {
         if (isNotificationActive) return;
@@ -16,9 +156,8 @@
             .then(visitors => {
                 if (visitors && visitors.length > 0) {
                     const visitor = visitors[0];
-                    // Only show if NOT in ignore list
                     if (!ignoredVisitorIds.has(visitor.id)) {
-                        handleNotification(visitor.name, visitor.reason, visitor.id);
+                        showNotificationModal(visitor);
                     }
                 }
             })
@@ -27,73 +166,131 @@
             });
     }
 
-    function handleNotification(name, reason, id) {
-        isNotificationActive = true;
+    // --- Modal Logic ---
 
-        // Play Sound (Frontend - works if tab active)
+    function showNotificationModal(visitor) {
+        isNotificationActive = true;
+        currentVisitorId = visitor.id;
+
+        // Populate Data
+        document.getElementById('modal-visitor-name').textContent = visitor.name;
+        document.getElementById('modal-visitor-reason').textContent = visitor.reason;
+
+        // Reset View State
+        resetModalView();
+
+        // Show Modal
+        document.getElementById('custom-notification-modal').classList.remove('hidden');
+
+        // Play Sound
         const audio = document.getElementById('notification-sound');
         if (audio) {
+            audio.currentTime = 0;
             audio.play().catch(e => console.log("Audio autoplay prevented:", e));
         }
-
-        // Small timeout to allow sound to start before blocking thread
-        setTimeout(() => {
-            const message = `Visitor Request:\n\nName: ${name}\nReason: ${reason}\n\nClick OK to ACCEPT.\nClick Cancel to DENY.`;
-
-            if (confirm(message)) {
-                // User clicked OK -> Accept
-                handleAction(id, 'approve');
-            } else {
-                // User clicked Cancel -> Deny Logic
-                promptDenial(id);
-            }
-        }, 100);
     }
 
-    function promptDenial(id) {
-        const denialReason = prompt("You have chosen to DENY this visitor.\n\nPlease enter a reason:\n(Click Cancel to Ignore/Snooze this request)");
+    function hideModal() {
+        document.getElementById('custom-notification-modal').classList.add('hidden');
+        isNotificationActive = false;
+        currentVisitorId = null;
+    }
 
-        if (denialReason !== null) {
-            // User entered text (or empty) and clicked OK
-            if (!denialReason.trim()) {
-                alert("Denial cancelled: A reason is required.");
-                // Add to ignore list to prevent immediate re-pop
-                ignoredVisitorIds.add(id);
-                isNotificationActive = false;
-            } else {
-                handleAction(id, 'deny', denialReason);
-            }
-        } else {
-            // User clicked Cancel on the PROMPT -> They just want to close the dialog
-            // Add to ignore list so we don't annoy them instantly
-            console.log("Notification snoozed for visitor ID:", id);
-            ignoredVisitorIds.add(id);
-            isNotificationActive = false;
+    function resetModalView() {
+        // Hide inputs
+        document.getElementById('deny-input-container').classList.add('hidden');
+        document.getElementById('forward-input-container').classList.add('hidden');
+
+        // Reset Inputs
+        document.getElementById('deny-reason').value = '';
+        document.getElementById('forward-select').selectedIndex = 0;
+
+        // Show Default Actions, Hide others
+        document.getElementById('modal-actions-default').classList.remove('hidden');
+        document.getElementById('modal-actions-deny').classList.add('hidden');
+        document.getElementById('modal-actions-forward').classList.add('hidden');
+    }
+
+    // --- Interactions ---
+
+    function confirmAccept() {
+        if (!currentVisitorId) return;
+        handleAction(currentVisitorId, 'approve');
+    }
+
+    function showDeny() {
+        document.getElementById('modal-actions-default').classList.add('hidden');
+        document.getElementById('modal-actions-deny').classList.remove('hidden');
+        document.getElementById('deny-input-container').classList.remove('hidden');
+    }
+
+    function confirmDeny() {
+        const reason = document.getElementById('deny-reason').value.trim();
+        if (!reason) {
+            alert("Please enter a reason for denial.");
+            return;
         }
+        handleAction(currentVisitorId, 'deny', reason);
     }
 
-    function handleAction(visitorId, action, reason = "") {
+    function showForward() {
+        document.getElementById('modal-actions-default').classList.add('hidden');
+        document.getElementById('modal-actions-forward').classList.remove('hidden');
+        document.getElementById('forward-input-container').classList.remove('hidden');
+    }
+
+    function confirmForward() {
+        const newHost = document.getElementById('forward-select').value;
+        if (!newHost) {
+            alert("Please select a host to forward to.");
+            return;
+        }
+        // Pass newHost as 'details'
+        handleAction(currentVisitorId, 'forward', null, newHost);
+    }
+
+    function snoozeNotification() {
+        if (currentVisitorId) {
+            ignoredVisitorIds.add(currentVisitorId);
+        }
+        hideModal();
+    }
+
+    // --- API Call ---
+
+    function handleAction(visitorId, action, reason = null, details = null) {
+
+        const payload = {
+            visitor_id: visitorId,
+            action: action
+        };
+
+        if (reason) payload.reason = reason;
+        if (details) payload.details = details; // Used for Forwarding (New Host Name)
+
         fetch('/api/action_visitor', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ visitor_id: visitorId, action: action, reason: reason })
+            body: JSON.stringify(payload)
         })
             .then(res => res.json())
             .then(data => {
-                isNotificationActive = false;
+                hideModal(); // Close modal immediately
                 if (data.success) {
-                    // Trigger global update immediately
+                    if (action === 'forward') {
+                        // Add to ignore list so it doesn't pop up again for THIS user
+                        ignoredVisitorIds.add(visitorId);
+                    }
                     window.dispatchEvent(new CustomEvent('notification-action-complete'));
                 } else {
-                    alert("Error processing action: " + data.error);
+                    alert("Error: " + (data.error || "Unknown error"));
                 }
             })
             .catch(err => {
                 console.error(err);
-                isNotificationActive = false;
+                hideModal();
+                alert("Network error.");
             });
     }
 
-    // Poll every 4 seconds
-    setInterval(pollNotifications, 4000);
 </script>
