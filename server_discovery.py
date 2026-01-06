@@ -60,22 +60,10 @@ def discover_server():
                     logger.info("Found myself listed as Active Server.")
                     return 'SERVER', local_ip
                 
-                # Check if remote server is healthy
-                if check_server_health(candidate_ip):
-                    logger.info(f"Found active Remote Server at {candidate_ip}. Acting as CLIENT.")
-                    return 'CLIENT', candidate_ip
-                else:
-                    logger.warning(f"Registered Server at {candidate_ip} is unreachable. Performing FAILOVER.")
-                    # Auto-heal: Mark this ghost server as Offline so we don't try again
-                    try:
-                        supabase.table('employee').update({
-                            'status': 0, 
-                            'ip_address': None, 
-                            'connection_mode': None
-                        }).eq('ip_address', candidate_ip).execute()
-                        logger.warning(f"Marked unreachable server {candidate_ip} as Offline to clean up stale record.")
-                    except Exception as clean_err:
-                        logger.error(f"Failed to clean up stale server record: {clean_err}")
+                # USER REQUEST: Skip health check, just connect.
+                # We blindly trust the DB record.
+                logger.info(f"Found active Remote Server at {candidate_ip}. Acting as CLIENT (Health check skipped).")
+                return 'CLIENT', candidate_ip
         
         # 2. No active/healthy server found -> I become Server
         logger.info("No active server found. Starting Local Server.")
