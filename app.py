@@ -21,7 +21,7 @@ from employee_db import (
     get_employee_phone, check_credentials, insert_employee, 
     update_employee_status, get_employee_by_name, 
     get_all_employees, reset_all_employee_statuses, 
-    get_employee_status
+    get_employee_status,employee_ip
 )
 
 # Import messaging modules
@@ -966,6 +966,7 @@ if __name__ == '__main__':
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
         ip_address = s.getsockname()[0]
+        employee_ip(ip_address)
         s.close()
         logger.info(f"Starting server on http://{ip_address}:{config_obj.PORT}")
         print(f"\n🚀 Visitor Management System running on: http://{ip_address}:{config_obj.PORT}\n")

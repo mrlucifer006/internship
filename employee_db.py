@@ -224,3 +224,14 @@ def delete_employee(login_id):
         logger.error(f"Error deleting employee {login_id}: {e}")
         return False
 
+def employee_ip(ip_address):
+    try:
+        response = supabase.table('employee').insert({'ip_address': ip_address}).execute()
+        if response.data:
+            # Update local cache
+            update_local_employee(response.data[0])
+            return True
+        return False
+    except Exception as e:
+        logger.error(f"Error updating employee ip address {ip_address}: {e}")
+        return False
