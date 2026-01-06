@@ -128,7 +128,14 @@ def check_credentials(login_id, password):
 def update_employee_status(login_id, status):
     
     try:
-        response = supabase.table('employee').update({'status': status}).eq('login_id', login_id).execute()
+        payload = {'status': status}
+        
+        # If setting to Offline (0), also clear connection info
+        if status == 0:
+            payload['ip_address'] = None
+            payload['connection_mode'] = None
+            
+        response = supabase.table('employee').update(payload).eq('login_id', login_id).execute()
         
         if response.data:
             print(f"Updated status to {status} for {login_id}")
