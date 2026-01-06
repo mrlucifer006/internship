@@ -42,26 +42,29 @@ def start_server():
         app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
 
 if __name__ == '__main__':
-    # Start the server in a separate thread
-    t = threading.Thread(target=start_server)
-    t.daemon = True
-    t.start()
-    
-    # Give server a moment to start
-    # Wait loop could be better, but simple delay works for local Flask
-    time.sleep(1) 
-
-    # Get local IP address
-    import socket
+    # Server Discovery / Failover Logic
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip_address = s.getsockname()[0]
-        s.close()
-    except Exception:
-        ip_address = "localhost"
+        from server_discovery import discover_server
+        mode, ip_address = discover_server()
+        print(f"Starting in {mode} mode. Target IP: {ip_address}")
+    except Exception as e:
+        print(f"Discovery failed (`{e}`). Fallback to Local Server.")
+        mode = 'SERVER'
+        from server_discovery import get_local_ip
+        ip_address = get_local_ip()
 
+    # Start Flask Server ONLY if acting as SERVER
+    if mode == 'SERVER':
+        # Start the server in a separate thread
+        t = threading.Thread(target=start_server)
+        t.daemon = True
+        t.start()
+        
+        # Give server a moment to start
+        time.sleep(1) 
+    
     # Create the native window
+    # Connect to the discovered IP (Local or Remote)
     webview.create_window(
         'Visitor Management System', 
         f'http://{ip_address}:5000',
