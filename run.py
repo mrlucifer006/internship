@@ -37,7 +37,14 @@ def start_server():
     # Run Server
     try:
         from waitress import serve
-        serve(app, host='0.0.0.0', port=5000, threads=6)
+        import multiprocessing
+        
+        # Optimize thread count for concurrency (I/O bound)
+        # Using cpu_count() * 2 + 1 is a standard recommendation for WSGI servers
+        threads_count = multiprocessing.cpu_count() * 2 + 1
+        print(f"Starting Waitress Server with {threads_count} threads...")
+        
+        serve(app, host='0.0.0.0', port=5000, threads=threads_count)
     except ImportError:
         app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
 

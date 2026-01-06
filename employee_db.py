@@ -149,6 +149,16 @@ def update_employee_status(login_id, status):
         return False
 
 def get_employee_status(login_id):
+    # 1. Try Remote Check (Priority for Security)
+    try:
+        response = supabase.table('employee').select('status').eq('login_id', login_id).execute()
+        if response.data:
+            return response.data[0]['status']
+    except Exception as e:
+        # Network/Supabase issue: Log and fall back to local
+        logger.warning(f"Remote status check failed for {login_id}: {e}. Falling back to local cache.")
+
+    # 2. Local Fallback
     conn = get_db_connection()
     try:
         cursor = conn.execute('SELECT status FROM employee WHERE login_id = ?', (login_id,))
