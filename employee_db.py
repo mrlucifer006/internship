@@ -202,11 +202,17 @@ def get_all_employees_full(search=None, role=None, status=None):
         conn.close()
 
 def reset_all_employee_statuses():
-    """Resets the status of all employees to 0 (Offline)."""
+    """Resets the status of all employees to 0 (Offline) and clears connection info."""
     
     try:
-        response = supabase.table('employee').update({'status': 0}).neq('status', 0).execute()
-        print("All employee statuses have been reset to 0.")
+        payload = {
+            'status': 0,
+            'ip_address': None,
+            'connection_mode': None
+        }
+        # Update ALL rows regardless of current status to ensure strict cleanup
+        response = supabase.table('employee').update(payload).execute()
+        print("All employee statuses and connection info have been reset.")
         # Sync the changes to the local cache
         from cache_manager import sync_data_from_supabase
         sync_data_from_supabase(force=True)
