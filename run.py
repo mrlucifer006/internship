@@ -7,6 +7,9 @@ import os
 import threading
 import webview
 import time
+import subprocess
+import re
+import atexit
 
 # Import Flask app and initialization
 if getattr(sys, 'frozen', False):
@@ -26,6 +29,80 @@ else:
     # Running as normal Python script
     from app import app, initialize_application
 
+def start_cloudflared_tunnel(port=5000):
+    """Starts a cloudflared tunnel and returns the public URL."""
+    try:
+        print(f"Starting Cloudflare Tunnel on port {port}...")
+        
+        # Determine executable name
+        cf_exe = 'cloudflared'
+        
+        # Check current directory for common windows name
+        if os.path.exists('cloudflared-windows-amd64.exe'):
+            cf_exe = os.path.abspath('cloudflared-windows-amd64.exe')
+        elif os.path.exists('cloudflared.exe'):
+             cf_exe = os.path.abspath('cloudflared.exe')
+        
+        # Check if cloudflared is accessible
+        try:
+            print(f"Using Cloudflare Executable: {cf_exe}")
+            subprocess.run([cf_exe, '--version'], capture_output=True, check=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+             print(f"ERROR: '{cf_exe}' executable not found or failed. Please download it from Cloudflare.")
+             return None
+
+        # Start the tunnel
+        process = subprocess.Popen(
+            [cf_exe, 'tunnel', '--url', f'http://localhost:{port}'],
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,            # Line buffered
+            encoding='utf-8'      # Explicit encoding
+        )
+        
+        # Register cleanup
+        atexit.register(lambda: process.terminate())
+        
+        # Scan stderr for the URL (it usually appears within a few seconds)
+        # We read line by line.
+        public_url = None
+        timeout = 20
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            # We use readline() which blocks, but cloudflared outputs frequently at start
+            line = process.stderr.readline()
+            if not line:
+                if process.poll() is not None:
+                     print("Cloudflared process exited unexpectedly.")
+                     break
+                continue
+                
+            # print(f"[CF Log]: {line.strip()}") # Optional: debug logs
+            
+            # Look for the URL
+            if "trycloudflare.com" in line:
+                match = re.search(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', line)
+                if match:
+                    public_url = match.group(0)
+                    print(f" * Cloudflare Tunnel URL: {public_url}")
+                    # Launch a thread to keep draining stderr so buffer doesn't fill
+                    def drain_stream(stream):
+                        for _ in stream: pass
+                    threading.Thread(target=drain_stream, args=(process.stderr,), daemon=True).start()
+                    break
+        
+        if not public_url:
+            print("Timed out waiting for Cloudflare URL.")
+            process.terminate()
+            
+        return public_url
+            
+    except Exception as e:
+        print(f"Failed to start Cloudflare Tunnel: {e}")
+        return None
+
 def start_server():
     """Starts the Flask server."""
     # Initialize Application Logic (DB tables, backups, etc.)
@@ -44,22 +121,14 @@ def start_server():
         threads_count = multiprocessing.cpu_count() * 2 + 1
         print(f"Starting Waitress Server with {threads_count} threads...")
 
-        # Start Pyngrok Tunnel if enabled
+        # Start Cloudflare Tunnel if enabled
         if app.config.get('ENABLE_TUNNEL'):
             try:
-                from pyngrok import ngrok, conf
-                
-                auth_token = app.config.get('NGROK_AUTH_TOKEN')
-                if auth_token:
-                    conf.get_default().auth_token = auth_token
-                
-                # Open a HTTP tunnel on the default port 5000
-                # bind_tls=True ensures we get an HTTPS url
-                public_url = ngrok.connect(5000, bind_tls=True).public_url
-                print(f" * Ngrok Tunnel: {public_url}")
-                app.config['PUBLIC_URL'] = public_url
+                public_url = start_cloudflared_tunnel(port=5000)
+                if public_url:
+                    app.config['PUBLIC_URL'] = public_url
             except Exception as e:
-                print(f" * Ngrok Tunnel Error: {e}")
+                print(f" * Tunnel Error: {e}")
         
         serve(app, host='0.0.0.0', port=5000, threads=threads_count)
     except ImportError:
