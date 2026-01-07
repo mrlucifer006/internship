@@ -890,9 +890,46 @@ def action_visitor():
         
     if action == 'forward':
         new_host = data.get('details') # 'details' holds the new host name for forward action
-        from visitor_service import forward_visitor
+        from visitor_service import forward_visitor, get_visitor_by_id
         result = forward_visitor(visitor_id, new_host)
         status = 0 # Remains pending
+
+        # [FIX] Send WhatsApp Notification if New Host is Offline
+        if result['success']:
+            try:
+                # 1. Check New Host Status
+                from employee_db import get_employee_by_name
+                # get_employee_by_name expects a dict with 'name' key
+                host_data = get_employee_by_name({"name": new_host})
+                
+                # If host is found and is OFFLINE (status 0)
+                if host_data and host_data.get('status') == 0:
+                     logger.info(f"Forwarded to Offline Host ({new_host}). Sending WhatsApp...")
+                     
+                     # 2. Get Visitor Details
+                     visitor = get_visitor_by_id(visitor_id)
+                     if visitor:
+                         # 3. Send Message
+                         from Whatsapp_message import send_message
+                         
+                         # Construct Message
+                         msg_body = (
+                             f"🚨 *New Visitor Forwarded*\n\n"
+                             f"👤 *Visitor:* {visitor.get('name')}\n"
+                             f"📞 *Phone:* {visitor.get('phone')}\n"
+                             f"🏢 *Reason:* {visitor.get('reason')}\n"
+                             f"📝 *Forwarded By:* {flask.session.get('user', 'Gate')}\n\n"
+                             f"Please log in to the portal to approve/deny."
+                         )
+                         
+                         host_phone = host_data.get('phone')
+                         if host_phone:
+                             threading.Thread(target=send_message, args=(host_phone, msg_body)).start()
+                             logger.info("WhatsApp notification sent (Threaded).")
+                         else:
+                             logger.warning(f"Host {new_host} has no phone number.")
+            except Exception as e:
+                logger.error(f"Error sending forwarding notification: {e}")
     elif action == 'approve':
         status = 1
         result = update_visitor_status(visitor_id, status)

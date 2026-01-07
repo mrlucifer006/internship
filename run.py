@@ -88,10 +88,16 @@ if __name__ == '__main__':
         time.sleep(1) 
     
     # Create the native window
+    # Create the native window
     # Connect to the discovered IP (Local or Remote)
+    if ip_address.startswith('http'):
+        target_url = ip_address
+    else:
+        target_url = f'http://{ip_address}:5000'
+
     webview.create_window(
         'Visitor Management System', 
-        f'http://{ip_address}:5000',
+        target_url,
         width=1280,
         height=720,
         resizable=True,
