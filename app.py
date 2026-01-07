@@ -22,7 +22,8 @@ from employee_db import (
     get_employee_phone, check_credentials, insert_employee, 
     update_employee_status, get_employee_by_name, 
     get_all_employees, reset_all_employee_statuses, 
-    get_employee_status, update_employee_connection
+    get_employee_status, update_employee_connection,
+    clear_user_session
 )
 
 # Import messaging modules
@@ -168,8 +169,8 @@ def logout():
     
     login_id = flask.session.get('login_id')
     if login_id:
-        # Explicitly set to 0 (integer)
-        update_employee_status(login_id, 0)
+        # Explicitly set to 0 (integer) and clear connection info
+        clear_user_session(login_id)
         
     # Clear global tracker if the logged-out user matches
     if CURRENT_LOGIN_ID == login_id:
@@ -896,40 +897,8 @@ def action_visitor():
 
         # [FIX] Send WhatsApp Notification if New Host is Offline
         if result['success']:
-            try:
-                # 1. Check New Host Status
-                from employee_db import get_employee_by_name
-                # get_employee_by_name expects a dict with 'name' key
-                host_data = get_employee_by_name({"name": new_host})
-                
-                # If host is found and is OFFLINE (status 0)
-                if host_data and host_data.get('status') == 0:
-                     logger.info(f"Forwarded to Offline Host ({new_host}). Sending WhatsApp...")
-                     
-                     # 2. Get Visitor Details
-                     visitor = get_visitor_by_id(visitor_id)
-                     if visitor:
-                         # 3. Send Message
-                         from Whatsapp_message import send_message
-                         
-                         # Construct Message
-                         msg_body = (
-                             f"🚨 *New Visitor Forwarded*\n\n"
-                             f"👤 *Visitor:* {visitor.get('name')}\n"
-                             f"📞 *Phone:* {visitor.get('phone')}\n"
-                             f"🏢 *Reason:* {visitor.get('reason')}\n"
-                             f"📝 *Forwarded By:* {flask.session.get('user', 'Gate')}\n\n"
-                             f"Please log in to the portal to approve/deny."
-                         )
-                         
-                         host_phone = host_data.get('phone')
-                         if host_phone:
-                             threading.Thread(target=send_message, args=(host_phone, msg_body)).start()
-                             logger.info("WhatsApp notification sent (Threaded).")
-                         else:
-                             logger.warning(f"Host {new_host} has no phone number.")
-            except Exception as e:
-                logger.error(f"Error sending forwarding notification: {e}")
+            from Whatsapp_message import send_forwarding_notification
+            send_forwarding_notification(visitor_id, new_host, flask.session.get('user', 'Gate'))
     elif action == 'approve':
         status = 1
         result = update_visitor_status(visitor_id, status)

@@ -134,6 +134,7 @@ def update_employee_status(login_id, status):
         if status == 0:
             payload['ip_address'] = None
             payload['connection_mode'] = None
+            payload['public_url'] = None # Also clear public URL
             
         response = supabase.table('employee').update(payload).eq('login_id', login_id).execute()
         
@@ -147,6 +148,12 @@ def update_employee_status(login_id, status):
     except Exception as e:
         logger.error(f"Error updating employee status: {e}")
         return False
+
+def clear_user_session(login_id):
+    """
+    Completely clears a user's session data (Status 0, No IP, No Mode, No Public URL).
+    """
+    return update_employee_status(login_id, 0)
 
 def get_employee_status(login_id):
     # 1. Try Remote Check (Priority for Security)

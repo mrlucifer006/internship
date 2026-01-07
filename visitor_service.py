@@ -5,8 +5,12 @@ import logging
 import math
 from cache_manager import (
     get_all_local_visitors, get_active_local_visitors, get_paginated_local_visitors,
-    update_local_visitor, remove_local_visitor, get_db_connection
+    update_local_visitor, remove_local_visitor, get_db_connection, get_local_visitor
 )
+
+def get_visitor_by_id(visitor_id):
+    """Retrieve a visitor by ID."""
+    return get_local_visitor(visitor_id)
 
 logger = logging.getLogger(__name__)
 
