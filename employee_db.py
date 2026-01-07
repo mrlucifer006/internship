@@ -218,7 +218,8 @@ def reset_all_employee_statuses():
         payload = {
             'status': 0,
             'ip_address': None,
-            'connection_mode': None
+            'connection_mode': None,
+            'public_url': None
         }
         # Update ALL rows regardless of current status.
         # Supabase requires a WHERE clause for updates, so we use neq('id', -1) as a catch-all.
@@ -248,15 +249,16 @@ def delete_employee(login_id):
         logger.error(f"Error deleting employee {login_id}: {e}")
         return False
 
-def update_employee_connection(login_id, ip_address, mode):
+def update_employee_connection(login_id, ip_address, mode, public_url=None):
     """
-    Updates the employee's connection info (IP and Mode) upon login.
+    Updates the employee's connection info (IP, Mode, and Public URL) upon login.
     """
     try:
         payload = {
             'ip_address': ip_address,
             'connection_mode': mode,
-            'status': 1 # Ensure they are marked Online
+            'status': 1, # Ensure they are marked Online
+            'public_url': public_url
         }
         
         response = supabase.table('employee').update(payload).eq('login_id', login_id).execute()

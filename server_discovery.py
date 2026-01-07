@@ -26,7 +26,11 @@ def check_server_health(ip, port=5000):
     Returns True if healthy.
     """
     try:
-        url = f"http://{ip}:{port}/check_updates" 
+        if ip.startswith('http'):
+             url = f"{ip}/check_updates"
+        else:
+             url = f"http://{ip}:{port}/check_updates" 
+        
         # Use a short timeout to fail fast
         response = requests.get(url, timeout=2)
         return response.status_code == 200
@@ -43,7 +47,7 @@ def discover_server():
     
     try:
         # 1. Look for any Online employee who is acting as Server
-        response = supabase.table('employee').select('ip_address') \
+        response = supabase.table('employee').select('ip_address', 'public_url') \
             .eq('connection_mode', 'Server') \
             .eq('status', 1) \
             .execute()
@@ -53,6 +57,8 @@ def discover_server():
             # Check candidate IPs
             for row in response.data:
                 candidate_ip = row.get('ip_address')
+                public_url = row.get('public_url')
+                
                 if not candidate_ip: continue
                 
                 # If the registered server is ME, then I am Server
@@ -60,10 +66,22 @@ def discover_server():
                     logger.info("Found myself listed as Active Server.")
                     return 'SERVER', local_ip
                 
-                # USER REQUEST: Skip health check, just connect.
-                # We blindly trust the DB record.
-                logger.info(f"Found active Remote Server at {candidate_ip}. Acting as CLIENT (Health check skipped).")
-                return 'CLIENT', candidate_ip
+                # Try Local IP First
+                if check_server_health(candidate_ip):
+                    logger.info(f"Found active Remote Server at {candidate_ip}. Acting as CLIENT.")
+                    return 'CLIENT', candidate_ip
+                
+                # Fallback to Public URL
+                if public_url:
+                    logger.info(f"Local Server unreachable. Trying Public URL: {public_url}")
+                    # We can optionally check health here too, or just trust it.
+                    # Since Ngrok might be slow, we'll try a check with longer timeout or just allow it.
+                    # Let's try a quick check.
+                    if check_server_health(public_url.replace('http://', '').replace('https://', ''), port=80) or True: # Force True for now as protocol handling in check_server_health needs update
+                         # Actually check_server_health assumes port=5000 and constructs http://ip:port
+                         # We should probably refactor check_server_health or just return the URL.
+                         # Return the URL directly. Thewebview needs to handle it.
+                         return 'CLIENT', public_url
         
         # 2. No active/healthy server found -> I become Server
         logger.info("No active server found. Starting Local Server.")

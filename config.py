@@ -40,6 +40,10 @@ class Config:
     
     # Sync Configuration
     SYNC_INTERVAL = int(os.getenv('SYNC_INTERVAL', 10))
+
+    # Tunneling
+    ENABLE_TUNNEL = os.getenv('ENABLE_TUNNEL', 'False').lower() in ('true', '1', 'yes')
+    NGROK_AUTH_TOKEN = os.getenv('NGROK_AUTH_TOKEN', '')
     
     @classmethod
     def validate(cls):

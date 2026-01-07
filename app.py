@@ -140,7 +140,8 @@ def login():
                     mode = 'Client'
                 
                 # Update connection info and status=1
-                update_employee_connection(user['login_id'], request_ip, mode)
+                public_url = app.config.get('PUBLIC_URL')
+                update_employee_connection(user['login_id'], request_ip, mode, public_url)
                 
             except Exception as e:
                 logger.error(f"Error updating connection mode: {e}")

@@ -43,6 +43,23 @@ def start_server():
         # Using cpu_count() * 2 + 1 is a standard recommendation for WSGI servers
         threads_count = multiprocessing.cpu_count() * 2 + 1
         print(f"Starting Waitress Server with {threads_count} threads...")
+
+        # Start Pyngrok Tunnel if enabled
+        if app.config.get('ENABLE_TUNNEL'):
+            try:
+                from pyngrok import ngrok, conf
+                
+                auth_token = app.config.get('NGROK_AUTH_TOKEN')
+                if auth_token:
+                    conf.get_default().auth_token = auth_token
+                
+                # Open a HTTP tunnel on the default port 5000
+                # bind_tls=True ensures we get an HTTPS url
+                public_url = ngrok.connect(5000, bind_tls=True).public_url
+                print(f" * Ngrok Tunnel: {public_url}")
+                app.config['PUBLIC_URL'] = public_url
+            except Exception as e:
+                print(f" * Ngrok Tunnel Error: {e}")
         
         serve(app, host='0.0.0.0', port=5000, threads=threads_count)
     except ImportError:
