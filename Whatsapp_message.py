@@ -1,6 +1,6 @@
-import pywhatkit
 import time
 import logging
+from whatsapp_service import whatsapp_service
 
 logger = logging.getLogger(__name__)
 
@@ -13,13 +13,8 @@ def send_message(visitor_name,visitor_phone,reason,person_meet_name,person_meet_
     )
 
     try:
-        pywhatkit.sendwhatmsg_instantly(
-            phone_no = person_meet_whatsapp,
-            message = message,
-            tab_close = True
-        )
-
-        time.sleep(5)
+        # Use new service
+        whatsapp_service.send_message(person_meet_whatsapp, message)
         
         logger.info(f"Visitor notification sent to {person_meet_name} at {person_meet_whatsapp}")
         return {
@@ -28,7 +23,6 @@ def send_message(visitor_name,visitor_phone,reason,person_meet_name,person_meet_
         }
     
     except Exception as e:
-        # Prevent server crash if browser fails
         logger.error(f"FAILED TO SEND WHATSAPP: {e}")
         return {
             "success" : False,
@@ -45,13 +39,8 @@ def host_message(visitor_name,visitor_phone,reason,person_meet_name,person_meet_
     )
 
     try:
-        pywhatkit.sendwhatmsg_instantly(
-            phone_no = visitor_phone,
-            message = message,
-            tab_close = True
-        )
-
-        time.sleep(5)
+        # Use new service to send TO VISITOR
+        whatsapp_service.send_message(visitor_phone, message)
         
         logger.info(f"Visit confirmation sent to visitor {visitor_name} at {visitor_phone}")
         return {
@@ -60,7 +49,6 @@ def host_message(visitor_name,visitor_phone,reason,person_meet_name,person_meet_
         }
     
     except Exception as e:
-        # Prevent server crash if browser fails
         logger.error(f"FAILED TO SEND WHATSAPP: {e}")
         return {
             "success" : False,

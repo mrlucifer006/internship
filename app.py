@@ -14,6 +14,7 @@ from logging_config import setup_logging
 from db import init_db
 import vehicle_db
 from cache_manager import init_cache, sync_data_from_supabase
+from db_supabase import get_supabase_client
 
 # Import services
 from visitor_service import save_visitor, get_all_entries, check_out_visitor, get_active_visitors, get_latest_visitor_timestamp, get_entries_paginated, update_visitor_status, get_pending_visitors
@@ -48,8 +49,25 @@ for warning in warnings:
 
 
 
-# Reset statuses on exit
-atexit.register(reset_all_employee_statuses)
+
+# Global variable to track the currently logged-in user in this instance
+CURRENT_LOGIN_ID = None
+
+def cleanup_current_user():
+    """Reset the status of the currently logged-in user on exit."""
+    global CURRENT_LOGIN_ID
+    if CURRENT_LOGIN_ID:
+        try:
+            # We must import here to ensure it's available at exit time if needed, 
+            # though usually module scope matches.
+            from employee_db import update_employee_status
+            print(f"Cleaning up session for user: {CURRENT_LOGIN_ID}")
+            update_employee_status(CURRENT_LOGIN_ID, 0)
+        except Exception as e:
+            print(f"Error during cleanup for {CURRENT_LOGIN_ID}: {e}")
+
+# Register the specific user cleanup instead of the global reset
+atexit.register(cleanup_current_user)
 
 @app.context_processor
 def inject_role_name():
@@ -91,6 +109,7 @@ def is_logged_in():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    global CURRENT_LOGIN_ID
     if flask.request.method == 'POST':
         username = flask.request.form.get('username')
         password = flask.request.form.get('password')
@@ -102,6 +121,9 @@ def login():
             flask.session['user'] = user['name']
             flask.session['auth_level'] = user['Auth_level'] # Store auth level
             flask.session['login_id'] = user['login_id']
+            
+            # Update global tracker for this instance
+            CURRENT_LOGIN_ID = user['login_id']
             
             # --- Detect Connection Mode ---
             try:
@@ -141,10 +163,16 @@ def login():
 
 @app.route('/logout')
 def logout():
+    global CURRENT_LOGIN_ID
+    
     login_id = flask.session.get('login_id')
     if login_id:
         # Explicitly set to 0 (integer)
         update_employee_status(login_id, 0)
+        
+    # Clear global tracker if the logged-out user matches
+    if CURRENT_LOGIN_ID == login_id:
+        CURRENT_LOGIN_ID = None
     
     flask.session.pop('user', None)
     flask.session.pop('auth_level', None)
@@ -771,6 +799,31 @@ def api_employees():
     from employee_db import get_all_employees_full
     employees = get_all_employees_full(search=search, role=role, status=status)
     return flask.jsonify(employees)
+
+# Check if this is the main entry point (mostly for development)
+# For production/Waitress, this might be imported, so we should allow service start explicitly or on import
+# But avoiding side effects on import is better. 
+# We'll rely on the fact that app.py is often the entry point or we add a startup hook.
+
+# Initialize WhatsApp Service
+try:
+    from whatsapp_service import whatsapp_service
+    whatsapp_service.start()
+except Exception as e:
+    logger.error(f"Failed to start WhatsApp Service: {e}")
+
+if __name__ == '__main__':
+    # Ensure uploads directory exists
+    os.makedirs(os.path.join(get_base_path(), 'uploads'), exist_ok=True)
+    
+    # Run the application
+    # app.run(debug=True, host='0.0.0.0', port=5000)
+    
+    # Use Waitress for production-grade performance on Windows
+    from waitress import serve
+    print("Starting Waitress server on http://0.0.0.0:5000")
+    serve(app, host='0.0.0.0', port=5000, threads=6)
+
 
 @app.route('/delete_user/<login_id>', methods=['POST'])
 def delete_user(login_id):

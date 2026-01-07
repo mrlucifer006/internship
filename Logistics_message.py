@@ -1,10 +1,9 @@
-import pywhatkit 
 import time 
 import logging
 import os
-import pyautogui
-from PIL import Image
 import tempfile
+from PIL import Image
+from whatsapp_service import whatsapp_service
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +31,7 @@ def compress_image(img_path, max_size_kb=100, quality_start=85):
             img = img.resize(new_size, Image.Resampling.LANCZOS)
         
         # Create temp file for compressed image
+        # mkstemp isn't automatically deleted, caller must handle
         temp_fd, temp_path = tempfile.mkstemp(suffix='.jpg')
         os.close(temp_fd)
         
@@ -75,30 +75,17 @@ To location : {to_location}"""
         if vehicle_img_path and os.path.exists(vehicle_img_path):
             logger.info(f"Compressing and sending WhatsApp image: {vehicle_img_path}")
             
-            # Compress image before sending
+            # Compress image before sending to save bandwidth/time
             compressed_path = compress_image(vehicle_img_path)
             
-            pywhatkit.sendwhats_image(
-                receiver=LOGISTICS_PHONE,
-                img_path=compressed_path,
-                caption=message,
-                wait_time=20,
-                tab_close=True
-            )
-            # Wait for WhatsApp to load and press Enter to send
-            time.sleep(3)
-            pyautogui.press('enter')
+            # Send using neonize service
+            whatsapp_service.send_image(LOGISTICS_PHONE, compressed_path, caption=message)
+            
         else:
             # Send text message only
             logger.info("No image provided, sending text only")
-            pywhatkit.sendwhatmsg_instantly(
-                phone_no=LOGISTICS_PHONE,
-                message=message,
-                wait_time=20,
-                tab_close=True
-            )
+            whatsapp_service.send_message(LOGISTICS_PHONE, message)
         
-        time.sleep(3)
         logger.info(f"Logistics notification sent to {LOGISTICS_PHONE}")
         return {
             "success": True,
@@ -145,27 +132,14 @@ To location : {to_location}"""
             # Compress image before sending
             compressed_path = compress_image(vehicle_img_path)
             
-            pywhatkit.sendwhats_image(
-                receiver=LOGISTICS_PHONE,
-                img_path=compressed_path,
-                caption=message,
-                wait_time=20,
-                tab_close=True
-            )
-            # Wait for WhatsApp to load and press Enter to send
-            time.sleep(3)
-            pyautogui.press('enter')
+            # Send using neonize service
+            whatsapp_service.send_image(LOGISTICS_PHONE, compressed_path, caption=message)
+
         else:
             # Send text message only
             logger.info("No image provided, sending text only")
-            pywhatkit.sendwhatmsg_instantly(
-                phone_no=LOGISTICS_PHONE,
-                message=message,
-                wait_time=20,
-                tab_close=True
-            )
+            whatsapp_service.send_message(LOGISTICS_PHONE, message)
         
-        time.sleep(3)
         logger.info(f"Logistics exit notification sent to {LOGISTICS_PHONE}")
         return {
             "success": True,
