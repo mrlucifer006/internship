@@ -58,3 +58,6 @@ backups/
 credentials.json
 token.json
 my_session.sqlite3
+my_session.sqlite3
+__pycache__/employee_db.cpython-310.pyc
+__pycache__/visitor_service.cpython-310.pyc
