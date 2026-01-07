@@ -57,3 +57,4 @@ backups/
 .backup_key
 credentials.json
 token.json
+my_session.sqlite3
