@@ -713,53 +713,122 @@ def get_paginated_local_vehicles(page=1, per_page=10, search=None, entry_type=No
 
 
 def add_to_whatsapp_queue(phone, message_type, text=None, image_path=None, caption=None):
-    """Add a message to the persistent queue."""
-    conn = get_db_connection()
+    """Add a message to the persistent queue (Supabase -> Local Fallback)."""
     try:
+        supabase = get_supabase_client()
+        payload = {
+            "phone": phone,
+            "message_type": message_type,
+            "message": text,
+            "image_path": image_path,
+            "caption": caption,
+            "status": "pending",
+            "attempts": 0
+        }
+        res = supabase.table('whatsapp_queue').insert(payload).execute()
+        if res.data:
+            logger.info(f"Added {message_type} message for {phone} to Supabase queue.")
+            return True
+    except Exception as e:
+        logger.error(f"Supabase add failed ({e}). Falling back to local queue.")
+
+    # Fallback to local
+    try:
+        conn = get_db_connection()
         conn.execute('''
-            INSERT INTO whatsapp_queue (phone, message_type, message, image_path, caption, status)
-            VALUES (?, ?, ?, ?, ?, 'pending')
-        ''', (phone, message_type, text, image_path, caption))
+            INSERT INTO whatsapp_queue (phone, message_type, message, image_path, caption, status, attempts)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (phone, message_type, text, image_path, caption, 'pending', 0))
         conn.commit()
-        logger.info(f"Added {message_type} message for {phone} to queue.")
+        conn.close()
+        logger.info(f"Added {message_type} message for {phone} to LOCAL queue.")
         return True
     except Exception as e:
-        logger.error(f"Error adding to whatsapp queue: {e}")
+        logger.error(f"Error adding to LOCAL whatsapp queue: {e}")
         return False
-    finally:
-        conn.close()
 
 def get_pending_whatsapp_messages():
-    """Get all pending messages from the queue."""
-    conn = get_db_connection()
+    """Get all pending messages from Supabase AND Local, handling ID collisions."""
+    messages = []
+    
+    # 1. Fetch from Supabase
     try:
-        cursor = conn.execute("SELECT * FROM whatsapp_queue WHERE status = 'pending' ORDER BY created_at ASC")
-        rows = cursor.fetchall()
-        return [dict(row) for row in rows]
+        supabase = get_supabase_client()
+        res = supabase.table('whatsapp_queue').select("*").eq('status', 'pending').order('created_at').execute()
+        if res.data:
+            for item in res.data:
+                # Prefix ID to identify source
+                item['original_id'] = item['id']
+                item['id'] = f"supabase_{item['id']}"
+                messages.append(item)
     except Exception as e:
-        logger.error(f"Error getting pending whatsapp messages: {e}")
-        return []
-    finally:
+        logger.error(f"Error getting pending messages from Supabase: {e}")
+
+    # 2. Fetch from Local
+    try:
+        conn = get_db_connection()
+        cursor = conn.execute("SELECT * FROM whatsapp_queue WHERE status='pending' ORDER BY created_at")
+        rows = cursor.fetchall()
         conn.close()
+        for row in rows:
+            item = dict(row)
+            item['original_id'] = item['id']
+            item['id'] = f"local_{item['id']}"
+            messages.append(item)
+    except Exception as e:
+        logger.error(f"Error getting pending messages from Local: {e}")
+        
+    return messages
 
 def remove_from_whatsapp_queue(message_id):
-    """Remove a message from the queue (successfully sent)."""
-    conn = get_db_connection()
-    try:
-        conn.execute("DELETE FROM whatsapp_queue WHERE id = ?", (message_id,))
-        conn.commit()
-    except Exception as e:
-        logger.error(f"Error removing from whatsapp queue: {e}")
-    finally:
-        conn.close()
+    """Remove a message from the appropriate queue based on ID prefix."""
+    str_id = str(message_id) # Ensure string
+    
+    if str_id.startswith("local_"):
+        real_id = str_id.replace("local_", "")
+        try:
+            conn = get_db_connection()
+            conn.execute("DELETE FROM whatsapp_queue WHERE id = ?", (real_id,))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            logger.error(f"Error removing from LOCAL queue: {e}")
+            
+    elif str_id.startswith("supabase_"):
+        real_id = str_id.replace("supabase_", "")
+        try:
+            supabase = get_supabase_client()
+            supabase.table('whatsapp_queue').delete().eq('id', real_id).execute()
+        except Exception as e:
+            logger.error(f"Error removing from SUPABASE queue: {e}")
+    
+    else:
+        # Legacy/Undefined: Try both (unlikely to hit this if flow is correct)
+        logger.warning(f"Unknown ID format {message_id}, trying to delete from both.")
+        # ... logic as needed, or ignore
 
 def increment_whatsapp_attempts(message_id):
     """Increment attempt count for a message."""
-    conn = get_db_connection()
-    try:
-        conn.execute("UPDATE whatsapp_queue SET attempts = attempts + 1 WHERE id = ?", (message_id,))
-        conn.commit()
-    except Exception as e:
-        logger.error(f"Error incrementing queue attempts: {e}")
-    finally:
-        conn.close()
+    str_id = str(message_id)
+    
+    if str_id.startswith("local_"):
+        real_id = str_id.replace("local_", "")
+        try:
+            conn = get_db_connection()
+            conn.execute("UPDATE whatsapp_queue SET attempts = attempts + 1 WHERE id = ?", (real_id,))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+             logger.error(f"Error incrementing LOCAL attempts: {e}")
+
+    elif str_id.startswith("supabase_"):
+        real_id = str_id.replace("supabase_", "")
+        try:
+            supabase = get_supabase_client()
+            # Simple read-modify-write or RPC if available.
+            res = supabase.table('whatsapp_queue').select('attempts').eq('id', real_id).execute()
+            if res.data:
+                current = res.data[0]['attempts']
+                supabase.table('whatsapp_queue').update({'attempts': current + 1}).eq('id', real_id).execute()
+        except Exception as e:
+            logger.error(f"Error incrementing SUPABASE attempts: {e}")

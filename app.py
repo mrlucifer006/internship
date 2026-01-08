@@ -1047,7 +1047,48 @@ if __name__ == '__main__':
 
     logger.info("Database initialization complete")
 
+
+from whatsapp_service import whatsapp_service
+import base64
+
+@app.route('/get_whatsapp_qr')
+def get_whatsapp_qr():
+    """Returns the current QR code status."""
+    if whatsapp_service.is_connected:
+        return flask.jsonify({"connected": True, "qr": None})
+    
+    qr_data = whatsapp_service.qr_data
+    if qr_data:
+        try:
+            # qr_data is the UUID string/bytes. Generate a QR code image from it.
+            import qrcode
+            from io import BytesIO
+            
+            # Ensure data is string
+            if isinstance(qr_data, bytes):
+                qr_content = qr_data.decode('utf-8')
+            else:
+                qr_content = str(qr_data)
+                
+            img = qrcode.make(qr_content)
+            
+            # Save to BytesIO
+            buffered = BytesIO()
+            img.save(buffered, format="PNG")
+            
+            # Encode image to base64
+            qr_b64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+            
+            return flask.jsonify({"connected": False, "qr": qr_b64})
+        except Exception as e:
+            logger.error(f"Error generating QR image: {e}")
+            return flask.jsonify({"connected": False, "qr": None, "error": str(e)})
+            
+    return flask.jsonify({"connected": False, "qr": None})
+
+if __name__ == '__main__':
     import socket
+
     try:
         # Determine local IP address
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

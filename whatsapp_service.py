@@ -29,7 +29,14 @@ class WhatsAppService:
         
         # Initialize client with session file
         self.session_file = "my_session.sqlite3"
+        self.qr_data = None
+        
+        # Initialize client
         self.client = NewClient(self.session_file)
+        
+        # Register callback
+        self.client.event.qr(self.on_qr)
+        
         self.is_connected = False
         self.thread = None
         self._setup_events()
@@ -42,6 +49,11 @@ class WhatsAppService:
         
         self._initialized = True
         logger.info("WhatsAppService initialized")
+
+    def on_qr(self, client, qr_uuid):
+        """Callback from neonize when a QR is generated."""
+        logger.info(f"Received QR Code Update: {qr_uuid}")
+        self.qr_data = qr_uuid
 
     def shutdown(self):
         """Gracefully disconnect the client."""
@@ -220,7 +232,7 @@ class WhatsAppService:
             if not jid:
                 jid = build_jid(clean_phone)
 
-            msg = self.client.build_image_message(img_bytes, caption=caption)
+            msg = self.client.build_image_message(image_bytes, caption=caption)
             self.client.send_message(jid, msg)
             return True
         except Exception as e:

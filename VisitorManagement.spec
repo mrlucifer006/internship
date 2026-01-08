@@ -19,8 +19,31 @@ for root, dirs, files in os.walk('static'):
 # Database files and executables
 db_files = [
     ('schema.sql', '.'),
-    ('cloudflared-windows-amd64.exe', '.')
+    ('cloudflared-windows-amd64.exe', '.'),
+    ('start_background.vbs', '.'),
+    ('stop_background.bat', '.'),
+    ('.env', '.') # [FIX] Include .env file for configuration settings
 ]
+
+# [FIX] Flatten neonize.proto submodules to root for imports
+import neonize
+import neonize.proto
+import os
+proto_dir = os.path.dirname(neonize.proto.__file__)
+for name in os.listdir(proto_dir):
+    path = os.path.join(proto_dir, name)
+    if os.path.isdir(path) and name.startswith("wa"):
+        db_files.append((path, name))
+
+# [FIX] Include neonize binary DLL explicitly
+neonize_dir = os.path.dirname(neonize.__file__)
+dll_name = 'neonize-windows-amd64.dll'
+dll_path = os.path.join(neonize_dir, dll_name)
+if os.path.exists(dll_path):
+    print(f"Adding binary: {dll_path}")
+    db_files.append((dll_path, 'neonize'))
+else:
+    print(f"WARNING: Could not find {dll_name} at {dll_path}")
 
 a = Analysis(
     ['run.py'],
@@ -56,7 +79,11 @@ a = Analysis(
         'cryptography',
         'cache_manager',
         'db_supabase',
-        'waAICommon',
+        'neonize.proto',
+        'neonize.proto.waAICommon',
+        'whatsapp_service',
+        'server_discovery',
+        'pkg_resources',
     ],
     hookspath=[],
     hooksconfig={},

@@ -1,0 +1,63 @@
+<div id="whatsapp-qr-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">WhatsApp Login Required</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500 mb-4">
+                    Scan the QR code with WhatsApp to enable message automation.
+                </p>
+                <div id="qr-container" class="flex justify-center items-center">
+                    <!-- QR Code Image will be injected here -->
+                    <img id="qr-image" src="" alt="WhatsApp QR Code" class="w-64 h-64 hidden">
+                    <div id="qr-placeholder" class="animate-pulse w-64 h-64 bg-gray-200 flex items-center justify-center">
+                        Waiting for QR...
+                    </div>
+                </div>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="close-qr-modal" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('whatsapp-qr-modal');
+        const qrImage = document.getElementById('qr-image');
+        const qrPlaceholder = document.getElementById('qr-placeholder');
+        const closeBtn = document.getElementById('close-qr-modal');
+        
+        let pollingInterval;
+        let isModalDismissed = false;
+
+        closeBtn.onclick = function() {
+            modal.classList.add('hidden');
+            isModalDismissed = true;
+            // Optionally stop polling or snooze
+        }
+
+        function checkWhatsAppStatus() {
+            fetch('/get_whatsapp_qr')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.connected) {
+                        modal.classList.add('hidden');
+                        isModalDismissed = false; // Reset if they reconnect
+                    } else if (data.qr && !isModalDismissed) {
+                         // Show modal if not connected AND QR is available
+                         modal.classList.remove('hidden');
+                         qrImage.src = "data:image/png;base64," + data.qr;
+                         qrImage.classList.remove('hidden');
+                         qrPlaceholder.classList.add('hidden');
+                    }
+                })
+                .catch(err => console.error("Error fetching QR status:", err));
+        }
+
+        // Poll every 3 seconds
+        setInterval(checkWhatsAppStatus, 3000);
+    });
+</script>
