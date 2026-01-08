@@ -112,6 +112,21 @@ def init_cache():
         except sqlite3.OperationalError:
             pass
 
+        # [NEW] Create WhatsApp Queue Table
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS whatsapp_queue (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                phone TEXT NOT NULL,
+                message TEXT,
+                image_path TEXT,
+                caption TEXT,
+                message_type TEXT NOT NULL, -- 'text' or 'image'
+                status TEXT DEFAULT 'pending',
+                attempts INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
 
         # Migration: Remove UNIQUE constraint on veh_reg_no (by recreating table)
         # This is complex in SQLite, so we check if constraint exists by trying to insert a duplicate
@@ -696,3 +711,55 @@ def get_paginated_local_vehicles(page=1, per_page=10, search=None, entry_type=No
         conn.close()
 
 
+
+def add_to_whatsapp_queue(phone, message_type, text=None, image_path=None, caption=None):
+    """Add a message to the persistent queue."""
+    conn = get_db_connection()
+    try:
+        conn.execute('''
+            INSERT INTO whatsapp_queue (phone, message_type, message, image_path, caption, status)
+            VALUES (?, ?, ?, ?, ?, 'pending')
+        ''', (phone, message_type, text, image_path, caption))
+        conn.commit()
+        logger.info(f"Added {message_type} message for {phone} to queue.")
+        return True
+    except Exception as e:
+        logger.error(f"Error adding to whatsapp queue: {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_pending_whatsapp_messages():
+    """Get all pending messages from the queue."""
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("SELECT * FROM whatsapp_queue WHERE status = 'pending' ORDER BY created_at ASC")
+        rows = cursor.fetchall()
+        return [dict(row) for row in rows]
+    except Exception as e:
+        logger.error(f"Error getting pending whatsapp messages: {e}")
+        return []
+    finally:
+        conn.close()
+
+def remove_from_whatsapp_queue(message_id):
+    """Remove a message from the queue (successfully sent)."""
+    conn = get_db_connection()
+    try:
+        conn.execute("DELETE FROM whatsapp_queue WHERE id = ?", (message_id,))
+        conn.commit()
+    except Exception as e:
+        logger.error(f"Error removing from whatsapp queue: {e}")
+    finally:
+        conn.close()
+
+def increment_whatsapp_attempts(message_id):
+    """Increment attempt count for a message."""
+    conn = get_db_connection()
+    try:
+        conn.execute("UPDATE whatsapp_queue SET attempts = attempts + 1 WHERE id = ?", (message_id,))
+        conn.commit()
+    except Exception as e:
+        logger.error(f"Error incrementing queue attempts: {e}")
+    finally:
+        conn.close()

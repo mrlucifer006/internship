@@ -159,6 +159,11 @@ if __name__ == '__main__':
         
         # Give server a moment to start
         time.sleep(1) 
+        
+        # REGISTER CLEANUP: When Server exits, clear ALL client sessions
+        from employee_db import reset_all_employee_statuses
+        atexit.register(reset_all_employee_statuses)
+        print(" [Server Mode]: Registered global session cleanup on exit.")
     
     # Create the native window
     # Create the native window

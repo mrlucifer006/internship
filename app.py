@@ -128,7 +128,13 @@ def login():
             
             # --- Detect Connection Mode ---
             try:
-                request_ip = flask.request.remote_addr
+                # Prioritize Headers for Real IP (Cloudflare/Proxy)
+                if flask.request.headers.get('CF-Connecting-IP'):
+                    request_ip = flask.request.headers.get('CF-Connecting-IP')
+                elif flask.request.headers.get('X-Forwarded-For'):
+                    request_ip = flask.request.headers.get('X-Forwarded-For').split(',')[0].strip()
+                else:
+                    request_ip = flask.request.remote_addr
                 
                 # Dynamic import to avoid circular dependency issues if any
                 from server_discovery import get_local_ip
