@@ -2,6 +2,7 @@ import threading
 import logging
 import time
 import os
+import atexit
 from neonize.client import NewClient
 from neonize.events import ConnectedEv
 from neonize.proto.waE2E.WAWebProtobufsE2E_pb2 import Message
@@ -29,8 +30,30 @@ class WhatsAppService:
         self.client = NewClient(self.session_file)
         self.is_connected = False
         self._setup_events()
+        
+        # Register cleanup
+        atexit.register(self.shutdown)
+        
         self._initialized = True
         logger.info("WhatsAppService initialized")
+
+    def shutdown(self):
+        """Gracefully disconnect the client."""
+        try:
+           if self.is_connected:
+               logger.info("Shutting down WhatsApp Service...")
+               # Suppress logging from neonize/underlying libs during disconnect
+               logging.getLogger().setLevel(logging.ERROR)
+               try:
+                   self.client.disconnect()
+               finally:
+                   # Restore (though app is exiting, so not strictly crucial)
+                   logging.getLogger().setLevel(logging.INFO)
+                   
+               self.is_connected = False
+        except Exception as e:
+            # We still want to see our own errors if any, but unlikely due to suppression above
+            print(f"Error during WhatsApp shutdown: {e}")
 
     def _setup_events(self):
         @self.client.event(ConnectedEv)
@@ -64,13 +87,27 @@ class WhatsAppService:
         # Use built-in helper to create JID with all required fields (RawAgent, etc)
         return build_jid(clean)
 
+    def wait_for_connection(self, timeout=15):
+        """Waits for the connection to be established."""
+        if self.is_connected:
+            return True
+        
+        logger.info("Waiting for WhatsApp connection...")
+        start_time = time.time()
+        while not self.is_connected:
+            if time.time() - start_time > timeout:
+                logger.warning(f"Connection wait timed out after {timeout}s")
+                return False
+            time.sleep(0.5)
+        return True
+
     def send_message(self, phone, text):
         """Send a text message asynchronously."""
         logger.info(f"send_message called with phone={phone}")
         
         def run_send():
-            if not self.is_connected:
-                logger.warning("WhatsApp not connected. Message might fail or queue.")
+            if not self.wait_for_connection():
+                logger.warning("WhatsApp not connected. Attempting to send anyway or queuing...")
 
             # Clean phone number string 
             clean_phone = ''.join(filter(str.isdigit, phone))
@@ -107,9 +144,7 @@ class WhatsAppService:
 
     def send_image(self, phone, image_path, caption=""):
         """Send an image message asynchronously."""
-        if not self.is_connected:
-            logger.warning("WhatsApp not connected.")
-
+        
         if not os.path.exists(image_path):
             logger.error(f"Image not found: {image_path}")
             return {"success": False, "message": "Image file not found"}
@@ -123,11 +158,14 @@ class WhatsAppService:
             return {"success": False, "message": f"Read failed: {e}"}
 
         def run_send(img_bytes, path_str):
+            if not self.wait_for_connection():
+                logger.warning("WhatsApp not connected. sending might fail.")
+
             # Clean phone number string 
             clean_phone = ''.join(filter(str.isdigit, phone))
             if len(clean_phone) == 10:
                 clean_phone = "91" + clean_phone
-
+            
             try:
                 result = self.client.is_on_whatsapp(clean_phone)
                 

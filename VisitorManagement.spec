@@ -16,8 +16,11 @@ for root, dirs, files in os.walk('static'):
     for file in files:
         static_files.append((os.path.join(root, file), root))
 
-# Database files
-db_files = [('schema.sql', '.')]
+# Database files and executables
+db_files = [
+    ('schema.sql', '.'),
+    ('cloudflared-windows-amd64.exe', '.')
+]
 
 a = Analysis(
     ['run.py'],
@@ -38,7 +41,6 @@ a = Analysis(
         'realtime',
         'storage3',
         'supafunc',
-        'pywhatkit',
         'watchdog',
         'employee_db',
         'visitor_service',
@@ -54,6 +56,7 @@ a = Analysis(
         'cryptography',
         'cache_manager',
         'db_supabase',
+        'waAICommon',
     ],
     hookspath=[],
     hooksconfig={},

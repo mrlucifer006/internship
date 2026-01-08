@@ -137,7 +137,11 @@ def start_server():
 if __name__ == '__main__':
     # Server Discovery / Failover Logic
     try:
-        from server_discovery import discover_server
+        from server_discovery import discover_server, cleanup_stale_sessions
+        
+        # 0. Clean up any previous mess from THIS machine
+        cleanup_stale_sessions()
+        
         mode, ip_address = discover_server()
         print(f"Starting in {mode} mode. Target IP: {ip_address}")
     except Exception as e:

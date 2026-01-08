@@ -46,6 +46,11 @@ def discover_server():
     local_ip = get_local_ip()
     
     try:
+        # Pre-Discovery Cleanup:
+        # If I am starting up, and the DB says I am ALREADY online as a Server (from a crash),
+        # that's a lie. We must clean it up so we don't discover "myself" as a remote server.
+        cleanup_stale_sessions()
+        
         # 1. Look for any Online employee who is acting as Server
         response = supabase.table('employee').select('ip_address', 'public_url') \
             .eq('connection_mode', 'Server') \
@@ -91,3 +96,37 @@ def discover_server():
         logger.error(f"Server Discovery Failed: {e}")
         # Fallback to Server Mode
         return 'SERVER', local_ip
+
+def cleanup_stale_sessions():
+    """
+    Checks if any user is currently marked as 'Online' and 'Server' with THIS machine's IP.
+    If found, it means the previous instance didn't exit cleanly. Force logout.
+    """
+    supabase = get_supabase_client()
+    local_ip = get_local_ip()
+    
+    try:
+        # Find stale sessions
+        response = supabase.table('employee').select('login_id', 'name') \
+            .eq('ip_address', local_ip) \
+            .eq('connection_mode', 'Server') \
+            .eq('status', 1) \
+            .execute()
+            
+        if response.data:
+            for row in response.data:
+                login_id = row['login_id']
+                logger.warning(f"Found stale session for {row['name']} ({login_id}) at {local_ip}. Cleaning up...")
+                
+                # Force update to Offline and clear fields
+                payload = {
+                    'status': 0,
+                    'ip_address': None,
+                    'connection_mode': None,
+                    'public_url': None
+                }
+                supabase.table('employee').update(payload).eq('login_id', login_id).execute()
+                print(f"cleaned up stale session for {row['name']}")
+                
+    except Exception as e:
+        logger.error(f"Error during stale session cleanup: {e}")
