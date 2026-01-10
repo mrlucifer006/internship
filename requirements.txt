@@ -122,7 +122,7 @@ pytweening==1.2.0
 pytz==2025.2
 pywebview==5.1
 pywhatkit==5.4
-pywin32==306
+
 pywin32-ctypes==0.2.3
 PyYAML==6.0.3
 qrcode==8.2
@@ -172,6 +172,7 @@ wikipedia==1.4.0
 wrapt==2.0.1
 yarl==1.22.0
 packaging
+
 
 
 
