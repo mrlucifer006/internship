@@ -33,6 +33,10 @@
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden"
             onclick="toggleSidebar()"></div>
 
+        <!-- Mobile Recent Sidebar Overlay -->
+        <div id="recent-sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden xl:hidden"
+            onclick="toggleRecentSidebar()"></div>
+
         {# Sidebar Navigation #}
         <aside id="sidebar"
             class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0"
@@ -316,8 +320,8 @@
                 </div>
 
                 <!-- Right Sidebar (Recent Entries) -->
-                <aside
-                    class="w-full xl:w-80 flex flex-col xl:border-l border-t xl:border-t-0 border-slate-200 bg-white/50 backdrop-blur-sm p-6 gap-6 overflow-y-auto max-h-[600px] xl:max-h-full mb-24 xl:mb-0">
+                <aside id="recent-sidebar"
+                    class="fixed inset-y-0 right-0 z-40 bg-white/95 backdrop-blur shadow-2xl transform transition-transform duration-300 translate-x-full xl:translate-x-0 xl:static xl:shadow-none xl:bg-white/50 w-80 md:w-96 xl:w-80 flex flex-col xl:border-l border-t xl:border-t-0 border-slate-200 p-6 gap-6 overflow-y-auto max-h-screen xl:max-h-full">
                     <div class="flex items-center justify-between">
                         <h3 class="text-slate-800 font-bold text-base">Recent Entries</h3>
                         <div class="flex items-center gap-2">
@@ -325,10 +329,9 @@
                             <a href="{{ url_for('view_all') }}"
                                 class="text-xs font-bold text-indigo-600 hover:text-indigo-800">VIEW ALL</a>
                             {% endif %}
-                            <button onclick="toggleRecentEntries()"
-                                class="xl:hidden text-slate-600 hover:text-slate-900 transition-colors p-1">
-                                <span id="recent-entries-icon"
-                                    class="material-symbols-outlined transition-transform">expand_more</span>
+                            <button onclick="toggleRecentSidebar()"
+                                class="xl:hidden text-slate-500 hover:text-slate-700">
+                                <span class="material-symbols-outlined">close</span>
                             </button>
                         </div>
                     </div>
@@ -375,7 +378,7 @@
                             }
                         });
                     </script>
-                    <div id="recent-entries-list" class="space-y-3 hidden xl:block">
+                    <div id="recent-entries-list" class="space-y-3 block">
                         {% include 'partials/sidebar_entries.html' %}
                     </div>
 
@@ -435,6 +438,12 @@
                     <span class="material-symbols-outlined text-[18px]">logout</span>
                     <span class="hidden sm:inline">Visitor Exit</span>
                 </a>
+                <button
+                    class="flex xl:hidden items-center gap-2 px-5 py-2.5 rounded-full text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all hover:text-slate-900"
+                    onclick="toggleRecentSidebar()">
+                    <span class="material-symbols-outlined text-[18px]">history</span>
+                    <span class="hidden sm:inline">Recent</span>
+                </button>
             </div>
         </div>
     </div>
@@ -530,13 +539,20 @@
             overlay.classList.toggle('hidden');
         }
 
-        // Toggle Recent Entries on Mobile
-        function toggleRecentEntries() {
-            const list = document.getElementById('recent-entries-list');
-            const icon = document.getElementById('recent-entries-icon');
-            list.classList.toggle('hidden');
-            list.classList.toggle('block');
-            icon.classList.toggle('rotate-180');
+        // Toggle Recent Entries Sidebar (Mobile Drawer)
+        function toggleRecentSidebar() {
+            const sidebar = document.getElementById('recent-sidebar');
+            const overlay = document.getElementById('recent-sidebar-overlay');
+
+            if (sidebar.classList.contains('translate-x-full')) {
+                // Open
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                // Close
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+            }
         }
 
         // ID Verification Logic

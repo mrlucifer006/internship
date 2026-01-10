@@ -8,7 +8,11 @@ from datetime import timedelta
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+import sys
+if getattr(sys, 'frozen', False):
+    load_dotenv(os.path.join(sys._MEIPASS, '.env'))
+else:
+    load_dotenv()
 
 
 class Config:
@@ -40,6 +44,9 @@ class Config:
     
     # Sync Configuration
     SYNC_INTERVAL = int(os.getenv('SYNC_INTERVAL', 10))
+
+    # Version Control
+    CURRENT_VERSION = "1.0"
 
     # Tunneling
     ENABLE_TUNNEL = os.getenv('ENABLE_TUNNEL', 'False').lower() in ('true', '1', 'yes')

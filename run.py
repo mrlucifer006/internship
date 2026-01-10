@@ -11,19 +11,28 @@ import subprocess
 import re
 import atexit
 
+# Function to get absolute path to resource
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 # Import Flask app and initialization
 if getattr(sys, 'frozen', False):
     # Running as compiled executable
-    application_path = sys._MEIPASS
-    sys.path.insert(0, application_path)
+    sys.path.insert(0, sys._MEIPASS)
     
     from app import app, initialize_application
     
     # Set template and static folders for bundled app
-    app.template_folder = os.path.join(application_path, 'templates')
-    app.static_folder = os.path.join(application_path, 'static')
+    app.template_folder = resource_path('templates')
+    app.static_folder = resource_path('static')
     
-    # Ensure database files are accessible
+    # Ensure database files are accessible (remain in exe dir)
     os.chdir(os.path.dirname(sys.executable))
 else:
     # Running as normal Python script
@@ -35,13 +44,11 @@ def start_cloudflared_tunnel(port=5000):
         print(f"Starting Cloudflare Tunnel on port {port}...")
         
         # Determine executable name
-        cf_exe = 'cloudflared'
-        
-        # Check current directory for common windows name
-        if os.path.exists('cloudflared-windows-amd64.exe'):
-            cf_exe = os.path.abspath('cloudflared-windows-amd64.exe')
-        elif os.path.exists('cloudflared.exe'):
-             cf_exe = os.path.abspath('cloudflared.exe')
+        cf_exe_name = 'cloudflared-windows-amd64.exe'
+        if not os.path.exists(resource_path(cf_exe_name)):
+             cf_exe_name = 'cloudflared.exe'
+             
+        cf_exe = resource_path(cf_exe_name)
         
         # Check if cloudflared is accessible
         try:
@@ -137,6 +144,9 @@ def start_server():
 if __name__ == '__main__':
     # Server Discovery / Failover Logic
     try:
+        from updater import check_for_updates
+        check_for_updates()
+
         from server_discovery import discover_server, cleanup_stale_sessions
         
         # 0. Clean up any previous mess from THIS machine

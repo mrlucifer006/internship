@@ -46,6 +46,10 @@
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden"
             onclick="toggleSidebar()"></div>
 
+        <!-- Mobile Recent Sidebar Overlay -->
+        <div id="recent-sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden"
+            onclick="toggleRecentSidebar()"></div>
+
         <!-- Sidebar -->
         <aside id="sidebar"
             class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
@@ -403,12 +407,18 @@
                 </div>
 
                 <!-- Right Sidebar (Recent Logistics) -->
-                <aside
-                    class="w-80 flex-shrink-0 flex flex-col border-l border-slate-200 bg-white/50 backdrop-blur-sm p-6 gap-6 overflow-y-auto">
+                <aside id="recent-sidebar"
+                    class="fixed inset-y-0 right-0 z-40 w-80 bg-white/95 backdrop-blur shadow-2xl transform transition-transform duration-300 translate-x-full md:translate-x-0 md:static md:shadow-none md:bg-white/50 flex flex-col border-l border-slate-200 p-6 gap-6 overflow-y-auto">
                     <div class="flex items-center justify-between">
                         <h3 class="text-slate-800 font-bold text-base">Recent Logistics</h3>
-                        <a href="{{ url_for('view_all_logistics') }}"
-                            class="text-xs font-bold text-indigo-600 hover:text-indigo-800">VIEW ALL</a>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ url_for('view_all_logistics') }}"
+                                class="text-xs font-bold text-indigo-600 hover:text-indigo-800">VIEW ALL</a>
+                            <button onclick="toggleRecentSidebar()"
+                                class="md:hidden text-slate-500 hover:text-slate-700">
+                                <span class="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Search Bar -->
@@ -520,6 +530,12 @@
                     <span class="material-symbols-outlined text-[18px]">logout</span>
                     <span class="hidden sm:inline">Vehicle Exit</span>
                 </a>
+                <button
+                    class="flex md:hidden items-center gap-2 px-5 py-2.5 rounded-full text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all hover:text-slate-900"
+                    onclick="toggleRecentSidebar()">
+                    <span class="material-symbols-outlined text-[18px]">history</span>
+                    <span class="hidden sm:inline">Recent</span>
+                </button>
             </div>
         </div>
     </div>
@@ -611,12 +627,19 @@
         }
 
         // Toggle Recent Entries on Mobile
-        function toggleRecentEntries() {
-            const list = document.getElementById('recent-entries-list');
-            const icon = document.getElementById('recent-entries-icon');
-            list.classList.toggle('hidden');
-            list.classList.toggle('flex');
-            icon.classList.toggle('rotate-180');
+        function toggleRecentSidebar() {
+            const sidebar = document.getElementById('recent-sidebar');
+            const overlay = document.getElementById('recent-sidebar-overlay');
+
+            if (sidebar.classList.contains('translate-x-full')) {
+                // Open
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                // Close
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+            }
         }
 
         // Skeleton Loading Simulation

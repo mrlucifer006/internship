@@ -3,11 +3,6 @@ import logging
 import time
 import os
 import atexit
-from neonize.client import NewClient
-from neonize.events import ConnectedEv, DisconnectedEv
-from neonize.proto.waE2E.WAWebProtobufsE2E_pb2 import Message
-from neonize.utils import build_jid
-from neonize.exc import IsOnWhatsAppError
 from cache_manager import add_to_whatsapp_queue, get_pending_whatsapp_messages, remove_from_whatsapp_queue, increment_whatsapp_attempts
 
 logger = logging.getLogger(__name__)
@@ -15,6 +10,14 @@ logger = logging.getLogger(__name__)
 class WhatsAppService:
     _instance = None
     _lock = threading.Lock()
+    
+    # Lazy loaded modules
+    _NewClient = None
+    _ConnectedEv = None
+    _DisconnectedEv = None
+    _Message = None
+    _build_jid = None
+    _IsOnWhatsAppError = None
 
     def __new__(cls):
         with cls._lock:
@@ -31,24 +34,47 @@ class WhatsAppService:
         self.session_file = "my_session.sqlite3"
         self.qr_data = None
         
-        # Initialize client
-        self.client = NewClient(self.session_file)
-        
-        # Register callback
-        self.client.event.qr(self.on_qr)
+        self.client = None # Lazy initialized
         
         self.is_connected = False
         self.thread = None
-        self._setup_events()
+        self.queue_thread = None
+        self._shutdown_flag = False
         
         # Register cleanup
         atexit.register(self.shutdown)
         
-        # Start Queue Processor
-        threading.Thread(target=self.process_queue, daemon=True, name="WhatsAppQueueProcessor").start()
-        
         self._initialized = True
-        logger.info("WhatsAppService initialized")
+        logger.info("WhatsAppService initialized (Lazy)")
+
+    def _ensure_dependencies(self):
+        """Lazy load neonize dependencies."""
+        if self._NewClient is None:
+            logger.info("Loading neonize dependencies...")
+            from neonize.client import NewClient
+            from neonize.events import ConnectedEv, DisconnectedEv
+            from neonize.proto.waE2E.WAWebProtobufsE2E_pb2 import Message
+            from neonize.utils import build_jid
+            from neonize.exc import IsOnWhatsAppError
+            
+            self._NewClient = NewClient
+            self._ConnectedEv = ConnectedEv
+            self._DisconnectedEv = DisconnectedEv
+            self._Message = Message
+            self._build_jid = build_jid
+            self._IsOnWhatsAppError = IsOnWhatsAppError
+            logger.info("neonize dependencies loaded.")
+
+    def _initialize_client(self):
+        """Initialize the neonize client if not already done."""
+        if self.client is None:
+            self._ensure_dependencies()
+            logger.info("Initializing neonize client...")
+            self.client = self._NewClient(self.session_file)
+            
+            # Register callbacks
+            self.client.event.qr(self.on_qr)
+            self._setup_events()
 
     def on_qr(self, client, qr_uuid):
         """Callback from neonize when a QR is generated."""
@@ -57,8 +83,9 @@ class WhatsAppService:
 
     def shutdown(self):
         """Gracefully disconnect the client."""
+        self._shutdown_flag = True
         try:
-           if self.is_connected:
+           if self.is_connected and self.client:
                logger.info("Shutting down WhatsApp Service...")
                # Suppress logging from neonize/underlying libs during disconnect
                logging.getLogger().setLevel(logging.ERROR)
@@ -74,12 +101,12 @@ class WhatsAppService:
             print(f"Error during WhatsApp shutdown: {e}")
 
     def _setup_events(self):
-        @self.client.event(ConnectedEv)
+        @self.client.event(self._ConnectedEv)
         def on_connected(client, event):
             self.is_connected = True
             logger.info("✅ Bot Connected to WhatsApp!")
             
-        @self.client.event(DisconnectedEv)
+        @self.client.event(self._DisconnectedEv)
         def on_disconnected(client, event):
             self.is_connected = False
             logger.warning("Bot Disconnected from WhatsApp!")
@@ -91,7 +118,15 @@ class WhatsAppService:
             return
 
         def run_client():
-            while True:
+            # Initialize inside the thread to avoid blocking main thread at all?
+            # Actually better to init here so it connects properly
+            try:
+                self._initialize_client()
+            except Exception as e:
+                logger.error(f"Failed to initialize WhatsApp client: {e}")
+                return
+
+            while not self._shutdown_flag:
                 try:
                     logger.info("Starting WhatsApp client connection...")
                     # connect() blocks until disconnected
@@ -105,22 +140,29 @@ class WhatsAppService:
                     except:
                         pass
                     
-                    logger.info("Retrying in 5s...")
-                    time.sleep(5) 
+                    if not self._shutdown_flag:
+                        logger.info("Retrying in 5s...")
+                        time.sleep(5) 
                 
                 self.is_connected = False
-                time.sleep(2)
+                if not self._shutdown_flag:
+                    time.sleep(2)
 
         # Name the thread for debugging
         self.thread = threading.Thread(target=run_client, name="WhatsAppBotThread", daemon=True)
         self.thread.start()
 
+        # Start Queue Processor if not running
+        if not self.queue_thread or not self.queue_thread.is_alive():
+            self.queue_thread = threading.Thread(target=self.process_queue, daemon=True, name="WhatsAppQueueProcessor")
+            self.queue_thread.start()
+
     def process_queue(self):
         """Background task to process pending messages."""
         logger.info("WhatsApp Queue Processor started.")
-        while True:
+        while not self._shutdown_flag:
             try:
-                if self.is_connected:
+                if self.is_connected and self.client:
                     pending = get_pending_whatsapp_messages()
                     for item in pending:
                         # Double check connection
@@ -155,6 +197,7 @@ class WhatsAppService:
 
     def _format_jid(self, phone):
         """Standardize phone number to JID format and return JID object."""
+        self._ensure_dependencies()
         # Remove non-digits
         clean = ''.join(filter(str.isdigit, phone))
         
@@ -163,7 +206,7 @@ class WhatsAppService:
             clean = "+91" + clean
         
         # Use built-in helper to create JID with all required fields (RawAgent, etc)
-        return build_jid(clean)
+        return self._build_jid(clean)
 
     def wait_for_connection(self, timeout=30):
         """Waits for the connection to be established."""
@@ -181,6 +224,7 @@ class WhatsAppService:
     def _send_text_sync(self, phone, text):
         """Synchronous helper for queue processing"""
         try:
+            self._ensure_dependencies()
             clean_phone = ''.join(filter(str.isdigit, phone))
             if len(clean_phone) == 10:
                 clean_phone = "91" + clean_phone
@@ -196,9 +240,9 @@ class WhatsAppService:
                 pass 
 
             if not jid:
-                jid = build_jid(clean_phone)
+                jid = self._build_jid(clean_phone)
             
-            msg = Message(conversation=text)
+            msg = self._Message(conversation=text)
             self.client.send_message(jid, msg)
             return True
         except Exception as e:
@@ -208,6 +252,7 @@ class WhatsAppService:
     def _send_image_sync(self, phone, image_path, caption):
         """Synchronous helper for queue processing"""
         try:
+            self._ensure_dependencies()
              # Read file
             if not os.path.exists(image_path):
                 return False
@@ -230,7 +275,7 @@ class WhatsAppService:
                 pass 
 
             if not jid:
-                jid = build_jid(clean_phone)
+                jid = self._build_jid(clean_phone)
 
             msg = self.client.build_image_message(image_bytes, caption=caption)
             self.client.send_message(jid, msg)
@@ -244,6 +289,13 @@ class WhatsAppService:
         logger.info(f"send_message called with phone={phone}")
         
         def run_send():
+            # Init client just in case (e.g. if start() wasn't called, though it safely should be)
+            if not self.thread or not self.thread.is_alive():
+                 logger.warning("Starting service lazily from send_message...")
+                 self.start()
+            
+            self._ensure_dependencies()
+
             max_retries = 3
             backoff_times = [2, 5, 10] 
             
@@ -256,7 +308,7 @@ class WhatsAppService:
                         logger.error("Abort send. Adding to persistent queue.")
                         add_to_whatsapp_queue(phone, 'text', text=text)
                         return 
-
+                
                 # Clean phone number string 
                 clean_phone = ''.join(filter(str.isdigit, phone))
                 if len(clean_phone) == 10:
@@ -271,7 +323,7 @@ class WhatsAppService:
                             item = result[0]
                             if hasattr(item, 'JID'): jid = item.JID
                             elif hasattr(item, 'jid'): jid = item.jid
-                    except IsOnWhatsAppError as e:
+                    except self._IsOnWhatsAppError as e:
                         logger.warning(f"is_on_whatsapp failed: {e}")
                         if "websocket not connected" in str(e) or "EOF" in str(e):
                              logger.warning("Detected disconnected websocket/EOF. Resetting connection state.")
@@ -282,11 +334,11 @@ class WhatsAppService:
 
                     if not jid:
                         logger.warning(f"No JID found for {clean_phone} (or check failed), using fallback")
-                        jid = build_jid(clean_phone)
+                        jid = self._build_jid(clean_phone)
 
                     logger.info(f"Using JID: {jid}")
                     
-                    msg = Message(conversation=text)
+                    msg = self._Message(conversation=text)
                     self.client.send_message(jid, msg)
                     
                     user_part = getattr(jid, 'user', getattr(jid, 'User', str(jid)))
@@ -327,6 +379,13 @@ class WhatsAppService:
             return {"success": False, "message": f"Read failed: {e}"}
 
         def run_send(path_str):
+            # Init client just in case
+            if not self.thread or not self.thread.is_alive():
+                 logger.warning("Starting service lazily from send_image...")
+                 self.start()
+
+            self._ensure_dependencies()
+
             max_retries = 3
             backoff_times = [2, 5, 10]
             
@@ -353,7 +412,7 @@ class WhatsAppService:
                             item = result[0]
                             if hasattr(item, 'JID'): jid = item.JID
                             elif hasattr(item, 'jid'): jid = item.jid
-                    except IsOnWhatsAppError as e:
+                    except self._IsOnWhatsAppError as e:
                         logger.warning(f"is_on_whatsapp failed: {e}")
                         if "websocket not connected" in str(e) or "EOF" in str(e):
                              logger.warning("Detected disconnected websocket. Resetting connection state.")
@@ -363,7 +422,7 @@ class WhatsAppService:
                         pass
 
                     if not jid:
-                        jid = build_jid(clean_phone)
+                        jid = self._build_jid(clean_phone)
 
                     logger.info(f"Sending image to JID: {jid}")
                     

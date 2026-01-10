@@ -84,6 +84,9 @@ a = Analysis(
         'whatsapp_service',
         'server_discovery',
         'pkg_resources',
+        'updater',
+        'packaging',
+        'requests',
     ],
     hookspath=[],
     hooksconfig={},
@@ -115,7 +118,6 @@ exe = EXE(
     entitlements_file=None,
     icon='favicon.ico',
 )
-
 coll = COLLECT(
     exe,
     a.binaries,
