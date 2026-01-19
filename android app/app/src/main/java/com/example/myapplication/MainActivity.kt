@@ -17,20 +17,23 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.serializer.KotlinXSerializer
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,7 +50,6 @@ class MainActivity : AppCompatActivity() {
             val data = result.data
             var results: Array<Uri>? = null
 
-            // Check if response is from camera
             if (data == null || data.data == null) {
                 if (cameraImageUri != null) {
                     results = arrayOf(cameraImageUri!!)
@@ -86,7 +88,6 @@ class MainActivity : AppCompatActivity() {
             var photoFile: File? = null
             try {
                 photoFile = createImageFile()
-                takePictureIntent.putExtra("PhotoPath", cameraImageUri.toString())
             } catch (ex: Exception) {
                 android.util.Log.e("WebView", "Image file creation failed", ex)
                 takePictureIntent = null
@@ -137,7 +138,6 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    // List of URLs to try in order
     private val urls = listOf(
         "https://follows-kingston-spring-registry.trycloudflare.com",
         "http://10.0.2.2:5000",
@@ -147,13 +147,17 @@ class MainActivity : AppCompatActivity() {
     private var currentUrlIndex = 0
     private var isErrorOccurred = false
 
-    // TODO: Replace with your actual Supabase credentials
     private val supabaseUrl = "https://tordrlujtfoechgrywmk.supabase.co"
     private val supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvcmRybHVqdGZvZWNoZ3J5d21rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTEyODYsImV4cCI6MjA4MzE4NzI4Nn0.f3DR_P8JErRFyhRNmGYPDv9_U19WNcUXGraunO_KzUw"
 
     private val supabase: SupabaseClient by lazy {
         createSupabaseClient(supabaseUrl, supabaseKey) {
             install(Postgrest)
+            // Use defaultSerializer property in the latest versions of Supabase-kt
+            defaultSerializer = KotlinXSerializer(Json {
+                ignoreUnknownKeys = true
+                coerceInputValues = true
+            })
         }
     }
 
@@ -166,14 +170,23 @@ class MainActivity : AppCompatActivity() {
 
         setupWebView()
         fetchUrlAndLoad()
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (webView.canGoBack()) {
+                    webView.goBack()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 
     private fun setupWebView() {
-        webView.webViewClient = WebViewClient()
         val webSettings: WebSettings = webView.settings
         webSettings.javaScriptEnabled = true
         webSettings.domStorageEnabled = true
-        webSettings.loadWithOverviewMode = true
         webSettings.loadWithOverviewMode = true
         webSettings.useWideViewPort = true
         
@@ -189,7 +202,6 @@ class MainActivity : AppCompatActivity() {
                 fileUploadCallback = filePathCallback
                 pendingFileChooserParams = fileChooserParams
                 
-                // Check permissions
                 val permissions = mutableListOf<String>()
                 permissions.add(Manifest.permission.CAMERA)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -226,10 +238,9 @@ class MainActivity : AppCompatActivity() {
                 error: android.webkit.WebResourceError?
             ) {
                 super.onReceivedError(view, request, error)
-                isErrorOccurred = true
-                android.util.Log.e("WebView", "Error loading ${request?.url}: ${error?.description}")
-                
                 if (request?.isForMainFrame == true) {
+                    isErrorOccurred = true
+                    android.util.Log.e("WebView", "Error loading ${request.url}: ${error?.description}")
                     tryNextUrl()
                 }
             }
@@ -241,31 +252,42 @@ class MainActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
+                android.util.Log.d("WebView", "Querying Supabase...")
                 val table = supabase.from("employee")
+                
                 val response = table.select {
                     filter {
-                        eq("connection_mode", "Server")
+                        ilike("connection_mode", "server")
                     }
                 }
                 
                 val employees = response.decodeAs<List<Employee>>()
+                android.util.Log.d("WebView", "Rows found: ${employees.size}")
+                
+                if (employees.isEmpty()) {
+                    android.util.Log.w("WebView", "No rows found with filter. Checking if ANY rows are visible...")
+                    val allRows = table.select().decodeAs<List<Employee>>()
+                    android.util.Log.d("WebView", "Total visible rows in table: ${allRows.size}")
+                }
+
                 val employee = employees.firstOrNull()
                 
                 if (employee != null && !employee.public_url.isNullOrEmpty()) {
-                    android.util.Log.d("WebView", "Fetched URL from Supabase: ${employee.public_url}")
+                    android.util.Log.d("WebView", "URL Found: ${employee.public_url}")
                     isErrorOccurred = false
-                    webView.loadUrl(employee.public_url)
+                    runOnUiThread {
+                        webView.loadUrl(employee.public_url!!)
+                    }
                 } else {
-                    android.util.Log.w("WebView", "Fetched URL is empty, falling back to local list")
-                    startFallbackChain()
+                    android.util.Log.w("WebView", "Fallback triggered: No valid 'server' row.")
+                    runOnUiThread { startFallbackChain() }
                 }
             } catch (e: Exception) {
-                android.util.Log.e("WebView", "Failed to fetch from Supabase. Error: ${e.message}", e)
-                e.printStackTrace()
+                android.util.Log.e("WebView", "Supabase error: ${e.message}", e)
                 runOnUiThread {
-                     Toast.makeText(this@MainActivity, "Supabase Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@MainActivity, "Supabase Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    startFallbackChain()
                 }
-                startFallbackChain()
             }
         }
     }
@@ -278,17 +300,12 @@ class MainActivity : AppCompatActivity() {
     private fun tryNextUrl() {
         currentUrlIndex++
         if (currentUrlIndex < urls.size) {
-            runOnUiThread {
-                Toast.makeText(this, "Connection failed. Retrying with local server...", Toast.LENGTH_SHORT).show()
-                loadCurrentUrl()
-            }
+            loadCurrentUrl()
         } else {
             runOnUiThread {
                 progressBar.visibility = View.GONE
                 webView.visibility = View.VISIBLE
-                val finalErrorHtml = "<html><body><h1>Connection Failed</h1><p>Could not connect to any server.</p></body></html>"
-                webView.loadData(finalErrorHtml, "text/html", "UTF-8")
-                Toast.makeText(this@MainActivity, "All connection attempts failed", Toast.LENGTH_LONG).show()
+                webView.loadData("<html><body><h1>Connection Failed</h1><p>Check your RLS policies and DB values.</p></body></html>", "text/html", "UTF-8")
             }
         }
     }
@@ -296,15 +313,9 @@ class MainActivity : AppCompatActivity() {
     private fun loadCurrentUrl() {
         isErrorOccurred = false
         val url = urls[currentUrlIndex]
-        android.util.Log.d("WebView", "Attempting to load: $url")
-        webView.loadUrl(url)
-    }
-
-    override fun onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack()
-        } else {
-            super.onBackPressed()
+        android.util.Log.d("WebView", "Loading fallback: $url")
+        runOnUiThread {
+            webView.loadUrl(url)
         }
     }
 }

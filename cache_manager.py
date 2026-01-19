@@ -42,6 +42,7 @@ def init_cache():
                 denial_reason TEXT,
                 id_type TEXT,
                 id_number TEXT,
+                added_by TEXT,
                 updated_at TEXT,
                 created_at TEXT
             )
@@ -73,6 +74,11 @@ def init_cache():
             
         try:
             conn.execute('ALTER TABLE visitors ADD COLUMN id_number TEXT')
+        except sqlite3.OperationalError:
+            pass # Column likely exists
+
+        try:
+            conn.execute('ALTER TABLE visitors ADD COLUMN added_by TEXT')
         except sqlite3.OperationalError:
             pass # Column likely exists
 
@@ -216,23 +222,23 @@ def sync_data_from_supabase(force=False):
             if v_id in local_ids:
                 conn.execute('''
                     UPDATE visitors
-                    SET name=?, phone=?, person_to_visit=?, reason=?, has_vehicle=?, vehicle_number=?, entry_time=?, exit_time=?, status=?, denial_reason=?, id_type=?, id_number=?, updated_at=?, created_at=?
+                    SET name=?, phone=?, person_to_visit=?, reason=?, has_vehicle=?, vehicle_number=?, entry_time=?, exit_time=?, status=?, denial_reason=?, id_type=?, id_number=?, added_by=?, updated_at=?, created_at=?
                     WHERE id=?
                 ''', (
                     v.get('name'), v.get('phone'), v.get('person_to_visit'), v.get('reason'),
                     v.get('has_vehicle'), v.get('vehicle_number'), v.get('entry_time'), v.get('exit_time'),
-                    v.get('status'), v.get('denial_reason'), v.get('id_type'), v.get('id_number'),
+                    v.get('status'), v.get('denial_reason'), v.get('id_type'), v.get('id_number'), v.get('added_by'),
                     v.get('updated_at'), v.get('created_at'),
                     v_id
                 ))
             else:
                 conn.execute('''
-                    INSERT INTO visitors (id, name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time, exit_time, status, denial_reason, id_type, id_number, updated_at, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO visitors (id, name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time, exit_time, status, denial_reason, id_type, id_number, added_by, updated_at, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     v_id, v.get('name'), v.get('phone'), v.get('person_to_visit'), v.get('reason'),
                     v.get('has_vehicle'), v.get('vehicle_number'), v.get('entry_time'), v.get('exit_time'),
-                    v.get('status'), v.get('denial_reason'), v.get('id_type'), v.get('id_number'),
+                    v.get('status'), v.get('denial_reason'), v.get('id_type'), v.get('id_number'), v.get('added_by'),
                     v.get('updated_at'), v.get('created_at')
                 ))
         
@@ -410,7 +416,7 @@ def update_local_visitor(data):
         if exists:
                 conn.execute('''
                     UPDATE visitors
-                    SET name=?, phone=?, person_to_visit=?, reason=?, has_vehicle=?, vehicle_number=?, entry_time=?, exit_time=?, status=?, denial_reason=?, id_type=?, id_number=?, updated_at=?, created_at=?
+                    SET name=?, phone=?, person_to_visit=?, reason=?, has_vehicle=?, vehicle_number=?, entry_time=?, exit_time=?, status=?, denial_reason=?, id_type=?, id_number=?, added_by=?, updated_at=?, created_at=?
                     WHERE id=?
                 ''', (
                     data.get('name'),
@@ -425,14 +431,15 @@ def update_local_visitor(data):
                     data.get('denial_reason'),
                     data.get('id_type'),
                     data.get('id_number'),
+                    data.get('added_by'),
                     data.get('updated_at'),
                     data.get('created_at'),
                     data.get('id')
                 ))
         else:
             conn.execute('''
-                INSERT INTO visitors (id, name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time, exit_time, status, denial_reason, id_type, id_number, updated_at, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO visitors (id, name, phone, person_to_visit, reason, has_vehicle, vehicle_number, entry_time, exit_time, status, denial_reason, id_type, id_number, added_by, updated_at, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 data.get('id'),
                 data.get('name'),
@@ -447,6 +454,7 @@ def update_local_visitor(data):
                 data.get('denial_reason'),
                 data.get('id_type'),
                 data.get('id_number'),
+                data.get('added_by'),
                 data.get('updated_at'),
                 data.get('created_at')
             ))

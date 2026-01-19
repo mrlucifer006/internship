@@ -69,6 +69,7 @@ def save_visitor(data):
             "vehicle_number": vehicle_number,
             "id_type": data.get("id_type"),
             "id_number": data.get("id_number"),
+            "added_by": data.get("added_by"),
             "entry_time": datetime.now().isoformat(),
             "status": status, 
             "updated_at": datetime.now().isoformat()

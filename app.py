@@ -274,7 +274,8 @@ def get_data():
                 "vehicle": vehicle,
                 "vehicle_number": vehicle_number,
                 "id_type": id_type,
-                "id_number": id_number
+                "id_number": id_number,
+                "added_by": flask.session.get('user', 'Gate')
             }
             
             result = save_visitor(data)

@@ -12,6 +12,9 @@ CREATE TABLE employee (
     password text,
     Auth_level integer,
     status integer DEFAULT 0,
+    connection_mode text,
+    public_url text,
+    last_seen timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
@@ -30,6 +33,7 @@ CREATE TABLE visitors (
     denial_reason text,
     id_type text,
     id_number text,
+    added_by text,
     updated_at timestamp with time zone DEFAULT now(),
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
