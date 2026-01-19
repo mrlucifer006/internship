@@ -12,6 +12,7 @@ CREATE TABLE employee (
     password text,
     Auth_level integer,
     status integer DEFAULT 0,
+    ip_address text,
     connection_mode text,
     public_url text,
     last_seen timestamp with time zone,

@@ -24,6 +24,7 @@ def init_cache():
                 password TEXT,
                 Auth_level INTEGER,
                 status INTEGER,
+                ip_address TEXT,
                 connection_mode TEXT,
                 public_url TEXT,
                 last_seen TEXT,
@@ -74,6 +75,10 @@ def init_cache():
         ''')
         
         # Migration: Add new columns if they don't exist (for existing DBs)
+        try:
+            conn.execute('ALTER TABLE employee ADD COLUMN ip_address TEXT')
+        except sqlite3.OperationalError:
+            pass
         try:
             conn.execute('ALTER TABLE employee ADD COLUMN connection_mode TEXT')
         except sqlite3.OperationalError:
