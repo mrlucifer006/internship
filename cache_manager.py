@@ -24,6 +24,9 @@ def init_cache():
                 password TEXT,
                 Auth_level INTEGER,
                 status INTEGER,
+                connection_mode TEXT,
+                public_url TEXT,
+                last_seen TEXT,
                 created_at TEXT
             )
         ''')
@@ -62,11 +65,28 @@ def init_cache():
                 is_returnable INTEGER DEFAULT 0,
                 material_type TEXT,
                 return_reason TEXT,
-                created_at TEXT
+                created_at TEXT,
+                driver_id_type TEXT,
+                driver_id_number TEXT,
+                vehicle_length TEXT,
+                return_time TEXT
             )
         ''')
         
         # Migration: Add new columns if they don't exist (for existing DBs)
+        try:
+            conn.execute('ALTER TABLE employee ADD COLUMN connection_mode TEXT')
+        except sqlite3.OperationalError:
+            pass
+        try:
+            conn.execute('ALTER TABLE employee ADD COLUMN public_url TEXT')
+        except sqlite3.OperationalError:
+            pass
+        try:
+            conn.execute('ALTER TABLE employee ADD COLUMN last_seen TEXT')
+        except sqlite3.OperationalError:
+            pass
+
         try:
             conn.execute('ALTER TABLE visitors ADD COLUMN id_type TEXT')
         except sqlite3.OperationalError:
@@ -117,7 +137,7 @@ def init_cache():
             conn.execute('ALTER TABLE vehicle ADD COLUMN return_time TEXT')
         except sqlite3.OperationalError:
             pass
-
+            
         # [NEW] Create WhatsApp Queue Table
         conn.execute('''
             CREATE TABLE IF NOT EXISTS whatsapp_queue (
