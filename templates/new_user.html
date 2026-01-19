@@ -251,6 +251,9 @@
                                             <div class="h-full bg-primary rounded-full transition-all duration-100 ease-out"
                                                 id="slider-track-fill" style="width: 50%;"></div>
                                         </div>
+                                        <div id="slider-thumb"
+                                            class="absolute h-5 w-5 bg-primary rounded-full shadow-md border-2 border-white z-10 pointer-events-none transition-all duration-100 ease-out top-1/2 -translate-y-1/2 -translate-x-1/2"
+                                            style="left: 50%;"></div>
                                         <div
                                             class="w-full flex justify-between absolute z-10 px-[10px] pointer-events-none">
                                             <div class="w-1 h-2 bg-gray-400 rounded-full opacity-50"></div>
@@ -305,6 +308,11 @@
             // Map 1-5 to 0-100%
             const percent = ((val - 1) / (5 - 1)) * 100;
             track.style.width = `${percent}%`;
+
+            const thumb = document.getElementById('slider-thumb');
+            if (thumb) {
+                thumb.style.left = `${percent}%`;
+            }
 
             const roles = {
                 1: 'Foreman',
