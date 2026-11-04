@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New User - SSBS Admin Portal</title>
+    <link rel="icon" href="./assets/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+
+<body class="bg-slate-50 font-sans antialiased min-h-screen text-slate-600">
+    <div class="flex h-screen bg-slate-50 overflow-hidden w-full">
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+        <!-- Left Navigation Sidebar -->
+        <aside id="sidebar"
+            class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
+            <div class="h-16 flex items-center px-6 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <img src="./assets/images/favicon.ico" alt="SSBS Logo" class="size-8 rounded-lg">
+                    <h1 class="font-bold text-white tracking-wide text-lg">SSBS Portal</h1>
+                </div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+                <div class="px-3 mb-6">
+                    <div class="bg-slate-800/60 rounded-xl p-3 border border-slate-700/50 flex items-center gap-3">
+                        <div id="user-avatar-initial"
+                            class="size-10 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-900/30">
+                            S
+                        </div>
+                        <div class="min-w-0">
+                            <p id="user-display-name" class="text-white font-bold text-sm truncate">Sanjai M S</p>
+                            <p id="user-role-badge" class="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">DEVELOPER</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Portals</div>
+
+                <a href="./index.html"
+                    class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span class="material-symbols-outlined text-[22px]">security</span>
+                    <span class="font-medium text-sm">Gate Portal</span>
+                </a>
+
+                <a href="./logistics_entry.html"
+                    class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span class="material-symbols-outlined text-[22px]">local_shipping</span>
+                    <span class="font-medium text-sm">Logistics Portal</span>
+                </a>
+
+                <a href="./notification.html"
+                    class="nav-link-item group flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[22px]">notifications</span>
+                        <span class="font-medium text-sm">Host Approvals</span>
+                    </div>
+                    <span id="nav-pending-notif-count" class="hidden px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500 text-white">0</span>
+                </a>
+
+                <div id="admin-nav-section" class="pt-4 space-y-1">
+                    <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Administration</div>
+                    <a href="./view_status.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+                        <span class="font-medium text-sm">System & Staff</span>
+                    </a>
+                    <a href="./view_all.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">group</span>
+                        <span class="font-medium text-sm">All Visitors</span>
+                    </a>
+                    <a href="./view_all_logistics.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">inventory</span>
+                        <span class="font-medium text-sm">All Logistics</span>
+                    </a>
+                    <a href="./new_user.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">person_add</span>
+                        <span class="font-medium text-sm">Add New User</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <button onclick="logout()"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-red-900/30 transition-all group">
+                    <span class="material-symbols-outlined text-[22px] group-hover:text-red-400 transition-colors">logout</span>
+                    <span class="font-medium text-sm">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+            <header class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 shrink-0">
+                <button onclick="toggleSidebar()" class="material-symbols-outlined text-2xl text-slate-600 hover:text-slate-900">menu</button>
+                <span class="font-bold text-slate-800">Add New User</span>
+                <a href="./view_status.html" class="material-symbols-outlined text-2xl text-indigo-600">arrow_back</a>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-6 md:p-10 pb-24">
+                <div class="max-w-3xl mx-auto flex flex-col gap-6">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Provision New System User</h1>
+                        <p class="text-slate-500 text-sm mt-1">Configure credentials, department, and role authorization level (1 to 5).</p>
+                    </div>
+
+                    <!-- User Creation Form Card -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 p-6 md:p-8 shadow-sm">
+                        <form id="add-user-form" class="flex flex-col gap-6">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <label class="block">
+                                    <span class="text-slate-700 font-medium text-xs mb-1.5 block">Full Name <span class="text-red-500">*</span></span>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                            <span class="material-symbols-outlined text-lg">person</span>
+                                        </span>
+                                        <input type="text" id="user-full-name" required placeholder="e.g. Ramesh Narayan"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 pl-10 pr-3 text-sm">
+                                    </div>
+                                </label>
+                                <label class="block">
+                                    <span class="text-slate-700 font-medium text-xs mb-1.5 block">Login ID / Username <span class="text-red-500">*</span></span>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                            <span class="material-symbols-outlined text-lg">badge</span>
+                                        </span>
+                                        <input type="text" id="user-login-id" required placeholder="e.g. ramesh_sec"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 pl-10 pr-3 text-sm font-mono">
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <label class="block">
+                                    <span class="text-slate-700 font-medium text-xs mb-1.5 block">Phone Number <span class="text-red-500">*</span></span>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                            <span class="material-symbols-outlined text-lg">phone</span>
+                                        </span>
+                                        <input type="tel" id="user-phone" maxlength="10" minlength="10" required
+                                            pattern="[0-9]{10}" placeholder="10-digit mobile"
+                                            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 pl-10 pr-3 text-sm font-mono">
+                                    </div>
+                                </label>
+                                <label class="block">
+                                    <span class="text-slate-700 font-medium text-xs mb-1.5 block">Password <span class="text-red-500">*</span></span>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                            <span class="material-symbols-outlined text-lg">lock</span>
+                                        </span>
+                                        <input type="password" id="user-password" required placeholder="••••••••"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 pl-10 pr-10 text-sm">
+                                        <button type="button" onclick="togglePass('user-password')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
+                                            <span class="material-symbols-outlined text-lg">visibility</span>
+                                        </button>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <label class="block">
+                                <span class="text-slate-700 font-medium text-xs mb-1.5 block">Assigned Department</span>
+                                <input type="text" id="user-dept" placeholder="e.g. Security, Logistics Bay, Administration, Operations"
+                                    class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm">
+                            </label>
+
+                            <!-- Authority Level Slider Component -->
+                            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-slate-800 text-sm">System Authority Level</h4>
+                                        <p class="text-xs text-slate-400">Controls permissions and portal capabilities.</p>
+                                    </div>
+                                    <span id="slider-role-display" class="px-3 py-1 bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg border border-indigo-200">
+                                        Level 3 — Employee
+                                    </span>
+                                </div>
+
+                                <div class="pt-2 px-1">
+                                    <input type="range" id="auth-level-slider" min="1" max="5" step="1" value="3"
+                                        oninput="updateSlider(this.value)"
+                                        class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                    <div class="flex justify-between text-[11px] font-bold text-slate-400 pt-2 font-mono">
+                                        <span>1: Foreman</span>
+                                        <span>2: Supervisor</span>
+                                        <span>3: Employee</span>
+                                        <span>4: Admin</span>
+                                        <span>5: Developer</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 pt-2">
+                                <button type="submit"
+                                    class="flex-1 h-12 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-2">
+                                    <span class="material-symbols-outlined text-xl">person_add</span>
+                                    Add New User
+                                </button>
+                                <button type="reset" class="px-6 h-12 bg-white border border-slate-300 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors">
+                                    Reset
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="./assets/js/db.js"></script>
+    <script src="./assets/js/app.js"></script>
+    <script>
+        function updateSlider(val) {
+            const roleName = window.SSBS_DB.getRoleName(val);
+            document.getElementById('slider-role-display').textContent = `Level ${val} — ${roleName}`;
+        }
+
+        function togglePass(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        document.getElementById('add-user-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById('user-full-name').value.trim();
+            const login_id = document.getElementById('user-login-id').value.trim();
+            const phone = document.getElementById('user-phone').value.trim();
+            const auth_level = document.getElementById('auth-level-slider').value;
+            const dept = document.getElementById('user-dept').value.trim() || 'Operations';
+
+            try {
+                const newEmp = window.SSBS_DB.addEmployee({
+                    name,
+                    login_id,
+                    phone,
+                    auth_level,
+                    department: dept
+                });
+                showToast(`User "${name}" (${login_id}) registered successfully!`);
+                document.getElementById('add-user-form').reset();
+                updateSlider(3);
+                setTimeout(() => {
+                    window.location.href = './view_status.html';
+                }, 1000);
+            } catch (err) {
+                alert(err.message);
+            }
+        });
+    </script>
+</body>
+
+</html>

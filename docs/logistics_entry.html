@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistics Entry - SSBS Portal</title>
+    <link rel="icon" href="./assets/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+
+<body class="bg-slate-50 font-sans antialiased min-h-screen text-slate-600">
+    <div class="flex h-screen bg-slate-50 overflow-hidden w-full">
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+        <!-- Left Navigation Sidebar -->
+        <aside id="sidebar"
+            class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
+            <div class="h-16 flex items-center px-6 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <img src="./assets/images/favicon.ico" alt="SSBS Logo" class="size-8 rounded-lg">
+                    <h1 class="font-bold text-white tracking-wide text-lg">SSBS Portal</h1>
+                </div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+                <div class="px-3 mb-6">
+                    <div class="bg-slate-800/60 rounded-xl p-3 border border-slate-700/50 flex items-center gap-3">
+                        <div id="user-avatar-initial"
+                            class="size-10 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-900/30">
+                            S
+                        </div>
+                        <div class="min-w-0">
+                            <p id="user-display-name" class="text-white font-bold text-sm truncate">Sanjai M S</p>
+                            <p id="user-role-badge" class="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">DEVELOPER</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Portals</div>
+
+                <a href="./index.html"
+                    class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span class="material-symbols-outlined text-[22px]">security</span>
+                    <span class="font-medium text-sm">Gate Portal</span>
+                </a>
+
+                <a href="./logistics_entry.html"
+                    class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span class="material-symbols-outlined text-[22px]">local_shipping</span>
+                    <span class="font-medium text-sm">Logistics Portal</span>
+                </a>
+
+                <a href="./notification.html"
+                    class="nav-link-item group flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[22px]">notifications</span>
+                        <span class="font-medium text-sm">Host Approvals</span>
+                    </div>
+                    <span id="nav-pending-notif-count" class="hidden px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500 text-white">0</span>
+                </a>
+
+                <div id="admin-nav-section" class="pt-4 space-y-1">
+                    <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Administration</div>
+                    <a href="./view_status.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+                        <span class="font-medium text-sm">System & Staff</span>
+                    </a>
+                    <a href="./view_all.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">group</span>
+                        <span class="font-medium text-sm">All Visitors</span>
+                    </a>
+                    <a href="./view_all_logistics.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">inventory</span>
+                        <span class="font-medium text-sm">All Logistics</span>
+                    </a>
+                    <a href="./new_user.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">person_add</span>
+                        <span class="font-medium text-sm">Add New User</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <button onclick="logout()"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-red-900/30 transition-all group">
+                    <span class="material-symbols-outlined text-[22px] group-hover:text-red-400 transition-colors">logout</span>
+                    <span class="font-medium text-sm">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+            <header class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 shrink-0">
+                <button onclick="toggleSidebar()" class="material-symbols-outlined text-2xl text-slate-600 hover:text-slate-900">menu</button>
+                <span class="font-bold text-slate-800">Logistics Entry</span>
+                <a href="./view_all_logistics.html" class="material-symbols-outlined text-2xl text-indigo-600">inventory</a>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-6 md:p-8 xl:p-10 pb-24">
+                <div class="max-w-4xl mx-auto flex flex-col gap-6">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">New Logistics Vehicle Entry</h1>
+                        <p class="text-slate-500 text-sm mt-1">Record inbound material, vehicle weight, and driver documentation.</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 p-6 md:p-8 shadow-sm">
+                        <form id="logistics-entry-form" class="flex flex-col gap-8">
+                            <!-- Driver Details -->
+                            <section class="space-y-4">
+                                <h3 class="text-xs font-extrabold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-base">person</span>
+                                    1. Driver Details
+                                </h3>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">Driver Name <span class="text-red-500">*</span></span>
+                                        <input type="text" id="driver-name" required placeholder="Full Name from License"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm">
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">Driver Phone <span class="text-red-500">*</span></span>
+                                        <input type="tel" id="driver-phone" maxlength="10" minlength="10" required
+                                            pattern="[0-9]{10}" placeholder="10-digit mobile"
+                                            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm font-mono">
+                                    </label>
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">Driver ID Type <span class="text-red-500">*</span></span>
+                                        <select id="driver-id-type" required
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm">
+                                            <option value="Driving License" selected>Driving License</option>
+                                            <option value="Aadhar">Aadhar Card</option>
+                                            <option value="PAN">PAN Card</option>
+                                        </select>
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">ID Proof Number <span class="text-red-500">*</span></span>
+                                        <input type="text" id="driver-id-number" required placeholder="License or UID number"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm font-mono uppercase">
+                                    </label>
+                                </div>
+                            </section>
+
+                            <hr class="border-slate-100">
+
+                            <!-- Vehicle & Consignment -->
+                            <section class="space-y-4">
+                                <h3 class="text-xs font-extrabold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-base">local_shipping</span>
+                                    2. Vehicle & Consignment Info
+                                </h3>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">Vehicle Reg. Number <span class="text-red-500">*</span></span>
+                                        <input type="text" id="veh-reg-no" required placeholder="e.g. HR-55-AN-8910"
+                                            oninput="this.value = this.value.toUpperCase()"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm font-mono uppercase tracking-wider">
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">Vehicle Classification / Type</span>
+                                        <select id="vehicle-length"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm">
+                                            <option value="Heavy 10-Wheeler">Heavy 10-Wheeler</option>
+                                            <option value="Container Truck">Container Truck (20/40ft)</option>
+                                            <option value="Medium Truck">Medium Commercial Truck</option>
+                                            <option value="Small Commercial">Light Commercial Vehicle (LCV)</option>
+                                            <option value="Tanker / Bulker">Tanker / Liquid Bulker</option>
+                                        </select>
+                                    </label>
+                                </div>
+
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">Origin / Supplier <span class="text-red-500">*</span></span>
+                                        <input type="text" id="vehicle-origin" required placeholder="e.g. Tata Steel Depot"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm">
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">Destination / Bay <span class="text-red-500">*</span></span>
+                                        <input type="text" id="vehicle-dest" required placeholder="e.g. Raw Material Bay 3"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm">
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">PO / DC Number <span class="text-red-500">*</span></span>
+                                        <input type="text" id="purchase-no" required placeholder="e.g. PO-2026-9941"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm font-mono uppercase">
+                                    </label>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">Material Description <span class="text-red-500">*</span></span>
+                                        <input type="text" id="material-type" required placeholder="e.g. Hot Rolled Steel Coils / Packaging"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm">
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">Gross Weighbridge Weight (kg) <span class="text-red-500">*</span></span>
+                                        <input type="number" id="gross-weight" required placeholder="e.g. 24800"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm font-mono">
+                                    </label>
+                                </div>
+
+                                <!-- Returnable Material Checkbox -->
+                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="size-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+                                                <span class="material-symbols-outlined text-lg">sync</span>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-bold text-slate-800">Returnable Consignment Assets</p>
+                                                <p class="text-[11px] text-slate-400">Empty pallets, crates, or gas cylinders requiring return slip?</p>
+                                            </div>
+                                        </div>
+                                        <input type="checkbox" id="is-returnable-toggle" onchange="toggleReturnFields()"
+                                            class="size-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                    </div>
+                                    <div id="return-details-box" class="hidden mt-3 pt-3 border-t border-slate-200">
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-xs mb-1.5 block">Return Description & Item Quantity</span>
+                                            <input type="text" id="return-reason" placeholder="e.g. Wooden Shipping Pallets (Qty: 30)"
+                                                class="w-full rounded-xl border border-slate-300 bg-white h-10 px-3 text-xs">
+                                        </label>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div class="flex items-center gap-3 pt-2">
+                                <button type="submit"
+                                    class="flex-1 h-12 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-2">
+                                    <span class="material-symbols-outlined text-xl">save</span>
+                                    Log Vehicle Entry
+                                </button>
+                                <button type="reset" class="px-6 h-12 bg-white border border-slate-300 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors">
+                                    Clear Form
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Bottom Floating Pill Switcher -->
+            <div class="fixed bottom-3 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md border border-slate-300/80 p-1.5 rounded-full shadow-2xl z-30 flex items-center gap-1">
+                <a href="./logistics_entry.html" class="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white text-xs font-bold shadow-sm">
+                    <span class="material-symbols-outlined text-base">login</span>
+                    <span>Logistics Entry</span>
+                </a>
+                <a href="./logistics_exit.html" class="flex items-center gap-2 px-4 py-2 rounded-full text-slate-600 hover:bg-slate-100 text-xs font-bold transition-all">
+                    <span class="material-symbols-outlined text-base">logout</span>
+                    <span>Vehicle Exit</span>
+                </a>
+                <a href="./view_all_logistics.html" class="flex items-center gap-2 px-4 py-2 rounded-full text-slate-600 hover:bg-slate-100 text-xs font-bold transition-all">
+                    <span class="material-symbols-outlined text-base">inventory</span>
+                    <span>All Logistics</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="./assets/js/db.js"></script>
+    <script src="./assets/js/app.js"></script>
+    <script>
+        function toggleReturnFields() {
+            const isChecked = document.getElementById('is-returnable-toggle').checked;
+            document.getElementById('return-details-box').classList.toggle('hidden', !isChecked);
+        }
+
+        document.getElementById('logistics-entry-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const entryData = {
+                driver_name: document.getElementById('driver-name').value.trim(),
+                driver_phone: document.getElementById('driver-phone').value.trim(),
+                id_type: document.getElementById('driver-id-type').value,
+                id_number: document.getElementById('driver-id-number').value.trim(),
+                veh_reg_no: document.getElementById('veh-reg-no').value.trim(),
+                vehicle_length: document.getElementById('vehicle-length').value,
+                origin: document.getElementById('vehicle-origin').value.trim(),
+                destination: document.getElementById('vehicle-dest').value.trim(),
+                purchase_no: document.getElementById('purchase-no').value.trim(),
+                material_type: document.getElementById('material-type').value.trim(),
+                gross_weight: document.getElementById('gross-weight').value,
+                is_returnable: document.getElementById('is-returnable-toggle').checked,
+                return_reason: document.getElementById('return-reason') ? document.getElementById('return-reason').value.trim() : ''
+            };
+
+            const vehicle = window.SSBS_DB.addLogisticsEntry(entryData);
+            showToast(`Logistics Vehicle ${vehicle.veh_reg_no} entry logged!`);
+            document.getElementById('logistics-entry-form').reset();
+            toggleReturnFields();
+        });
+    </script>
+</body>
+
+</html>

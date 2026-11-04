@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Approvals & Notifications | SSBS</title>
+    <link rel="icon" href="./assets/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+
+<body class="bg-slate-50 font-sans antialiased min-h-screen text-slate-600">
+    <div class="flex h-screen bg-slate-50 overflow-hidden w-full">
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+        <!-- Left Navigation Sidebar -->
+        <aside id="sidebar"
+            class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
+            <div class="h-16 flex items-center px-6 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <img src="./assets/images/favicon.ico" alt="SSBS Logo" class="size-8 rounded-lg">
+                    <h1 class="font-bold text-white tracking-wide text-lg">SSBS Portal</h1>
+                </div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+                <div class="px-3 mb-6">
+                    <div class="bg-slate-800/60 rounded-xl p-3 border border-slate-700/50 flex items-center gap-3">
+                        <div id="user-avatar-initial"
+                            class="size-10 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-900/30">
+                            S
+                        </div>
+                        <div class="min-w-0">
+                            <p id="user-display-name" class="text-white font-bold text-sm truncate">Sanjai M S</p>
+                            <p id="user-role-badge" class="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">DEVELOPER</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Portals</div>
+
+                <a href="./index.html"
+                    class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span class="material-symbols-outlined text-[22px]">security</span>
+                    <span class="font-medium text-sm">Gate Portal</span>
+                </a>
+
+                <a href="./logistics_entry.html"
+                    class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span class="material-symbols-outlined text-[22px]">local_shipping</span>
+                    <span class="font-medium text-sm">Logistics Portal</span>
+                </a>
+
+                <a href="./notification.html"
+                    class="nav-link-item group flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[22px]">notifications</span>
+                        <span class="font-medium text-sm">Host Approvals</span>
+                    </div>
+                    <span id="nav-pending-notif-count" class="hidden px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500 text-white">0</span>
+                </a>
+
+                <div id="admin-nav-section" class="pt-4 space-y-1">
+                    <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Administration</div>
+                    <a href="./view_status.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+                        <span class="font-medium text-sm">System & Staff</span>
+                    </a>
+                    <a href="./view_all.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">group</span>
+                        <span class="font-medium text-sm">All Visitors</span>
+                    </a>
+                    <a href="./view_all_logistics.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">inventory</span>
+                        <span class="font-medium text-sm">All Logistics</span>
+                    </a>
+                    <a href="./new_user.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">person_add</span>
+                        <span class="font-medium text-sm">Add New User</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <button onclick="logout()"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-red-900/30 transition-all group">
+                    <span class="material-symbols-outlined text-[22px] group-hover:text-red-400 transition-colors">logout</span>
+                    <span class="font-medium text-sm">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+            <header class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 shrink-0">
+                <button onclick="toggleSidebar()" class="material-symbols-outlined text-2xl text-slate-600 hover:text-slate-900">menu</button>
+                <span class="font-bold text-slate-800">Approvals & Alerts</span>
+                <a href="./index.html" class="material-symbols-outlined text-2xl text-indigo-600">home</a>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-6 md:p-10 pb-24">
+                <div class="max-w-4xl mx-auto flex flex-col gap-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Host Approvals & Alerts</h1>
+                            <p class="text-slate-500 text-sm mt-1">Review visitor gate entry authorization requests and WhatsApp service queue.</p>
+                        </div>
+                    </div>
+
+                    <!-- Pending Approval Cards -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <span class="material-symbols-outlined text-amber-500">pending_actions</span>
+                                Pending Host Visitor Approvals
+                            </h3>
+                            <span id="pending-count-tag" class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-xs">0 Pending</span>
+                        </div>
+
+                        <div id="pending-approvals-list" class="space-y-3">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Automated WhatsApp Notifications Feed -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4 mt-4">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-emerald-600 text-2xl">chat</span>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-sm">Automated WhatsApp Broadcast Queue</h3>
+                                    <p class="text-xs text-slate-400">Real-time alerts sent to employee hosts and logistics managers</p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-lg border border-emerald-200">
+                                WhatsApp Web Active
+                            </span>
+                        </div>
+
+                        <div id="whatsapp-queue-list" class="space-y-3">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="./assets/js/db.js"></script>
+    <script src="./assets/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPendingApprovals();
+            renderWhatsAppQueue();
+        });
+
+        function renderPendingApprovals() {
+            const container = document.getElementById('pending-approvals-list');
+            const tag = document.getElementById('pending-count-tag');
+            const pending = window.SSBS_DB.getPendingVisitors();
+
+            tag.textContent = `${pending.length} Pending`;
+
+            if (pending.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 bg-white rounded-2xl border border-slate-200 text-center text-slate-400 text-xs">
+                        <span class="material-symbols-outlined text-4xl mb-1 text-slate-300">task_alt</span>
+                        <p class="font-medium text-sm text-slate-600">All visitor arrival requests have been reviewed.</p>
+                        <p class="mt-0.5">New visitor check-ins requiring host approval will appear here in real-time.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = pending.map(v => `
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-modal">
+                    <div class="flex items-center gap-4">
+                        <img src="${v.photo || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'}"
+                            class="size-14 rounded-2xl object-cover border border-slate-200" alt="">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-slate-800 text-base">${v.name}</h4>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Pending Host Approval</span>
+                            </div>
+                            <p class="text-xs text-slate-500 font-mono mt-0.5">Phone: ${v.phone} • ID: ${v.id_type || 'ID'}</p>
+                            <p class="text-xs text-slate-700 mt-1">Visiting: <strong class="text-indigo-600">${v.person_to_visit}</strong></p>
+                            <p class="text-xs text-slate-500 italic mt-0.5">"${v.reason || 'Official Business'}"</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 self-end sm:self-center">
+                        <button onclick="approveVisitor(${v.id}, '${v.name.replace(/'/g, "\\'")}')"
+                            class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-base">check</span>
+                            Approve Entry
+                        </button>
+                        <button onclick="rejectVisitor(${v.id}, '${v.name.replace(/'/g, "\\'")}')"
+                            class="px-4 py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 rounded-xl text-xs font-bold transition-all">
+                            Decline
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function approveVisitor(id, name) {
+            window.SSBS_DB.updateVisitorApproval(id, 1);
+            showToast(`Visitor "${name}" entry approved! Gate pass generated.`);
+            renderPendingApprovals();
+            renderWhatsAppQueue();
+        }
+
+        function rejectVisitor(id, name) {
+            const reason = prompt(`Reason for denying entry to ${name}:`, 'Host unavailable for meeting');
+            if (reason) {
+                window.SSBS_DB.updateVisitorApproval(id, 3, reason);
+                showToast(`Visitor "${name}" entry declined.`);
+                renderPendingApprovals();
+            }
+        }
+
+        function renderWhatsAppQueue() {
+            const container = document.getElementById('whatsapp-queue-list');
+            const data = window.SSBS_DB.getData();
+            const queue = [...data.whatsapp_queue].reverse();
+
+            if (queue.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">No broadcast messages in queue.</p>';
+                return;
+            }
+
+            container.innerHTML = queue.map(m => `
+                <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-start justify-between gap-3 text-xs">
+                    <div class="flex items-start gap-2.5">
+                        <div class="size-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-base">outgoing_mail</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-800">To: ${m.recipient || m.phone} <span class="font-mono text-[10px] text-slate-400">(${m.phone})</span></p>
+                            <p class="text-slate-600 mt-0.5">${m.message}</p>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">Delivered</span>
+                        <p class="text-[10px] text-slate-400 font-mono mt-1">${m.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+
+</html>

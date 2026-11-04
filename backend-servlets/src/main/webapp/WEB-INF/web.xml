@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+
+    <display-name>SSBS Visitor &amp; Logistics Management</display-name>
+
+    <!-- Global CORS Filter -->
+    <filter>
+        <filter-name>CorsFilter</filter-name>
+        <filter-class>com.ssbs.filter.CorsFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CorsFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- Auth Servlet -->
+    <servlet>
+        <servlet-name>AuthServlet</servlet-name>
+        <servlet-class>com.ssbs.servlet.AuthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/api/auth/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Visitor Servlet -->
+    <servlet>
+        <servlet-name>VisitorServlet</servlet-name>
+        <servlet-class>com.ssbs.servlet.VisitorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>VisitorServlet</servlet-name>
+        <url-pattern>/api/visitors/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Logistics Servlet -->
+    <servlet>
+        <servlet-name>LogisticsServlet</servlet-name>
+        <servlet-class>com.ssbs.servlet.LogisticsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LogisticsServlet</servlet-name>
+        <url-pattern>/api/logistics/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Employee Servlet -->
+    <servlet>
+        <servlet-name>EmployeeServlet</servlet-name>
+        <servlet-class>com.ssbs.servlet.EmployeeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EmployeeServlet</servlet-name>
+        <url-pattern>/api/employees/*</url-pattern>
+    </servlet-mapping>
+
+    <session-config>
+        <session-timeout>60</session-timeout>
+    </session-config>
+</web-app>

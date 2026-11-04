@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Entry - Gate Portal | SSBS</title>
+    <link rel="icon" href="./assets/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+
+<body class="bg-slate-50 font-sans antialiased min-h-screen text-slate-600">
+    <div class="flex h-screen bg-slate-50 overflow-hidden" role="application">
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+        <!-- Mobile Recent Sidebar Overlay -->
+        <div id="recent-sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden xl:hidden" onclick="toggleRecentSidebar()"></div>
+
+        <!-- Left Main Navigation Sidebar -->
+        <aside id="sidebar"
+            class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
+            <div class="h-16 flex items-center px-6 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <img src="./assets/images/favicon.ico" alt="SSBS Logo" class="size-8 rounded-lg">
+                    <h1 class="font-bold text-white tracking-wide text-lg">SSBS Portal</h1>
+                </div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+                <!-- User Profile Card in Sidebar -->
+                <div class="px-3 mb-6">
+                    <div class="bg-slate-800/60 rounded-xl p-3 border border-slate-700/50 flex items-center gap-3">
+                        <div id="user-avatar-initial"
+                            class="size-10 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-900/30">
+                            S
+                        </div>
+                        <div class="min-w-0">
+                            <p id="user-display-name" class="text-white font-bold text-sm truncate">Sanjai M S</p>
+                            <p id="user-role-badge" class="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">DEVELOPER</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Portals</div>
+
+                <a href="./index.html"
+                    class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span class="material-symbols-outlined text-[22px]">security</span>
+                    <span class="font-medium text-sm">Gate Portal</span>
+                </a>
+
+                <a href="./logistics_entry.html"
+                    class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span class="material-symbols-outlined text-[22px]">local_shipping</span>
+                    <span class="font-medium text-sm">Logistics Portal</span>
+                </a>
+
+                <a href="./notification.html"
+                    class="nav-link-item group flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[22px]">notifications</span>
+                        <span class="font-medium text-sm">Host Approvals</span>
+                    </div>
+                    <span id="nav-pending-notif-count" class="hidden px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500 text-white">0</span>
+                </a>
+
+                <!-- Admin Only Section -->
+                <div id="admin-nav-section" class="pt-4 space-y-1">
+                    <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Administration</div>
+                    <a href="./view_status.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+                        <span class="font-medium text-sm">System & Staff</span>
+                    </a>
+                    <a href="./view_all.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">group</span>
+                        <span class="font-medium text-sm">All Visitors</span>
+                    </a>
+                    <a href="./view_all_logistics.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">inventory</span>
+                        <span class="font-medium text-sm">All Logistics</span>
+                    </a>
+                    <a href="./new_user.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">person_add</span>
+                        <span class="font-medium text-sm">Add New User</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <button onclick="logout()"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-red-900/30 transition-all group">
+                    <span class="material-symbols-outlined text-[22px] group-hover:text-red-400 transition-colors">logout</span>
+                    <span class="font-medium text-sm">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+            <!-- Mobile Top Header -->
+            <header class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 shrink-0 z-10">
+                <button onclick="toggleSidebar()" class="material-symbols-outlined text-2xl text-slate-600 hover:text-slate-900" aria-label="Menu">menu</button>
+                <div class="flex items-center gap-2">
+                    <img src="./assets/images/favicon.ico" class="size-6">
+                    <span class="font-bold text-slate-800">SSBS Gate Portal</span>
+                </div>
+                <button onclick="toggleRecentSidebar()" class="material-symbols-outlined text-2xl text-slate-600 hover:text-slate-900" aria-label="Recent">history</button>
+            </header>
+
+            <main class="flex-1 overflow-hidden flex flex-col xl:flex-row relative">
+                <!-- Center Form Area -->
+                <div class="flex-1 overflow-y-auto p-6 md:p-8 xl:p-10 pb-24">
+                    <div class="max-w-3xl mx-auto flex flex-col gap-6">
+                        <!-- Heading -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h1 class="text-slate-800 text-3xl font-extrabold tracking-tight">New Visitor Entry</h1>
+                                <p class="text-slate-500 text-sm mt-1">Please register visitor information and print gate pass badge.</p>
+                            </div>
+                            <button type="button" onclick="openCameraModal()"
+                                class="hidden sm:flex items-center gap-2 px-4 py-2 border border-indigo-200 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors">
+                                <span class="material-symbols-outlined text-base">photo_camera</span>
+                                Take Photo
+                            </button>
+                        </div>
+
+                        <!-- Visitor Entry Form Card -->
+                        <div class="bg-white rounded-2xl border border-slate-200/80 p-6 md:p-8 shadow-sm">
+                            <form id="visitor-entry-form" class="flex flex-col gap-7">
+                                <!-- Section 1: Host Details -->
+                                <section class="space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-base">domain</span>
+                                            1. Host & Destination
+                                        </h3>
+                                        <span id="host-phone-indicator" class="text-xs text-slate-400 font-mono"></span>
+                                    </div>
+                                    <div class="grid md:grid-cols-2 gap-4">
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-xs mb-1.5 block">Visiting Employee <span class="text-red-500">*</span></span>
+                                            <select id="person-to-visit" required onchange="handleHostChange()"
+                                                class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm text-slate-800 transition-all">
+                                                <option value="" disabled selected>Select employee host...</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-xs mb-1.5 block">Department</span>
+                                            <input type="text" id="host-department" readonly
+                                                class="w-full rounded-xl border border-slate-200 bg-slate-100 text-slate-500 h-11 px-3 text-sm"
+                                                placeholder="Auto-populated...">
+                                        </label>
+                                    </div>
+                                </section>
+
+                                <hr class="border-slate-100" />
+
+                                <!-- Section 2: Visitor Details -->
+                                <section class="space-y-4">
+                                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-base">person</span>
+                                        2. Visitor Information
+                                    </h3>
+                                    <div class="grid md:grid-cols-2 gap-4">
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-xs mb-1.5 block">Visitor Full Name <span class="text-red-500">*</span></span>
+                                            <input type="text" id="visitor-name" required placeholder="e.g. Ramesh Chandra"
+                                                class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm text-slate-800 transition-all">
+                                        </label>
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-xs mb-1.5 block">Mobile Number <span class="text-red-500">*</span></span>
+                                            <div class="relative">
+                                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                                    <span class="material-symbols-outlined text-lg">phone</span>
+                                                </span>
+                                                <input type="tel" id="visitor-phone" maxlength="10" minlength="10" required
+                                                    pattern="[0-9]{10}" placeholder="10-digit mobile number"
+                                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                                    class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 pl-10 pr-3 text-sm text-slate-800 transition-all">
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div class="grid md:grid-cols-2 gap-4">
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-xs mb-1.5 block">Government ID Proof <span class="text-red-500">*</span></span>
+                                            <select id="id-type" required onchange="handleIdTypeChange()"
+                                                class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm text-slate-800 transition-all">
+                                                <option value="" disabled selected>Choose ID Type...</option>
+                                                <option value="Aadhar">Aadhar Card</option>
+                                                <option value="PAN">PAN Card</option>
+                                                <option value="Driving License">Driving License</option>
+                                                <option value="Voter ID">Voter ID</option>
+                                                <option value="Passport">Passport</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="text-slate-700 font-medium text-xs mb-1.5 block">ID Number <span class="text-red-500">*</span></span>
+                                            <input type="text" id="id-number" required disabled placeholder="Select ID Type first"
+                                                class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm text-slate-800 uppercase font-mono transition-all">
+                                        </label>
+                                    </div>
+
+                                    <label class="block">
+                                        <span class="text-slate-700 font-medium text-xs mb-1.5 block">Purpose / Reason of Visit <span class="text-red-500">*</span></span>
+                                        <input type="text" id="visit-reason" required placeholder="e.g. Official Vendor Meeting / Technical Interview"
+                                            class="w-full rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm text-slate-800 transition-all">
+                                    </label>
+
+                                    <!-- Vehicle Toggle Box -->
+                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-3">
+                                                <div class="size-9 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                                    <span class="material-symbols-outlined text-xl">directions_car</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-slate-800 font-semibold text-xs">Vehicle Parking Entry</p>
+                                                    <p class="text-slate-400 text-[11px]">Does the visitor have a vehicle?</p>
+                                                </div>
+                                            </div>
+                                            <label class="inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" id="has-vehicle-toggle" onchange="toggleVehicleField()" class="sr-only peer">
+                                                <div class="relative w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                            </label>
+                                        </div>
+                                        <div id="vehicle-number-wrapper" class="hidden mt-3 pt-3 border-t border-slate-200 animate-fade-in">
+                                            <label class="block">
+                                                <span class="text-slate-700 font-medium text-xs mb-1.5 block">Vehicle Registration Number</span>
+                                                <input type="text" id="vehicle-number" placeholder="e.g. KA-01-MJ-4521"
+                                                    oninput="this.value = this.value.toUpperCase()"
+                                                    class="w-full rounded-xl border border-slate-300 bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 h-11 px-3 text-sm font-mono uppercase tracking-wider">
+                                            </label>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- Submit Actions -->
+                                <div class="flex items-center gap-3 pt-2">
+                                    <button type="submit"
+                                        class="flex-1 h-12 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined text-xl">how_to_reg</span>
+                                        Check-In & Generate Pass
+                                    </button>
+                                    <button type="reset" onclick="resetEntryForm()"
+                                        class="px-6 h-12 bg-white border border-slate-300 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors">
+                                        Reset
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar: Recent Visitor Entries -->
+                <aside id="recent-sidebar"
+                    class="fixed inset-y-0 right-0 z-40 bg-white xl:bg-white/70 xl:backdrop-blur shadow-2xl xl:shadow-none transform transition-transform duration-300 translate-x-full xl:translate-x-0 xl:static w-80 md:w-96 xl:w-80 flex flex-col xl:border-l border-slate-200 p-6 gap-4 overflow-y-auto max-h-screen xl:max-h-full">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-indigo-600">schedule</span>
+                            <h3 class="text-slate-800 font-bold text-sm">Recent Entries</h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a href="./view_all.html" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">VIEW ALL</a>
+                            <button onclick="toggleRecentSidebar()" class="xl:hidden text-slate-400 hover:text-slate-600">
+                                <span class="material-symbols-outlined text-lg">close</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <span class="material-symbols-outlined text-lg">search</span>
+                        </span>
+                        <input type="text" id="recent-search-input" oninput="renderRecentEntries()"
+                            class="w-full rounded-xl border border-slate-200 bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-100 h-9 pl-9 pr-3 text-xs placeholder:text-slate-400"
+                            placeholder="Filter recent entries...">
+                    </div>
+
+                    <!-- Dynamic Entries List -->
+                    <div id="recent-entries-container" class="flex-1 space-y-3 overflow-y-auto">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </aside>
+            </main>
+
+            <!-- Floating Bottom Pill Switcher -->
+            <div class="fixed bottom-3 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md border border-slate-300/80 p-1.5 rounded-full shadow-2xl z-30 flex items-center gap-1">
+                <a href="./index.html" class="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white text-xs font-bold shadow-sm">
+                    <span class="material-symbols-outlined text-base">login</span>
+                    <span>New Entry</span>
+                </a>
+                <a href="./check_out.html" class="flex items-center gap-2 px-4 py-2 rounded-full text-slate-600 hover:bg-slate-100 text-xs font-bold transition-all">
+                    <span class="material-symbols-outlined text-base">logout</span>
+                    <span>Visitor Exit</span>
+                </a>
+                <button onclick="toggleRecentSidebar()" class="xl:hidden flex items-center gap-2 px-4 py-2 rounded-full text-slate-600 hover:bg-slate-100 text-xs font-bold transition-all">
+                    <span class="material-symbols-outlined text-base">history</span>
+                    <span>Recent</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Webcam Modal -->
+    <div id="camera-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 flex flex-col gap-4 animate-modal">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-indigo-600">photo_camera</span>
+                    <h3 class="font-bold text-slate-800 text-sm">Capture Visitor Photo</h3>
+                </div>
+                <button onclick="closeCameraModal()" class="text-slate-400 hover:text-slate-600">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="relative bg-black rounded-xl overflow-hidden aspect-video flex items-center justify-center">
+                <video id="webcam-video" autoplay playsinline class="w-full h-full object-cover"></video>
+                <canvas id="webcam-canvas" class="hidden"></canvas>
+                <div id="camera-fallback" class="hidden text-white/70 text-xs text-center p-4">
+                    Camera access not available. Sample avatar will be applied.
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeCameraModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700">Cancel</button>
+                <button type="button" onclick="capturePhoto()" class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-base">camera</span>
+                    Capture Photo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./assets/js/db.js"></script>
+    <script src="./assets/js/app.js"></script>
+    <script>
+        let capturedPhotoUrl = null;
+        let videoStream = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateEmployeesDropdown();
+            renderRecentEntries();
+        });
+
+        function populateEmployeesDropdown() {
+            const select = document.getElementById('person-to-visit');
+            const emps = window.SSBS_DB.getEmployees();
+            select.innerHTML = '<option value="" disabled selected>Select employee host...</option>';
+            emps.forEach(emp => {
+                const opt = document.createElement('option');
+                opt.value = emp.name;
+                opt.textContent = `${emp.name} (${emp.role_name} - ${emp.department})`;
+                opt.dataset.dept = emp.department;
+                opt.dataset.phone = emp.phone;
+                select.appendChild(opt);
+            });
+        }
+
+        function handleHostChange() {
+            const select = document.getElementById('person-to-visit');
+            const selectedOpt = select.options[select.selectedIndex];
+            document.getElementById('host-department').value = selectedOpt.dataset.dept || '';
+            const indicator = document.getElementById('host-phone-indicator');
+            if (indicator && selectedOpt.dataset.phone) {
+                indicator.textContent = `Host Mobile: ${selectedOpt.dataset.phone}`;
+            }
+        }
+
+        function handleIdTypeChange() {
+            const idType = document.getElementById('id-type').value;
+            const idNumber = document.getElementById('id-number');
+            idNumber.disabled = false;
+            idNumber.focus();
+
+            if (idType === 'Aadhar') {
+                idNumber.placeholder = '12-digit UID (e.g. 1234 5678 9012)';
+                idNumber.maxLength = 14;
+            } else if (idType === 'PAN') {
+                idNumber.placeholder = '10-char PAN (e.g. ABCDE1234F)';
+                idNumber.maxLength = 10;
+            } else if (idType === 'Driving License') {
+                idNumber.placeholder = 'e.g. KA-04-2020-0012';
+                idNumber.maxLength = 20;
+            } else {
+                idNumber.placeholder = 'Enter ID number';
+                idNumber.maxLength = 20;
+            }
+        }
+
+        function toggleVehicleField() {
+            const isChecked = document.getElementById('has-vehicle-toggle').checked;
+            const wrapper = document.getElementById('vehicle-number-wrapper');
+            const input = document.getElementById('vehicle-number');
+            if (isChecked) {
+                wrapper.classList.remove('hidden');
+                input.required = true;
+                input.focus();
+            } else {
+                wrapper.classList.add('hidden');
+                input.required = false;
+                input.value = '';
+            }
+        }
+
+        function resetEntryForm() {
+            document.getElementById('visitor-entry-form').reset();
+            document.getElementById('id-number').disabled = true;
+            document.getElementById('vehicle-number-wrapper').classList.add('hidden');
+            document.getElementById('host-phone-indicator').textContent = '';
+            capturedPhotoUrl = null;
+        }
+
+        // --- Camera Handling ---
+        function openCameraModal() {
+            const modal = document.getElementById('camera-modal');
+            const video = document.getElementById('webcam-video');
+            const fallback = document.getElementById('camera-fallback');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        videoStream = stream;
+                        video.srcObject = stream;
+                        video.classList.remove('hidden');
+                        fallback.classList.add('hidden');
+                    })
+                    .catch(err => {
+                        console.warn('Webcam not permitted or unavailable:', err);
+                        video.classList.add('hidden');
+                        fallback.classList.remove('hidden');
+                    });
+            } else {
+                video.classList.add('hidden');
+                fallback.classList.remove('hidden');
+            }
+        }
+
+        function closeCameraModal() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            const modal = document.getElementById('camera-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('webcam-video');
+            const canvas = document.getElementById('webcam-canvas');
+            if (video && video.videoWidth) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                capturedPhotoUrl = canvas.toDataURL('image/jpeg');
+            } else {
+                capturedPhotoUrl = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80';
+            }
+            showToast('Photo captured successfully');
+            closeCameraModal();
+        }
+
+        // --- Recent Entries Rendering ---
+        function renderRecentEntries() {
+            const container = document.getElementById('recent-entries-container');
+            const searchQuery = (document.getElementById('recent-search-input').value || '').trim();
+            const visitors = window.SSBS_DB.getVisitors({ search: searchQuery }).slice(0, 8);
+
+            if (visitors.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 text-xs">
+                        <span class="material-symbols-outlined text-3xl mb-1 text-slate-300">person_off</span>
+                        <p>No matching visitor entries found.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = visitors.map(v => `
+                <div class="p-3 bg-slate-50 hover:bg-white rounded-xl border border-slate-200/80 transition-all flex flex-col gap-2 shadow-xs group">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <img src="${v.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}"
+                                class="size-9 rounded-lg object-cover border border-slate-200" alt="">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-xs">${v.name}</h4>
+                                <p class="text-[11px] text-slate-400 font-mono">${v.phone}</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${v.status === 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}">
+                            ${v.status === 1 ? 'Inside' : 'Exited'}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+                        <span class="truncate max-w-[140px]">Host: <strong>${v.person_to_visit}</strong></span>
+                        <span class="font-mono text-[10px] text-slate-400">${v.entry_time.split(' ')[1] || ''}</span>
+                    </div>
+                    <div class="flex items-center justify-end gap-1.5 pt-1">
+                        <button onclick='window.showVisitorPassModal(${JSON.stringify(v).replace(/'/g, "&#39;")})'
+                            class="px-2 py-1 text-[11px] font-bold text-indigo-600 hover:bg-indigo-50 rounded transition-colors flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">badge</span>
+                            Pass
+                        </button>
+                        ${v.status === 1 ? `
+                            <button onclick="handleQuickCheckout(${v.id})"
+                                class="px-2 py-1 text-[11px] font-bold text-red-600 hover:bg-red-50 rounded transition-colors flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs">logout</span>
+                                Check-out
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleQuickCheckout(id) {
+            if (confirm('Mark this visitor as checked out?')) {
+                window.SSBS_DB.checkOutVisitor(id);
+                showToast('Visitor checked out successfully');
+                renderRecentEntries();
+            }
+        }
+
+        // --- Form Submission Handler ---
+        document.getElementById('visitor-entry-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const host = document.getElementById('person-to-visit').value;
+            const dept = document.getElementById('host-department').value;
+            const name = document.getElementById('visitor-name').value.trim();
+            const phone = document.getElementById('visitor-phone').value.trim();
+            const idType = document.getElementById('id-type').value;
+            const idNumber = document.getElementById('id-number').value.trim();
+            const reason = document.getElementById('visit-reason').value.trim();
+            const hasVehicle = document.getElementById('has-vehicle-toggle').checked;
+            const vehicleNumber = document.getElementById('vehicle-number').value.trim();
+
+            const newVisitor = window.SSBS_DB.addVisitor({
+                name,
+                phone,
+                person_to_visit: host,
+                department: dept,
+                reason,
+                id_type: idType,
+                id_number: idNumber,
+                has_vehicle: hasVehicle,
+                vehicle_number: vehicleNumber,
+                photo: capturedPhotoUrl
+            });
+
+            showToast(`Visitor ${name} checked in successfully!`);
+            resetEntryForm();
+            renderRecentEntries();
+
+            // Auto-open print pass modal
+            window.showVisitorPassModal(newVisitor);
+        });
+    </script>
+</body>
+
+</html>

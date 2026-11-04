@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Logistics Records | SSBS</title>
+    <link rel="icon" href="./assets/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+
+<body class="bg-slate-50 font-sans antialiased min-h-screen text-slate-600">
+    <div class="flex h-screen bg-slate-50 overflow-hidden w-full">
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+        <!-- Left Navigation Sidebar -->
+        <aside id="sidebar"
+            class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 md:z-20 -translate-x-full md:translate-x-0">
+            <div class="h-16 flex items-center px-6 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <img src="./assets/images/favicon.ico" alt="SSBS Logo" class="size-8 rounded-lg">
+                    <h1 class="font-bold text-white tracking-wide text-lg">SSBS Portal</h1>
+                </div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+                <div class="px-3 mb-6">
+                    <div class="bg-slate-800/60 rounded-xl p-3 border border-slate-700/50 flex items-center gap-3">
+                        <div id="user-avatar-initial"
+                            class="size-10 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-900/30">
+                            S
+                        </div>
+                        <div class="min-w-0">
+                            <p id="user-display-name" class="text-white font-bold text-sm truncate">Sanjai M S</p>
+                            <p id="user-role-badge" class="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">DEVELOPER</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Portals</div>
+
+                <a href="./index.html"
+                    class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span class="material-symbols-outlined text-[22px]">security</span>
+                    <span class="font-medium text-sm">Gate Portal</span>
+                </a>
+
+                <a href="./logistics_entry.html"
+                    class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <span class="material-symbols-outlined text-[22px]">local_shipping</span>
+                    <span class="font-medium text-sm">Logistics Portal</span>
+                </a>
+
+                <a href="./notification.html"
+                    class="nav-link-item group flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[22px]">notifications</span>
+                        <span class="font-medium text-sm">Host Approvals</span>
+                    </div>
+                    <span id="nav-pending-notif-count" class="hidden px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500 text-white">0</span>
+                </a>
+
+                <div id="admin-nav-section" class="pt-4 space-y-1">
+                    <div class="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Administration</div>
+                    <a href="./view_status.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+                        <span class="font-medium text-sm">System & Staff</span>
+                    </a>
+                    <a href="./view_all.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">group</span>
+                        <span class="font-medium text-sm">All Visitors</span>
+                    </a>
+                    <a href="./view_all_logistics.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">inventory</span>
+                        <span class="font-medium text-sm">All Logistics</span>
+                    </a>
+                    <a href="./new_user.html"
+                        class="nav-link-item group flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                        <span class="material-symbols-outlined text-[22px]">person_add</span>
+                        <span class="font-medium text-sm">Add New User</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <button onclick="logout()"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-red-900/30 transition-all group">
+                    <span class="material-symbols-outlined text-[22px] group-hover:text-red-400 transition-colors">logout</span>
+                    <span class="font-medium text-sm">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+            <header class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 shrink-0">
+                <button onclick="toggleSidebar()" class="material-symbols-outlined text-2xl text-slate-600 hover:text-slate-900">menu</button>
+                <span class="font-bold text-slate-800">All Logistics</span>
+                <a href="./logistics_entry.html" class="material-symbols-outlined text-2xl text-indigo-600">arrow_back</a>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-6 md:p-10 pb-24">
+                <div class="max-w-6xl mx-auto flex flex-col gap-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Logistics Gate Operations Archive</h1>
+                            <p class="text-slate-500 text-sm mt-1">Audit log of inward/outward freight, weighbridge records, and materials.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="exportLogisticsCSV()"
+                                class="px-4 h-11 bg-white border border-slate-300 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-xs">
+                                <span class="material-symbols-outlined text-base">download</span>
+                                Export CSV
+                            </button>
+                            <button onclick="window.print()"
+                                class="px-4 h-11 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-md shadow-indigo-100">
+                                <span class="material-symbols-outlined text-base">print</span>
+                                Print Log
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search and Status Bar -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-3">
+                        <div class="flex-1 min-w-[240px] relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                                <span class="material-symbols-outlined text-xl">search</span>
+                            </span>
+                            <input type="text" id="logistics-archive-search" oninput="renderTable()"
+                                placeholder="Search driver, vehicle number, supplier, or material..."
+                                class="w-full rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-100 h-10 pl-11 pr-3 text-xs">
+                        </div>
+                        <select id="logistics-status-filter" onchange="renderTable()"
+                            class="rounded-xl border border-slate-200 bg-slate-50 h-10 px-3 text-xs text-slate-700 font-medium">
+                            <option value="">All Statuses</option>
+                            <option value="Inside">Inside Facility</option>
+                            <option value="Exited">Exited Facility</option>
+                        </select>
+                    </div>
+
+                    <!-- Logistics Records Table -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-extrabold tracking-wider">
+                                        <th class="p-4">Vehicle</th>
+                                        <th class="p-4">Driver</th>
+                                        <th class="p-4">Origin / Supplier</th>
+                                        <th class="p-4">Material / PO</th>
+                                        <th class="p-4">Gross Wt</th>
+                                        <th class="p-4">Tare Wt</th>
+                                        <th class="p-4">In-Time</th>
+                                        <th class="p-4">Exit-Time</th>
+                                        <th class="p-4 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logistics-table-body" class="divide-y divide-slate-100 text-xs">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="./assets/js/db.js"></script>
+    <script src="./assets/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', renderTable);
+
+        function renderTable() {
+            const tbody = document.getElementById('logistics-table-body');
+            const search = (document.getElementById('logistics-archive-search').value || '').trim();
+            const status = document.getElementById('logistics-status-filter').value;
+
+            const list = window.SSBS_DB.getVehicles({ search, status });
+
+            if (list.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-12 text-slate-400">
+                            No logistics vehicle records found.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = list.map(v => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-4 font-mono font-bold text-slate-800">${v.veh_reg_no}</td>
+                    <td class="p-4">
+                        <p class="font-bold text-slate-800">${v.driver_name}</p>
+                        <p class="text-[10px] text-slate-400 font-mono">${v.driver_phone}</p>
+                    </td>
+                    <td class="p-4">
+                        <p class="text-slate-700 font-medium">${v.origin}</p>
+                        <p class="text-[10px] text-slate-400">Bay: ${v.destination}</p>
+                    </td>
+                    <td class="p-4">
+                        <p class="text-slate-800">${v.material_type}</p>
+                        <p class="text-[10px] text-indigo-600 font-mono font-bold">${v.purchase_no}</p>
+                    </td>
+                    <td class="p-4 font-mono font-bold text-slate-700">${v.gross_weight || 0} kg</td>
+                    <td class="p-4 font-mono text-slate-500">${v.tare_weight ? `${v.tare_weight} kg` : '—'}</td>
+                    <td class="p-4 font-mono text-slate-500">${v.time}</td>
+                    <td class="p-4 font-mono text-slate-400">${v.exit_time || '—'}</td>
+                    <td class="p-4 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${v.status === 'Inside' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}">
+                            ${v.status}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function exportLogisticsCSV() {
+            const list = window.SSBS_DB.getVehicles();
+            if (list.length === 0) return;
+
+            const headers = ['Vehicle_Reg_No', 'Driver_Name', 'Driver_Phone', 'Origin', 'Destination', 'PO_Number', 'Material', 'Gross_Weight', 'Tare_Weight', 'In_Time', 'Exit_Time', 'Status'];
+            const rows = list.map(v => [
+                `"${v.veh_reg_no}"`,
+                `"${v.driver_name}"`,
+                `"${v.driver_phone}"`,
+                `"${v.origin}"`,
+                `"${v.destination}"`,
+                `"${v.purchase_no}"`,
+                `"${v.material_type}"`,
+                v.gross_weight || 0,
+                v.tare_weight || 0,
+                `"${v.time}"`,
+                `"${v.exit_time || ''}"`,
+                `"${v.status}"`
+            ]);
+
+            const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `SSBS_Logistics_Report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+    </script>
+</body>
+
+</html>

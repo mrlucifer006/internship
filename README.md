@@ -1,6 +1,53 @@
-# Visitor Management System
+# Visitor & Logistics Management System (SSBS Portal)
 
-A comprehensive web-based visitor management system built with Flask for managing visitors, employees, and logistics operations.
+A comprehensive industrial web-based visitor management system for managing visitors, employees, logistics operations, and gate security.
+
+---
+
+## 🚀 Live Demo & Web Replica (GitHub Pages)
+
+The complete frontend application has been replicated using modern **HTML5, CSS3 (Tailwind CSS), and JavaScript**, integrated with a reactive client-side database engine and automated **GitHub Actions**:
+
+- 🌐 **Live Website Link**: [https://mrlucifer006.github.io/internship/](https://mrlucifer006.github.io/internship/)
+- ⚙️ **Continuous Deployment**: Automated deployment via GitHub Actions workflow (`.github/workflows/deploy-pages.yml`)
+- 🧪 **Demo Credentials**:
+  - **Developer (Level 5)**: `super` / `password123`
+  - **Admin (Level 4)**: `admin` / `password123`
+  - **Supervisor (Level 2)**: `supervisor1` / `password123`
+  - **Foreman (Level 1)**: `foreman1` / `password123`
+  - *(One-click demo login buttons are provided on the login page)*
+
+---
+
+## 📂 Multi-Stack Architecture & Implementations
+
+This repository includes full implementations across three tech stacks:
+
+1. **Frontend Replica (`docs/`)**:
+   - `index.html` - Gate Portal & Visitor Check-In with live camera snapshot & printable badge pass modal
+   - `login.html` - SSBS Login Portal with quick role selector
+   - `check_out.html` - Visitor Check-Out portal with barcode scan & instant checkout
+   - `view_all.html` - Full visitor records archive with search, filter & CSV export
+   - `logistics_entry.html` - Vehicle inbound logistics registration
+   - `logistics_exit.html` - Weighbridge tare weight calculation & exit clearance
+   - `view_all_logistics.html` - Logistics history with weight tracking
+   - `view_status.html` - Real-time staff online/offline monitoring & KPI dashboard
+   - `new_user.html` - Role authorization provisioning with interactive authority slider
+   - `notification.html` - Host approvals & automated WhatsApp broadcast feed
+
+2. **PHP Backend (`backend-php/`)**:
+   - RESTful API endpoints (`api/auth.php`, `api/visitors.php`, `api/logistics.php`, `api/employees.php`)
+   - PDO database connection with MySQL support and zero-config SQLite portable fallback
+   - Complete schema (`sql/schema.sql`)
+   - See [backend-php/README.md](backend-php/README.md) for run instructions (`php -S localhost:8000`)
+
+3. **Java Servlets Backend (`backend-servlets/`)**:
+   - Standard Java EE / Jakarta Maven structure (`pom.xml`, `web.xml`)
+   - Servlets (`AuthServlet`, `VisitorServlet`, `LogisticsServlet`, `EmployeeServlet`)
+   - DAO patterns with JDBC MySQL and SQLite support (`DBUtil`, `VisitorDAO`, `VehicleDAO`, `EmployeeDAO`)
+   - See [backend-servlets/README.md](backend-servlets/README.md) for Tomcat deployment instructions
+
+---
 
 ## Features
 
